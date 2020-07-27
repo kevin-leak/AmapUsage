@@ -144,7 +144,6 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
         for (i in 0..49) {
             arrayList.add("第" + i + "条数据")
         }
-        rv
         rv.adapter = LocationAdapter(this, arrayList)
     }
 

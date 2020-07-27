@@ -53,4 +53,8 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
         }
         return return super.onTouchEvent(ev)
     }
+
+    override fun fling(velocityY: Int) {
+        super.fling((velocityY * 0.5).toInt())
+    }
 }

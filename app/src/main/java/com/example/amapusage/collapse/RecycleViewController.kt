@@ -50,4 +50,8 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
         }
         return super.onTouchEvent(ev) // 这里对Down事件进行了消费.
     }
+
+    override fun fling(velocityX: Int, velocityY: Int): Boolean {
+       return super.fling(velocityX, (velocityY * 0.3).toInt())
+    }
 }
