@@ -73,7 +73,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
     override fun animation() {
         if (lock) {
-            Log.e(TAG, "animation lock state is $lock "  )
+            Log.e(TAG, "animation lock state is $lock ")
             return
         }
         collapseAnimation = if (isHeadCollapsing) {
