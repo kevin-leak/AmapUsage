@@ -1,17 +1,18 @@
-package com.example.amapusage.collapse
+package com.example.amapusage.CollapseMapView
 
 import android.animation.ValueAnimator
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 import android.widget.RelativeLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
-import com.example.amapusage.collapse.ControlSensorPerformer.Companion.AFTER_COLLLAPSING
-import com.example.amapusage.collapse.ControlSensorPerformer.Companion.BEFORE_COLLLAPSING
-import com.example.amapusage.collapse.ControlSensorPerformer.Companion.ON_COLLLAPSING
+import com.example.amapusage.CollapseMapView.ControlSensorPerformer.Companion.AFTER_COLLLAPSING
+import com.example.amapusage.CollapseMapView.ControlSensorPerformer.Companion.BEFORE_COLLLAPSING
+import com.example.amapusage.CollapseMapView.ControlSensorPerformer.Companion.ON_COLLLAPSING
 
 
 class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
@@ -37,6 +38,18 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
             expandHeight = collapseView?.measuredHeight?.toFloat() ?: 0f // 获取测量的最初值
             collapseHeight = collapseView?.minimumHeight?.toFloat() ?: 0f
         }
+
+    }
+
+    var downY :Float = 0f
+
+
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        if (ev?.action == MotionEvent.ACTION_MOVE && !isCollapsing()  ){
+            collapsing()
+            return true
+        }
+        return super.onInterceptTouchEvent(ev)
     }
 
     override fun isCollapsing(): Boolean {
@@ -102,12 +115,12 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         this.listener = listener
     }
 
-    fun expand() {
-        if (!isHeadCollapsing) animation()
+    override fun expand() {
+        if (isHeadCollapsing) animation()
     }
 
-    fun collapsing() {
-        if (isHeadCollapsing) animation()
+    override fun collapsing() {
+        if (!isHeadCollapsing) animation()
     }
 
     open class CollapsingListenerImpl(private val doAction: Boolean = false) :

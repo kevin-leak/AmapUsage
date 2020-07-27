@@ -1,4 +1,4 @@
-package com.example.amapusage.collapse
+package com.example.amapusage.CollapseMapView
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -7,46 +7,65 @@ import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
 
-class RecycleViewController(context: Context, attr: AttributeSet?, defStyleAttr: Int) :
-    RecyclerView(context, attr, defStyleAttr), ControlSensorPerformer.Controller {
+class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
 
+    private lateinit var sensor: ControlSensorPerformer.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
 
-    constructor(context: Context) : this(context, null) {
-        touchSlop = ViewConfiguration.get(context).scaledTouchSlop
-        maxFlingVelocity = 4000
+    constructor(context: Context) : this(context, null)
+    constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
+    constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
+            : super(context, attr, defStyleAttr) {
+        init()
     }
 
-    constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0) {
+    private fun init() {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
     }
+
+    override fun onMeasure(widthSpec: Int, heightSpec: Int) {
+        super.onMeasure(widthSpec, heightSpec)
+        var temp = parent
+        while (temp !is ControlSensorPerformer.Sensor) temp = temp.parent
+        sensor = temp
+    }
+
+//    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+//        if (!sensor.isCollapsing()) {
+//            sensor.isCollapsing()
+//            return true
+//        }
+//        return super.onInterceptTouchEvent(ev)
+//    }
+
 
     // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        var controller = parent
-        while (controller !is ControlSensorPerformer.Sensor) controller = parent.parent
         when (ev?.action) {
-            MotionEvent.ACTION_DOWN -> downY = ev.y
+            MotionEvent.ACTION_DOWN -> {
+                downY = ev.y
+            }
             MotionEvent.ACTION_UP -> {
-                if (controller.isCollapsing() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
-                    controller.animation() // 坍塌状态，手指向下滑动且处于顶端
+                if (sensor.isCollapsing() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
+                    sensor.expand() // 坍塌状态，手指向下滑动且处于顶端
                     return true // 如果没有Recycle会滑动，不好看
-                } else if (!controller.isCollapsing() && downY - ev.y > touchSlop) {
-                    stopScroll()
+                } else if (!sensor.isCollapsing() && downY - ev.y > touchSlop) {
                     scrollToPosition(0)
-                    controller.animation() // 非坍塌状态，手指向上滑动
+                    sensor.collapsing() // 非坍塌状态，手指向上滑动
                     return true // 如果没有Recycle会滑动，不好看
                 }
             }
         }
         return super.onTouchEvent(ev) // 这里对Down事件进行了消费.
     }
+//
+//    override fun scrollByInternal(x: Int, y: Int, ev: MotionEvent?): Boolean {
+//        if (!sensor.isCollapsing()) {
+//            sensor.collapsing()
+//            return true
+//        }
+//    }
 
-    fun setMaxFlingVelocity(velocity: Int) {
-        val field = this.javaClass.getDeclaredField("mMaxFlingVelocity");
-        field.isAccessible = true;
-        field.set(this, velocity);
-    }
 }
