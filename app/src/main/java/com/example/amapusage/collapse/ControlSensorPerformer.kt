@@ -1,4 +1,4 @@
-package com.example.amapusage.CollapseMapView
+package com.example.amapusage.collapse
 
 import android.view.View
 import android.view.animation.Animation
@@ -9,9 +9,7 @@ interface ControlSensorPerformer {
         val ON_COLLLAPSING = 2
         val AFTER_COLLLAPSING = 3
     }
-
     interface Controller
-    interface Performer
     interface Sensor {
 
         fun isCollapsing(): Boolean
@@ -24,6 +22,7 @@ interface ControlSensorPerformer {
         fun getLinkages(): MutableMap<View, Linkage?>
         fun expand()
         fun collapsing()
+        fun bindController(Controller: ControlSensorPerformer.Controller)
     }
 
     interface CollapsingListener {

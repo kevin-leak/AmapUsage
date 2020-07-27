@@ -9,10 +9,9 @@ import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.MyLocationStyle
 
-object MapHelper {
-    fun uiConfig(map: AMap, baseContext: Context) {
-        // 蓝点设置
-        map.myLocationStyle = MyLocationStyle().apply {
+object AMapConfiguration {
+    fun buildUIConfig(map: AMap) {
+        map.myLocationStyle = MyLocationStyle().apply {// 蓝点设置
             interval(2000) //连续定位模式下的刷新间隔
             strokeColor(Color.argb(0, 0, 0, 0))
             radiusFillColor(Color.argb(0, 0, 0, 0))
@@ -25,12 +24,7 @@ object MapHelper {
             isMyLocationEnabled = true                  // 是否显示蓝点
             uiSettings.isZoomControlsEnabled = false    // 是否显示缩放按钮
             uiSettings.logoPosition = AMapOptions.LOGO_POSITION_BOTTOM_RIGHT // 设置地图logo显示在右下方
-
+            uiSettings.setLogoBottomMargin(-50)         //隐藏logo
         }
-
-        map.apply {
-            uiSettings.setLogoBottomMargin(100)         //隐藏logo
-        }
-
     }
 }

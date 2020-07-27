@@ -1,4 +1,4 @@
-package com.example.amapusage.CollapseMapView
+package com.example.amapusage.collapse
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -29,24 +29,14 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
         var temp = parent
         while (temp !is ControlSensorPerformer.Sensor) temp = temp.parent
         sensor = temp
+        sensor.bindController(this)
     }
-
-//    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
-//        if (!sensor.isCollapsing()) {
-//            sensor.isCollapsing()
-//            return true
-//        }
-//        return super.onInterceptTouchEvent(ev)
-//    }
-
 
     // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         when (ev?.action) {
-            MotionEvent.ACTION_DOWN -> {
-                downY = ev.y
-            }
+            MotionEvent.ACTION_DOWN -> downY = ev.y
             MotionEvent.ACTION_UP -> {
                 if (sensor.isCollapsing() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
                     sensor.expand() // 坍塌状态，手指向下滑动且处于顶端
@@ -60,12 +50,4 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
         }
         return super.onTouchEvent(ev) // 这里对Down事件进行了消费.
     }
-//
-//    override fun scrollByInternal(x: Int, y: Int, ev: MotionEvent?): Boolean {
-//        if (!sensor.isCollapsing()) {
-//            sensor.collapsing()
-//            return true
-//        }
-//    }
-
 }

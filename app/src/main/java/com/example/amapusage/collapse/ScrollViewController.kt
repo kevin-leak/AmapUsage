@@ -8,34 +8,49 @@ import android.view.ViewConfiguration
 import android.widget.ScrollView
 
 
-class ScrollViewController(context: Context, attr: AttributeSet?, defStyleAttr: Int) :
-    ScrollView(context, attr, defStyleAttr),
-    ControlSensorPerformer.Controller {
+class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
 
+    private lateinit var sensor: ControlSensorPerformer.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
 
-    constructor(context: Context) : this(context, null) {
+    constructor(context: Context) : this(context, null)
+    constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
+    constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
+            : super(context, attr, defStyleAttr) {
+        init()
+    }
+
+    private fun init() {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
     }
 
-    constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0) {
-        touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+
+    override fun onMeasure(widthSpec: Int, heightSpec: Int) {
+        super.onMeasure(widthSpec, heightSpec)
+        var temp = parent
+        while (temp !is ControlSensorPerformer.Sensor) temp = temp.parent
+        sensor = temp
+        sensor.bindController(this)
     }
+
 
     // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        var controller = parent
-        while (controller !is ControlSensorPerformer.Sensor) controller = parent.parent
         when (ev?.action) {
             MotionEvent.ACTION_DOWN -> downY = ev.y
-            MotionEvent.ACTION_UP ->
-                if (controller.isCollapsing() && ev.y - downY < touchSlop && scrollY == 0) {
-                    controller.animation()
-                    return true // 如果没有Recycle会滑动，不好看
+            MotionEvent.ACTION_UP -> {
+                if (sensor.isCollapsing() && ev.y - downY > touchSlop && scrollY == 0) {
+                    sensor.expand() // 坍塌状态，手指向下滑动且处于顶端
+                    return true
+                } else if (!sensor.isCollapsing() && downY - ev.y > touchSlop) {
+                    scrollTo(0, 0)
+                    sensor.collapsing() // 非坍塌状态，手指向上滑动
+                    return true
                 }
+            }
         }
-        return super.onTouchEvent(ev)
+        return return super.onTouchEvent(ev)
     }
 }

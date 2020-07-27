@@ -2,74 +2,128 @@
 <com.example.amapusage.collapse.ScrollCollapseLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/scroll_collapse_controller"
+    android:id="@+id/scroll_collapse_sensor"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
     <com.amap.api.maps.TextureMapView
-        android:id="@+id/map"
+        android:id="@+id/texture_map_view"
         android:layout_width="match_parent"
         android:layout_height="450dp"
-        android:minHeight="250dp" />
+        android:minHeight="250dp">
 
-    <RelativeLayout
-        android:id="@+id/rl_search"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/map"
-        android:orientation="vertical">
-
-        <ImageButton
-            android:id="@+id/collapse_button"
-            android:layout_width="40dp"
-            android:layout_height="23dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/collapse_button"
-            android:src="@drawable/ic_baseline_keyboard_arrow_down_24"
-            android:visibility="gone" />
-
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/collapse_button"
-            android:orientation="horizontal"
-            android:padding="15dp">
+            android:background="@drawable/shape_send_layout"
+            android:elevation="3dp"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
+            tools:targetApi="lollipop">
 
-            <androidx.appcompat.widget.SearchView
-                android:id="@+id/sv_Search"
-                android:layout_width="0dp"
-                android:layout_height="35dp"
-                android:layout_weight="1"
-                android:background="@drawable/shape_search_second"
-                android:clickable="true"
-                android:drawableStart="@drawable/icon_search"
-                android:drawableLeft="@drawable/icon_search"
-                android:focusable="true"
-                app:closeIcon="@null"
-                app:searchIcon="@null" />
+            <Button
+                android:id="@+id/out_map"
+                android:layout_width="60dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginLeft="20dp"
+                android:background="#00000000"
+                android:text="@string/cancel" />
 
-            <TextView
-                android:id="@+id/btn_ack"
-                android:layout_width="wrap_content"
-                android:paddingLeft="10dp"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="Cancel"
-                android:textColor="#249ACF"
+            <Button
+                android:id="@+id/send_location"
+                android:layout_width="60dp"
+                android:layout_height="30dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="20dp"
+                android:layout_marginRight="20dp"
+                android:background="@drawable/shape_send_botton"
+                android:text="Send"
+                android:textAllCaps="false" />
+
+        </RelativeLayout>
+
+        <ImageButton
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="25dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="25dp"
+            android:background="@drawable/shape_location_botton"
+            android:elevation="3dp"
+            android:src="@drawable/ic_location_blue"
+            tools:targetApi="lollipop" />
+
+    </com.amap.api.maps.TextureMapView>
+
+    <RelativeLayout
+        android:id="@+id/controller_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/texture_map_view"
+        android:layout_marginTop="-10dp">
+
+        <RelativeLayout
+            android:id="@+id/rl_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/collapse_button"
+                android:layout_width="40dp"
+                android:layout_height="23dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/shape_collapse_button"
+                android:src="@drawable/ic_collapse_button"
                 android:visibility="gone" />
 
-        </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/collapse_button"
+                android:orientation="horizontal"
+                android:padding="15dp">
+
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/sv_Search"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/shape_search_view"
+                    android:clickable="true"
+                    android:drawableStart="@drawable/ic_search"
+                    android:drawableLeft="@drawable/ic_search"
+                    android:focusable="true"
+                    app:closeIcon="@null"
+                    app:searchIcon="@null" />
+
+                <TextView
+                    android:id="@+id/btn_ack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingStart="10dp"
+                    android:paddingLeft="10dp"
+                    android:text="@string/cancel"
+                    android:textColor="#249ACF"
+                    android:visibility="gone"
+                    tools:ignore="RtlSymmetry" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <com.example.amapusage.collapse.RecycleViewController
+            android:id="@+id/rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/rl_search" />
 
     </RelativeLayout>
-
-    <com.example.amapusage.collapse.RecycleViewController
-        android:id="@+id/rv"
-        android:fadeScrollbars="false"
-        android:scrollbars="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/rl_search" />
 
 </com.example.amapusage.collapse.ScrollCollapseLayout>

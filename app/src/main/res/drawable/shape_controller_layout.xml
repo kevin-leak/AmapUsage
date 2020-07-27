@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_activated="true">
+    <item>
         <shape>
             <solid android:color="#FFFDFD" />
-            <corners android:topLeftRadius="25dp" android:topRightRadius="25dp" />
-        </shape>
-    </item>
-
-    <item android:state_activated="false">
-        <shape>
-            <solid android:color="#FFFDFD" />
+            <corners android:topLeftRadius="10dp" android:topRightRadius="10dp" />
         </shape>
     </item>
 </selector>
