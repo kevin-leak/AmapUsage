@@ -3,6 +3,7 @@ package com.example.amapusage.collapse
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.ScrollView
@@ -31,7 +32,6 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
         var temp = parent
         while (temp !is ControlSensorPerformer.Sensor) temp = temp.parent
         sensor = temp
-        sensor.bindController(this)
     }
 
 
@@ -39,15 +39,25 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         when (ev?.action) {
-            MotionEvent.ACTION_DOWN -> downY = ev.y
+            MotionEvent.ACTION_DOWN -> {
+                downY = ev.y
+                // 子view没有产生消费，判断父view是否要消费
+                if (!sensor.isCollapsing()) sensor.collapsing()
+            }
+            MotionEvent.ACTION_MOVE -> {
+                // 子view没有产生消费，判断父view是否要消费
+                if (!sensor.isCollapsing()){
+
+                    sensor.collapsing()
+                }
+            }
             MotionEvent.ACTION_UP -> {
+                // 子view没有产生消费，判断父view是否要消费
                 if (sensor.isCollapsing() && ev.y - downY > touchSlop && scrollY == 0) {
                     sensor.expand() // 坍塌状态，手指向下滑动且处于顶端
-                    return true
                 } else if (!sensor.isCollapsing() && downY - ev.y > touchSlop) {
-                    scrollTo(0, 0)
                     sensor.collapsing() // 非坍塌状态，手指向上滑动
-                    return true
+                    scrollTo(0, 0)
                 }
             }
         }

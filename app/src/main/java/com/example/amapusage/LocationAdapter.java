@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -53,6 +54,12 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.DataVi
         public DataViewHolder(View itemView) {
             super(itemView);
             tv_data = (TextView) itemView.findViewById(R.id.tv_recycle);
+            tv_data.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(App.Companion.getAppContext(), "-----", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 }

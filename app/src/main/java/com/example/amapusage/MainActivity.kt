@@ -3,7 +3,7 @@ package com.example.amapusage
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import com.e.MapShowActivity
+import com.example.amapusage.MapShowActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

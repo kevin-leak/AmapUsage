@@ -1,4 +1,4 @@
-package com.e
+package com.example.amapusage
 
 import android.content.Context
 import android.content.Intent
@@ -58,7 +58,6 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
         searchView.findViewById<View>(R.id.submit_area).background = null
         controllerLayout = findViewById(R.id.controller_layout)
         val sendLocation = findViewById<Button>(R.id.send_location)
-
         linkageAnimation()
 
         textureMapView.map.setOnCameraChangeListener(object : AMap.OnCameraChangeListener {
@@ -93,8 +92,10 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
                 if (sensor.isCollapsing()) {
                     controllerLayout.background = baseContext.resources
                         .getDrawable(R.drawable.shape_controller_layout)
+                    controllerLayout.elevation = 5f
                 } else {
                     controllerLayout.background = null
+                    controllerLayout.elevation = 0f
                 }
             }
         })

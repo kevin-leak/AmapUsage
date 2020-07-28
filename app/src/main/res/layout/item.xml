@@ -2,17 +2,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="5dp">
 
     <TextView
         android:id="@+id/tv_recycle"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:background="#A103A9F4"
         android:gravity="center_horizontal"
         android:padding="10dp"
         android:textColor="#ffffff"
         android:text="data"
         android:textSize="20sp" />
+
 </LinearLayout>

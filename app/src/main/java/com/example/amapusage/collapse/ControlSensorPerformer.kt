@@ -1,5 +1,6 @@
 package com.example.amapusage.collapse
 
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 
@@ -22,7 +23,6 @@ interface ControlSensorPerformer {
         fun getLinkages(): MutableMap<View, Linkage?>
         fun expand()
         fun collapsing()
-        fun bindController(Controller: ControlSensorPerformer.Controller)
     }
 
     interface CollapsingListener {

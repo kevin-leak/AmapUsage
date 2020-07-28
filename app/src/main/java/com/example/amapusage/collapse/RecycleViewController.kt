@@ -3,6 +3,7 @@ package com.example.amapusage.collapse
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +23,7 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
 
     private fun init() {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+        if (touchSlop == 0) touchSlop = 21
     }
 
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
@@ -29,22 +31,33 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
         var temp = parent
         while (temp !is ControlSensorPerformer.Sensor) temp = temp.parent
         sensor = temp
-        sensor.bindController(this)
     }
+
+    val TAG = "RecycleViewController"
 
     // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         when (ev?.action) {
-            MotionEvent.ACTION_DOWN -> downY = ev.y
+            MotionEvent.ACTION_DOWN -> {
+                downY = ev.y
+                // 子view没有产生消费，判断父view是否要消费
+                if (!sensor.isCollapsing()) sensor.collapsing()
+            }
+            MotionEvent.ACTION_MOVE -> {
+                // 子view没有产生消费，判断父view是否要消费
+                if (!sensor.isCollapsing()) {
+                    sensor.collapsing()
+                    smoothScrollToPosition(0)
+                }
+            }
             MotionEvent.ACTION_UP -> {
+                // 子view没有产生消费，判断父view是否要消费
                 if (sensor.isCollapsing() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
                     sensor.expand() // 坍塌状态，手指向下滑动且处于顶端
-                    return true // 如果没有Recycle会滑动，不好看
                 } else if (!sensor.isCollapsing() && downY - ev.y > touchSlop) {
-                    scrollToPosition(0)
                     sensor.collapsing() // 非坍塌状态，手指向上滑动
-                    return true // 如果没有Recycle会滑动，不好看
+                    smoothScrollToPosition(0)
                 }
             }
         }
@@ -52,6 +65,6 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
     }
 
     override fun fling(velocityX: Int, velocityY: Int): Boolean {
-       return super.fling(velocityX, (velocityY * 0.3).toInt())
+        return super.fling(velocityX, (velocityY * 0.3).toInt())
     }
 }

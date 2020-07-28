@@ -23,7 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.e.MapShowActivity" />
+        <activity android:name=".MapShowActivity" />
         <!--        todo add service-->
         <service android:name="com.amap.api.location.APSService" />
     </application>

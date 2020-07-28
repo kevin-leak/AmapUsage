@@ -13,6 +13,7 @@ import androidx.core.animation.doOnStart
 import com.example.amapusage.collapse.ControlSensorPerformer.Companion.AFTER_COLLLAPSING
 import com.example.amapusage.collapse.ControlSensorPerformer.Companion.BEFORE_COLLLAPSING
 import com.example.amapusage.collapse.ControlSensorPerformer.Companion.ON_COLLLAPSING
+import kotlin.math.abs
 
 
 class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
@@ -30,7 +31,6 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
     // 不能作为反控制的view, 允许自己设定，默认为第一个子view
     var collapseView: View? = null
-    var controller: ControlSensorPerformer.Controller? = null // 只允许一个
     private val linkageMap = mutableMapOf<View, ControlSensorPerformer.Linkage?>()
 
     constructor(context: Context?) : this(context, null)
@@ -42,16 +42,6 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
             expandHeight = collapseView?.measuredHeight?.toFloat() ?: 0f // 获取测量的最初值
             collapseHeight = collapseView?.minimumHeight?.toFloat() ?: 0f
         }
-    }
-
-    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.action == MotionEvent.ACTION_MOVE && !isCollapsing()
-            && isTouchView(controller as View, ev)
-        ) {
-            collapsing()
-            return true
-        }
-        return super.onInterceptTouchEvent(ev)
     }
 
     // 判断事件发生是否在当前view的位置
@@ -140,25 +130,21 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         if (!isHeadCollapsing) animation()
     }
 
-    override fun bindController(controller: ControlSensorPerformer.Controller) {
-        this.controller = controller
-    }
-
     open class CollapsingListenerImpl(private val doAction: Boolean = false) :
         ControlSensorPerformer.CollapsingListener {
         private val TAG = "ScrollCollapseLayout"
         override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
-            Log.e(TAG, "beforeCollapsingStateChange: ${sensor.isCollapsing()}")
+            Log.d(TAG, "beforeCollapsingStateChange: ${sensor.isCollapsing()}")
             if (doAction) actionImpl(BEFORE_COLLLAPSING, sensor)
         }
 
         override fun onCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
-            Log.e(TAG, "onCollapsingStateChange: ${sensor.isCollapsing()}")
+            Log.d(TAG, "onCollapsingStateChange: ${sensor.isCollapsing()}")
             if (doAction) actionImpl(ON_COLLLAPSING, sensor)
         }
 
         override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
-            Log.e(TAG, "collapsingStateChanged: ${sensor.isCollapsing()}")
+            Log.d(TAG, "collapsingStateChanged: ${sensor.isCollapsing()}")
             if (doAction) actionImpl(AFTER_COLLLAPSING, sensor)
         }
 
