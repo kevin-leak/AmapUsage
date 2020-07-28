@@ -2,35 +2,39 @@ package com.example.amapusage
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
 import com.amap.api.maps.TextureMapView
 import com.amap.api.maps.model.CameraPosition
-import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
+import com.example.amapusage.search.ILocationSearchView
+import com.example.amapusage.search.LocationSearchView
 import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_show_map.*
 
 
 class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
-    private lateinit var btnACK: TextView
+    private var sendGrayDrawable: Drawable? =
+        App.getAppContext().resources.getDrawable(R.drawable.shape_send_botton_gray)
+    private var sendDrawable: Drawable? =
+        App.getAppContext().resources.getDrawable(R.drawable.shape_send_button)
+    private lateinit var sendLocationButton: Button
     private lateinit var collapseButton: ImageButton
-    private lateinit var scrollCollapseSensor: ScrollCollapseLayout
     private lateinit var textureMapView: TextureMapView
-    private lateinit var searchView: SearchView
     private lateinit var controllerLayout: RelativeLayout
+    private lateinit var lsSearchView: LocationSearchView
+    private lateinit var scrollCollapseSensor: ScrollCollapseLayout
 
     companion object {
         fun show(context: Context, cls: Class<out MapShowActivity>) {
@@ -47,28 +51,33 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
 
         scrollCollapseSensor = findViewById(R.id.scroll_collapse_sensor)
         collapseButton = findViewById(R.id.collapse_button)
-        btnACK = findViewById(R.id.btn_ack)
-        searchView = findViewById(R.id.sv_Search)
-        searchView.findViewById<ImageView>(R.id.search_close_btn).setImageDrawable(null)
-        searchView.findViewById<View>(R.id.search_plate).background = null
-        searchView.findViewById<View>(R.id.submit_area).background = null
         controllerLayout = findViewById(R.id.controller_layout)
-        val sendLocation = findViewById<Button>(R.id.send_location)
+        lsSearchView = findViewById(R.id.ls_Search_view)
+        sendLocationButton = findViewById<Button>(R.id.send_location_button)
+
         linkageAnimation()
 
         textureMapView.map.setOnCameraChangeListener(object : AMap.OnCameraChangeListener {
             override fun onCameraChangeFinish(p0: CameraPosition?) {
-                sendLocation.background =
-                    baseContext.resources.getDrawable(R.drawable.shape_send_botton)
+                sendLocationButton.background = sendDrawable
             }
 
             override fun onCameraChange(p0: CameraPosition?) {
-                if (sendLocation.background != baseContext.resources.getDrawable(R.drawable.shape_send_botton_gray))
-                    sendLocation.background =
-                        baseContext.resources.getDrawable(R.drawable.shape_send_botton_gray)
+                if (sendLocationButton.background != sendGrayDrawable)
+                    sendLocationButton.background = sendGrayDrawable
             }
+        })
 
-
+        lsSearchView.setLocationSearchListener(object : ILocationSearchView.OnLocationSourceChange {
+            override fun onFocusChange(isFocus: Boolean) {
+                when (isFocus) {
+                    true -> scrollCollapseSensor.collapsing()
+                    false -> scrollCollapseSensor.expand()
+                }
+            }
+            override fun locationSourceCome(data: String) {}
+            override fun locationSourceChanging(data: String) {}
+            override fun beforeLocationSourceChange(toString: String) {}
         })
     }
 
@@ -78,20 +87,19 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
             override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
                 super.beforeCollapsingStateChange(sensor)
                 // fixme 慢慢显示
-                collapseButtonAnimation(!sensor.isCollapsed())
+//                collapseButtonAnimation(!sensor.isCollapsed())
             }
 
             override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
-                super.collapsingStateChanged(sensor)
-                if (!sensor.isCollapsed()) KeyBoardUtils.closeKeyboard(searchView, baseContext)
-                if (!sensor.isCollapsed()) searchView.clearFocus()
                 if (sensor.isCollapsed()) {
                     controllerLayout.background = baseContext.resources
                         .getDrawable(R.drawable.shape_controller_layout)
                     controllerLayout.elevation = 5f
+                    collapseButton.visibility = VISIBLE
                 } else {
                     controllerLayout.background = null
                     controllerLayout.elevation = 0f
+                    collapseButton.visibility = GONE
                 }
 
             }
@@ -100,23 +108,6 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
             .setOnClickListener { scrollCollapseSensor.animation() }
 
         collapseButton.setOnClickListener { scrollCollapseSensor.animation() }
-
-        btnACK.setOnClickListener {
-            scrollCollapseSensor.animation()
-            if (!scrollCollapseSensor.isHeadCollapsing) {
-                searchView.clearFocus()
-                KeyBoardUtils.closeKeyboard(searchView, baseContext)
-            }
-        }
-
-        searchView.setOnQueryTextFocusChangeListener { _, hasFocus ->
-            if (hasFocus) scrollCollapseSensor.collapsing()
-            btnACK.visibility = when (hasFocus) {
-                false -> GONE
-                true -> VISIBLE
-            }
-        }
-
         rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (!scrollCollapseSensor.isHeadCollapsing) {
@@ -156,7 +147,7 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
             collapseButton.visibility = GONE
         }
         val animation = AlphaAnimation(start, end)
-        animation.duration = 300
+        animation.duration = 10
         animation.fillAfter = true
         animation.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation?) {}

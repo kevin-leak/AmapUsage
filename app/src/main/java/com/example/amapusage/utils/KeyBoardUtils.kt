@@ -22,8 +22,5 @@ object KeyBoardUtils {
         imm.hideSoftInputFromWindow(mEditText.windowToken, 0)
     }
 
-    fun closeKeyboard(mEditText: SearchView, mContext: Context) {
-        val imm = mContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(mEditText.windowToken, 0)
-    }
+
 }

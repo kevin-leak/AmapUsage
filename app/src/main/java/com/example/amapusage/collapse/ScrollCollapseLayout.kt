@@ -6,7 +6,9 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.view.animation.Animation
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.OvershootInterpolator
 import android.widget.RelativeLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
@@ -25,7 +27,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         private set
     var expandHeight: Float = -1f
     var collapseHeight: Float = -1f
-    var lock = false
+    private var lock = false
     private var listener: ControlSensorPerformer.CollapsingListener? = null
 
     // 不能作为反控制的view, 允许自己设定，默认为第一个子view
@@ -66,6 +68,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         } else {
             ValueAnimator.ofFloat(expandHeight, collapseHeight) // 非坍塌有高到低
         }
+//        collapseAnimation?.interpolator = AccelerateInterpolator(2f)
         collapseAnimation?.duration = collapseDuration
         collapseAnimation?.startDelay = collapseDelay
         if (listener == null) listener = CollapsingListenerImpl()

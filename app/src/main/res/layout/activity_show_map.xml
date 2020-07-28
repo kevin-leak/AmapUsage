@@ -32,14 +32,14 @@
                 android:text="@string/cancel" />
 
             <Button
-                android:id="@+id/send_location"
+                android:id="@+id/send_location_button"
                 android:layout_width="60dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_marginEnd="20dp"
                 android:layout_marginRight="20dp"
-                android:background="@drawable/shape_send_botton"
+                android:background="@drawable/shape_send_button"
                 android:text="Send"
                 android:textAllCaps="false" />
 
@@ -72,8 +72,8 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:paddingTop="10dp">
+            android:paddingTop="10dp"
+            android:paddingRight="20dp">
 
             <ImageButton
                 android:id="@+id/collapse_button"
@@ -84,49 +84,23 @@
                 android:src="@drawable/ic_collapse_button"
                 android:visibility="gone" />
 
-            <LinearLayout
+            <com.example.amapusage.search.LocationSearchView
+                android:id="@+id/ls_Search_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/collapse_button"
-                android:paddingTop="10dp"
                 android:orientation="horizontal"
-                android:paddingBottom="10dp">
-
-                <androidx.appcompat.widget.SearchView
-                    android:id="@+id/sv_Search"
-                    android:layout_width="0dp"
-                    android:layout_height="35dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/shape_search_view"
-                    android:clickable="true"
-                    android:drawableStart="@drawable/ic_search"
-                    android:drawableLeft="@drawable/ic_search"
-                    android:focusable="true"
-                    app:closeIcon="@null"
-                    app:searchIcon="@null" />
-
-                <TextView
-                    android:id="@+id/btn_ack"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:paddingStart="10dp"
-                    android:paddingLeft="10dp"
-                    android:text="@string/cancel"
-                    android:textColor="#249ACF"
-                    android:visibility="gone"
-                    tools:ignore="RtlSymmetry" />
-
-            </LinearLayout>
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp" />
 
         </RelativeLayout>
 
         <com.example.amapusage.collapse.RecycleViewController
             android:id="@+id/rv"
-            android:scrollbars="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/rl_search" />
+            android:layout_below="@id/rl_search"
+            android:scrollbars="vertical" />
 
     </RelativeLayout>
 

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="35dp"
+    android:minHeight="35dp">
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/shape_search_view">
+
+        <RelativeLayout
+            android:id="@+id/rl_edit"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true">
+
+            <ImageView
+                android:id="@+id/search_left_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:src="@drawable/ic_search"
+                tools:ignore="RtlSymmetry" />
+
+            <EditText
+                android:id="@+id/search_content_edit"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_toStartOf="@id/search_delete_icon"
+                android:layout_toEndOf="@id/search_left_icon"
+                android:background="@drawable/shape_search_view"
+                android:clickable="true"
+                android:ellipsize="end"
+                android:focusable="true"
+                android:hint="@string/search_place"
+                android:imeOptions="actionSearch|flagNoExtractUi"
+                android:inputType="textNoSuggestions"
+                android:maxLines="1"
+                android:textAlignment="viewStart"
+                android:textColor="#171717"
+                android:textColorHint="#9A9A9A"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:id="@+id/search_delete_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/ic_delete"
+                tools:ignore="RtlSymmetry" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/hint_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+           >
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true">
+
+                <ImageView
+                    android:id="@+id/search_center_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_search"
+                    tools:ignore="RtlSymmetry" />
+
+                <TextView
+                    android:id="@+id/search_icon_hint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:gravity="center"
+                    android:layout_toEndOf="@id/search_center_icon"
+                    android:text="@string/search_place"
+                    android:textColor="#9A9A9A"
+                    android:textSize="16sp" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/btn_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:gravity="center"
+        android:text="@string/cancel"
+        android:textColor="#414C9A"
+        android:visibility="gone" />
+
+</LinearLayout>
