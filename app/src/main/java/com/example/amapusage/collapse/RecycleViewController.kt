@@ -35,30 +35,25 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
 
     val TAG = "RecycleViewController"
 
+    override fun onInterceptTouchEvent(e: MotionEvent?): Boolean {
+        // 防止被消费掉，先记录
+        if (MotionEvent.ACTION_DOWN == e?.action)  downY = e.y
+        return super.onInterceptTouchEvent(e)
+    }
+
     // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        when (ev?.action) {
-            MotionEvent.ACTION_DOWN -> {
-                downY = ev.y
-                // 子view没有产生消费，判断父view是否要消费
-                if (!sensor.isCollapsing()) sensor.collapsing()
+        if (ev?.action == MotionEvent.ACTION_MOVE){
+            // 非坍塌,手指向上滑动 -> 则坍塌
+            if (!sensor.isCollapsed() && downY - ev.y > touchSlop ) {
+                sensor.collapsing()
+                return false
             }
-            MotionEvent.ACTION_MOVE -> {
-                // 子view没有产生消费，判断父view是否要消费
-                if (!sensor.isCollapsing()) {
-                    sensor.collapsing()
-                    smoothScrollToPosition(0)
-                }
-            }
-            MotionEvent.ACTION_UP -> {
-                // 子view没有产生消费，判断父view是否要消费
-                if (sensor.isCollapsing() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
-                    sensor.expand() // 坍塌状态，手指向下滑动且处于顶端
-                } else if (!sensor.isCollapsing() && downY - ev.y > touchSlop) {
-                    sensor.collapsing() // 非坍塌状态，手指向上滑动
-                    smoothScrollToPosition(0)
-                }
+            // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
+            if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
+                sensor.expand()
+                return false
             }
         }
         return super.onTouchEvent(ev) // 这里对Down事件进行了消费.

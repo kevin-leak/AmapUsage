@@ -10,19 +10,21 @@ interface ControlSensorPerformer {
         val ON_COLLLAPSING = 2
         val AFTER_COLLLAPSING = 3
     }
+
     interface Controller
     interface Sensor {
 
-        fun isCollapsing(): Boolean
-        fun animation()
-        fun getPAnimation():Animation?
-        fun bindCollapsingView(view: View): Sensor // 默认是坍塌后
-        // 当view为空表示默认的linkage
-        fun setLinkages(view: View? = null, linkage: Linkage, tag: Int = AFTER_COLLLAPSING): Sensor
+        fun isCollapsed(): Boolean
 
-        fun getLinkages(): MutableMap<View, Linkage?>
+        fun animation()
         fun expand()
         fun collapsing()
+
+        fun bindCollapsingView(view: View): Sensor // 默认第一个
+
+        // 当view为空表示默认的linkage
+        fun setLinkages(view: View? = null, linkage: Linkage, tag: Int = AFTER_COLLLAPSING): Sensor
+        fun getLinkages(): MutableMap<View, Linkage?>
     }
 
     interface CollapsingListener {

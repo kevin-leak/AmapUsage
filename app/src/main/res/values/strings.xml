@@ -2,4 +2,6 @@
     <string name="app_name">AmapUsage</string>
     <string name="get_location">get Location</string>
     <string name="cancel">Cancel</string>
+    <drawable name="item_normal">#FBFAFA</drawable>
+    <drawable name="item_pressed">#52392D2D</drawable>
 </resources>

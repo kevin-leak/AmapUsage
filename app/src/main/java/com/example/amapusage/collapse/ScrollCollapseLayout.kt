@@ -13,7 +13,6 @@ import androidx.core.animation.doOnStart
 import com.example.amapusage.collapse.ControlSensorPerformer.Companion.AFTER_COLLLAPSING
 import com.example.amapusage.collapse.ControlSensorPerformer.Companion.BEFORE_COLLLAPSING
 import com.example.amapusage.collapse.ControlSensorPerformer.Companion.ON_COLLLAPSING
-import kotlin.math.abs
 
 
 class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
@@ -53,12 +52,8 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         return ev.x > x && ev.x < x + view.width && ev.y > y && ev.y < y + view.height
     }
 
-    override fun isCollapsing(): Boolean {
+    override fun isCollapsed(): Boolean {
         return isHeadCollapsing
-    }
-
-    override fun getPAnimation(): Animation? {
-        return super.getAnimation()
     }
 
     override fun animation() {
@@ -134,17 +129,17 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         ControlSensorPerformer.CollapsingListener {
         private val TAG = "ScrollCollapseLayout"
         override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
-            Log.d(TAG, "beforeCollapsingStateChange: ${sensor.isCollapsing()}")
+            Log.d(TAG, "beforeCollapsingStateChange: ${sensor.isCollapsed()}")
             if (doAction) actionImpl(BEFORE_COLLLAPSING, sensor)
         }
 
         override fun onCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
-            Log.d(TAG, "onCollapsingStateChange: ${sensor.isCollapsing()}")
+            Log.d(TAG, "onCollapsingStateChange: ${sensor.isCollapsed()}")
             if (doAction) actionImpl(ON_COLLLAPSING, sensor)
         }
 
         override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
-            Log.d(TAG, "collapsingStateChanged: ${sensor.isCollapsing()}")
+            Log.d(TAG, "collapsingStateChanged: ${sensor.isCollapsed()}")
             if (doAction) actionImpl(AFTER_COLLLAPSING, sensor)
         }
 

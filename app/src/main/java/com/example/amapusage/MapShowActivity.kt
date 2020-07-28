@@ -17,11 +17,7 @@ import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
 import com.amap.api.maps.TextureMapView
 import com.amap.api.maps.model.CameraPosition
-import com.example.amapusage.IMapClient
 import com.example.amapusage.utils.KeyBoardUtils
-import com.example.amapusage.LocationAdapter
-import com.example.amapusage.AMapConfiguration
-import com.example.amapusage.R
 import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
 import com.example.amapusage.utils.ScreenUtils
@@ -82,14 +78,14 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
             override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
                 super.beforeCollapsingStateChange(sensor)
                 // fixme 慢慢显示
-                collapseButtonAnimation(!sensor.isCollapsing())
+                collapseButtonAnimation(!sensor.isCollapsed())
             }
 
             override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
                 super.collapsingStateChanged(sensor)
-                if (!sensor.isCollapsing()) KeyBoardUtils.closeKeyboard(searchView, baseContext)
-                if (!sensor.isCollapsing()) searchView.clearFocus()
-                if (sensor.isCollapsing()) {
+                if (!sensor.isCollapsed()) KeyBoardUtils.closeKeyboard(searchView, baseContext)
+                if (!sensor.isCollapsed()) searchView.clearFocus()
+                if (sensor.isCollapsed()) {
                     controllerLayout.background = baseContext.resources
                         .getDrawable(R.drawable.shape_controller_layout)
                     controllerLayout.elevation = 5f
@@ -97,6 +93,7 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
                     controllerLayout.background = null
                     controllerLayout.elevation = 0f
                 }
+
             }
         })
         findViewById<RelativeLayout>(R.id.rl_search)
