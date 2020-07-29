@@ -21,15 +21,15 @@ import com.amap.api.maps.model.LatLng
 import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
 import com.example.amapusage.factory.AMapOperator
-import com.example.amapusage.factory.MapOperator
-import com.example.amapusage.search.HintSearchView
-import com.example.amapusage.search.HintCheckAdapter
+import com.example.amapusage.factory.IMapOperator
+import com.example.amapusage.search.EntityCheckSearch
+import com.example.amapusage.search.EntityCheckAdapter
 import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_show_map.*
 
 
-class MapShowActivity : AppCompatActivity(), MapOperator.LocationSourceLister {
+class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
     private var latLng: LatLng? = null
     private val TAG = "MapShowActivity"
     private var sendGrayDrawable: Drawable? =
@@ -41,7 +41,7 @@ class MapShowActivity : AppCompatActivity(), MapOperator.LocationSourceLister {
     private lateinit var collapseLayout: RelativeLayout
     private lateinit var textureMapView: TextureMapView
     private lateinit var controllerLayout: LinearLayout
-    private lateinit var lsSearchView: HintSearchView
+    private lateinit var lsSearchView: EntityCheckSearch
     private lateinit var scrollCollapseSensor: ScrollCollapseLayout
     private lateinit var currentButton: ImageButton
 
@@ -65,15 +65,14 @@ class MapShowActivity : AppCompatActivity(), MapOperator.LocationSourceLister {
         sendLocationButton = findViewById(R.id.send_location_button)
         currentButton = findViewById(R.id.current_location_button)
         linkageAnimation()
-        lsSearchView.setSearchListener(
-            object : HintSearchView.OnSearchChangeListenerIml() {
-                override fun onEnterModeChange(isEnter: Boolean) {
-                    when (isEnter) {
-                        true -> scrollCollapseSensor.collapsing()
-                        false -> scrollCollapseSensor.expand()
-                    }
+        lsSearchView.setSearchListener(object : EntityCheckSearch.OnSearchChangeListenerIml() {
+            override fun onEnterModeChange(isEnter: Boolean) {
+                when (isEnter) {
+                    true -> scrollCollapseSensor.collapsing()
+                    false -> scrollCollapseSensor.expand()
                 }
-            })
+            }
+        })
     }
 
     private fun linkageAnimation() {
@@ -84,7 +83,7 @@ class MapShowActivity : AppCompatActivity(), MapOperator.LocationSourceLister {
                 collapseButtonAnimation(!sensor.isCollapsed())
                 // 在发生扩展之前一定要关闭软键盘
                 if (sensor.isCollapsed())
-                    KeyBoardUtils.closeKeyboard(lsSearchView.getEditView(), baseContext)
+                    KeyBoardUtils.closeKeyboard(lsSearchView.windowToken, baseContext)
             }
 
             override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
@@ -116,7 +115,7 @@ class MapShowActivity : AppCompatActivity(), MapOperator.LocationSourceLister {
         for (i in 0..49) {
             arrayList.add("第" + i + "条数据")
         }
-        rv.adapter = HintCheckAdapter(this, arrayList)
+        rv.adapter = EntityCheckAdapter(this, arrayList)
     }
 
     fun collapseButtonAnimation(isShow: Boolean) {
@@ -136,7 +135,7 @@ class MapShowActivity : AppCompatActivity(), MapOperator.LocationSourceLister {
 
     override fun onPause() {
         // 当pause的时候要关闭软键盘
-        KeyBoardUtils.closeKeyboard(lsSearchView.getEditView(), baseContext)
+        KeyBoardUtils.closeKeyboard(lsSearchView.windowToken, baseContext)
         super.onPause()
         textureMapView.onPause()
     }
@@ -150,7 +149,7 @@ class MapShowActivity : AppCompatActivity(), MapOperator.LocationSourceLister {
         AMapOperator.moveToCurrent()
     }
 
-//    override fun locationSync(dataSource: MapOperator.locationDataSource) {}
+    //    override fun locationSync(dataSource: MapOperator.locationDataSource) {}
     override fun locationSync(dataSource: AMapLocation) {
 //        TODO("Not yet implemented")
     }

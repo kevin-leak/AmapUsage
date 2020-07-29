@@ -97,7 +97,7 @@
 
             </RelativeLayout>
 
-            <com.example.amapusage.search.HintSearchView
+            <com.example.amapusage.search.EntityCheckSearch
                 android:id="@+id/ls_Search_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

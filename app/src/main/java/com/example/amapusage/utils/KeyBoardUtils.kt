@@ -1,6 +1,7 @@
 package com.example.amapusage.utils
 
 import android.content.Context
+import android.os.IBinder
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.appcompat.widget.SearchView
@@ -16,10 +17,10 @@ object KeyBoardUtils {
         )
     }
 
-    fun closeKeyboard(mEditText: EditText, mContext: Context) {
+    fun closeKeyboard(windowToken: IBinder, mContext: Context) {
         val imm = mContext
             .getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(mEditText.windowToken, 0)
+        imm.hideSoftInputFromWindow(windowToken, 0)
     }
 
 

@@ -1,6 +1,7 @@
 package com.example.amapusage.search
 
 import android.content.Context
+import android.os.IBinder
 import android.os.SystemClock
 import android.text.Editable
 import android.text.TextUtils
@@ -14,7 +15,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import com.example.amapusage.R
 
-class HintSearchView : FrameLayout, IHintSearchView {
+class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
     private val TAG = "HintSearchView"
 
     constructor(context: Context) : this(context, null)
@@ -22,7 +23,7 @@ class HintSearchView : FrameLayout, IHintSearchView {
     constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
             : super(context, attr, defStyleAttr, defStyleAttr)
 
-    var listener: IHintSearchView.OnSearchChangeListener? = null
+    var listener: IEntityCheckSearch.OnSearchChangeListener? = null
     private val rootLayout: View = View.inflate(context, R.layout.location_search_view, this)
     private val rlEdit: RelativeLayout = rootLayout.findViewById(R.id.rl_edit)
     private val searchLeftIcon = rootLayout.findViewById<ImageView>(R.id.search_left_icon)
@@ -129,17 +130,17 @@ class HintSearchView : FrameLayout, IHintSearchView {
         )
     }
 
-    override fun setSearchListener(listener: IHintSearchView.OnSearchChangeListener) {
+    override fun setSearchListener(listener: IEntityCheckSearch.OnSearchChangeListener) {
         this.listener = listener
     }
 
-    override fun getEditView(): EditText {
-        return searchContentEdit
+    override fun getWindowToken(): IBinder {
+        return searchContentEdit.windowToken
     }
 
     private fun hideSoftKeyboard() {
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(windowToken, 0)
+        imm.hideSoftInputFromWindow(searchContentEdit.windowToken, 0)
         Log.d(TAG, "openKeyboard: " + "imm.isActive")
     }
 
@@ -150,10 +151,20 @@ class HintSearchView : FrameLayout, IHintSearchView {
         Log.d(TAG, "openKeyboard: " + "imm.isActive")
     }
 
-    open class OnSearchChangeListenerIml : IHintSearchView.OnSearchChangeListener {
+    open class OnSearchChangeListenerIml : IEntityCheckSearch.OnSearchChangeListener {
         override fun onEnterModeChange(isEnter: Boolean) {}
         override fun sourceCome(data: String) {}
         override fun sourceChanging(data: String) {}
         override fun beforeSourceChange(toString: String) {}
+    }
+
+
+    override fun setText(text: String) {
+        enterEditMode()
+        searchContentEdit.setText(text)
+    }
+
+    override fun getText(): Editable? {
+        return searchContentEdit.text
     }
 }

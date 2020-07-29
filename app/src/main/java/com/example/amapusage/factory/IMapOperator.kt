@@ -4,7 +4,7 @@ import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
 import com.amap.api.maps.model.Marker
 
-interface MapOperator {
+interface IMapOperator {
     interface Operator {
         fun prepareForWork(aMap: AMap, lister: LocationSourceLister)    // 必须实现.
         fun buildMapBaseConfig(): AMap      // 配置

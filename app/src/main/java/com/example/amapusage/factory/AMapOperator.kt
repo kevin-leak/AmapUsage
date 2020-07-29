@@ -13,13 +13,13 @@ import com.example.amapusage.R
 import com.example.amapusage.utils.ScreenUtils
 import kotlin.math.sqrt
 
-object AMapOperator : AMap.OnCameraChangeListener, MapOperator.Operator {
+object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
     private val mLocationClient: AMapLocationClient = AMapLocationClient(App.getAppContext())
     private var centerMarker: Marker? = null
     private lateinit var aMap: AMap
     private var currentLocation: AMapLocation? = null
 
-    override fun prepareForWork(aMap: AMap, listener: MapOperator.LocationSourceLister) {
+    override fun prepareForWork(aMap: AMap, listener: IMapOperator.LocationSourceLister) {
         AMapOperator.aMap = aMap
         mLocationClient.setLocationListener { aMapLocation ->
             currentLocation = aMapLocation

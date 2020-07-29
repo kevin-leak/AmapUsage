@@ -11,9 +11,9 @@ import com.example.amapusage.R
 import kotlinx.android.synthetic.main.item_location.view.*
 import java.util.*
 
-class HintCheckAdapter(private var mContext: Context?, private var mList: ArrayList<String>?) :
-    RecyclerView.Adapter<HintCheckAdapter.DataViewHolder>(),
-    CompoundButton.OnCheckedChangeListener, IHintSearchView.IHintAdapter {
+class EntityCheckAdapter(private var mContext: Context?, private var mList: ArrayList<String>?) :
+    RecyclerView.Adapter<EntityCheckAdapter.DataViewHolder>(),
+    CompoundButton.OnCheckedChangeListener, IEntityCheckSearch.IHintAdapter {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
         val view = LayoutInflater.from(mContext).inflate(R.layout.item_location, null)
