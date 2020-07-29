@@ -1,4 +1,4 @@
-package com.example.amapusage
+package com.example.amapusage.search
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -6,13 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
-import android.widget.RadioButton
 import androidx.recyclerview.widget.RecyclerView
+import com.example.amapusage.R
 import kotlinx.android.synthetic.main.item_location.view.*
 import java.util.*
 
-class LocationAdapter(private var mContext: Context?, private var mList: ArrayList<String>?) :
-    RecyclerView.Adapter<LocationAdapter.DataViewHolder>(),CompoundButton.OnCheckedChangeListener {
+class HintCheckAdapter(private var mContext: Context?, private var mList: ArrayList<String>?) :
+    RecyclerView.Adapter<HintCheckAdapter.DataViewHolder>(),
+    CompoundButton.OnCheckedChangeListener, IHintSearchView.IHintAdapter {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
         val view = LayoutInflater.from(mContext).inflate(R.layout.item_location, null)
@@ -33,17 +34,18 @@ class LocationAdapter(private var mContext: Context?, private var mList: ArrayLi
     }
 
     //创建ViewHolder
-    class DataViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+    class DataViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         init {
             itemView.setOnClickListener {
-                itemView.locationChecker.isChecked = !itemView.locationChecker.isChecked }
+                itemView.locationChecker.isChecked = !itemView.locationChecker.isChecked
+            }
         }
     }
 
     private var currentHolder: DataViewHolder? = null
-    private var currentCheckPosition :Int = -1
+    private var currentCheckPosition: Int = -1
     override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
-        if (currentCheckPosition != -1 && currentHolder?.layoutPosition != currentCheckPosition){
+        if (currentCheckPosition != -1 && currentHolder?.layoutPosition != currentCheckPosition) {
             currentHolder?.itemView?.locationChecker?.isChecked = !isChecked
         }
     }

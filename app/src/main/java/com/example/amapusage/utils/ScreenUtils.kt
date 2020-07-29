@@ -1,6 +1,7 @@
 package com.example.amapusage.utils
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.view.View
@@ -19,5 +20,11 @@ object ScreenUtils {
         } else if (Build.VERSION.SDK_INT >= 19) {//19表示4.4
             activity.window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
+    }
+
+    //dip和px转换
+    fun dip2px(context: Context, dpValue: Float): Int {
+        val scale = context.resources.displayMetrics.density
+        return (dpValue * scale + 0.5f).toInt()
     }
 }

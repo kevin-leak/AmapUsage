@@ -20,7 +20,7 @@ class HintSearchView : FrameLayout, IHintSearchView {
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
     constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
-            : super(context, attr, defStyleAttr)
+            : super(context, attr, defStyleAttr, defStyleAttr)
 
     var listener: IHintSearchView.OnSearchChangeListener? = null
     private val rootLayout: View = View.inflate(context, R.layout.location_search_view, this)

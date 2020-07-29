@@ -4,29 +4,33 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.Log
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.animation.*
-import android.widget.*
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.AlphaAnimation
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.amap.api.location.AMapLocation
-import com.amap.api.maps.AMap
 import com.amap.api.maps.TextureMapView
-import com.amap.api.maps.model.CameraPosition
+import com.amap.api.maps.model.LatLng
 import com.example.amapusage.collapse.ControlSensorPerformer
-import com.example.amapusage.collapse.ControlSensorPerformer.Companion.BEFORE_COLLLAPSING
 import com.example.amapusage.collapse.ScrollCollapseLayout
-import com.example.amapusage.search.IHintSearchView
+import com.example.amapusage.factory.AMapOperator
+import com.example.amapusage.factory.MapOperator
 import com.example.amapusage.search.HintSearchView
+import com.example.amapusage.search.HintCheckAdapter
 import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_show_map.*
 
 
-class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
+class MapShowActivity : AppCompatActivity(), MapOperator.LocationSourceLister {
+    private var latLng: LatLng? = null
     private val TAG = "MapShowActivity"
     private var sendGrayDrawable: Drawable? =
         App.getAppContext().resources.getDrawable(R.drawable.shape_send_botton_gray)
@@ -39,6 +43,7 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
     private lateinit var controllerLayout: LinearLayout
     private lateinit var lsSearchView: HintSearchView
     private lateinit var scrollCollapseSensor: ScrollCollapseLayout
+    private lateinit var currentButton: ImageButton
 
     companion object {
         fun show(context: Context, cls: Class<out MapShowActivity>) {
@@ -52,35 +57,23 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
         setContentView(R.layout.activity_show_map)
         initMap(savedInstanceState)
         initAdapter()
-
         scrollCollapseSensor = findViewById(R.id.scroll_collapse_sensor)
         collapseButton = findViewById(R.id.collapse_button)
         collapseLayout = findViewById(R.id.collapse_layout)
         controllerLayout = findViewById(R.id.controller_layout)
         lsSearchView = findViewById(R.id.ls_Search_view)
         sendLocationButton = findViewById(R.id.send_location_button)
-
+        currentButton = findViewById(R.id.current_location_button)
         linkageAnimation()
-
-        textureMapView.map.setOnCameraChangeListener(object : AMap.OnCameraChangeListener {
-            override fun onCameraChangeFinish(p0: CameraPosition?) {
-                sendLocationButton.background = sendDrawable
-            }
-
-            override fun onCameraChange(p0: CameraPosition?) {
-                if (sendLocationButton.background != sendGrayDrawable)
-                    sendLocationButton.background = sendGrayDrawable
-                Log.e(TAG, "onCameraChange: ${p0.toString()}")
-            }
-        })
-        lsSearchView.setSearchListener(object : HintSearchView.OnSearchChangeListenerIml() {
-            override fun onEnterModeChange(isEnter: Boolean) {
-                when (isEnter) {
-                    true -> scrollCollapseSensor.collapsing()
-                    false -> scrollCollapseSensor.expand()
+        lsSearchView.setSearchListener(
+            object : HintSearchView.OnSearchChangeListenerIml() {
+                override fun onEnterModeChange(isEnter: Boolean) {
+                    when (isEnter) {
+                        true -> scrollCollapseSensor.collapsing()
+                        false -> scrollCollapseSensor.expand()
+                    }
                 }
-            }
-        })
+            })
     }
 
     private fun linkageAnimation() {
@@ -90,10 +83,8 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
                 super.beforeCollapsingStateChange(sensor)
                 collapseButtonAnimation(!sensor.isCollapsed())
                 // 在发生扩展之前一定要关闭软键盘
-                if (sensor.isCollapsed()) KeyBoardUtils.closeKeyboard(
-                    lsSearchView.getEditView(),
-                    baseContext
-                )
+                if (sensor.isCollapsed())
+                    KeyBoardUtils.closeKeyboard(lsSearchView.getEditView(), baseContext)
             }
 
             override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
@@ -114,9 +105,8 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
     }
 
     private fun initMap(savedInstanceState: Bundle?) {
-        IMapClient.getLocation(this) // 初始化，获取当前位置的数据.
         textureMapView = findViewById(R.id.texture_map_view)
-        AMapConfiguration.buildUIConfig(textureMapView.map)
+        AMapOperator.prepareForWork(textureMapView.map, this)
         textureMapView.onCreate(savedInstanceState) // 此方法必须重写
     }
 
@@ -126,25 +116,17 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
         for (i in 0..49) {
             arrayList.add("第" + i + "条数据")
         }
-        rv.adapter = LocationAdapter(this, arrayList)
+        rv.adapter = HintCheckAdapter(this, arrayList)
     }
 
     fun collapseButtonAnimation(isShow: Boolean) {
-        var start = 0f
-        var end = 0f
-        if (isShow) end = 1f
-        else start = 1f
-        val animation = AlphaAnimation(start, end)
-        animation.duration = 10
-        animation.fillAfter = true
-        animation.interpolator = AccelerateInterpolator(300f)
-        collapseButton.animation = animation
-        animation.start()
-    }
-
-
-    override fun arrival(location: AMapLocation) {
-
+        val deta = if (isShow) 1 else 0
+        collapseButton.animation = AlphaAnimation(deta.and(0).toFloat(), deta.and(1).toFloat())
+        collapseButton.animation.apply {
+            duration = 10
+            fillAfter = true
+            interpolator = AccelerateInterpolator(300f)
+        }.start()
     }
 
     override fun onResume() {
@@ -162,5 +144,14 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
     override fun onDestroy() {
         super.onDestroy()
         textureMapView.onDestroy()
+    }
+
+    fun loadCurrentLocation(view: View) {
+        AMapOperator.moveToCurrent()
+    }
+
+//    override fun locationSync(dataSource: MapOperator.locationDataSource) {}
+    override fun locationSync(dataSource: AMapLocation) {
+//        TODO("Not yet implemented")
     }
 }

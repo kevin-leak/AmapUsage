@@ -5,4 +5,8 @@
     <string name="search_place">Search Place</string>
     <drawable name="item_normal">#FBFAFA</drawable>
     <drawable name="item_pressed">#52392D2D</drawable>
+
+
+
+
 </resources>

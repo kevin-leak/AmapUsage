@@ -14,4 +14,6 @@ interface IHintSearchView {
         fun sourceChanging(data: String)
         fun beforeSourceChange(toString: String)
     }
+
+    interface IHintAdapter
 }
