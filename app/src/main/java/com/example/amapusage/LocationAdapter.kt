@@ -1,5 +1,6 @@
 package com.example.amapusage
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -23,10 +24,12 @@ class LocationAdapter(private var mContext: Context?, private var mList: ArrayLi
         return mList!!.size
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: DataViewHolder, position: Int) {
         holder.itemView.locationChecker.tag = position // 标记
         currentHolder = holder
         holder.itemView.tvLocationName.text = mList!![position]
+        holder.itemView.tvLocationDesc.text = mList!![position] + "this is description"
         holder.itemView.locationChecker.setOnCheckedChangeListener(this)
     }
 
@@ -39,7 +42,7 @@ class LocationAdapter(private var mContext: Context?, private var mList: ArrayLi
     }
 
     private var currentHolder: DataViewHolder? = null
-    var currentCheckPosition :Int = -1
+    private var currentCheckPosition :Int = -1
     override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
         if (currentCheckPosition != -1 && currentHolder?.layoutPosition != currentCheckPosition){
             currentHolder?.itemView?.locationChecker?.isChecked = !isChecked

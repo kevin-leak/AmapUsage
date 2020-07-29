@@ -18,12 +18,11 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
     constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
-            : super(context, attr, defStyleAttr) {
-        init()
-    }
+            : super(context, attr, defStyleAttr)
 
-    private fun init() {
+    init {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+        if (touchSlop == 0) touchSlop = 21
     }
 
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
@@ -42,15 +41,20 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         // 子view没有产生消费，判断父view是否要消费
-        if (ev?.action == MotionEvent.ACTION_MOVE) {
-            // 如果非坍塌且手指向上滑动，则坍塌
-            if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
-                sensor.collapsing()
-                return false
+        when (ev?.action) {
+            MotionEvent.ACTION_MOVE -> {
+                // 非坍塌,手指向上滑动 -> 则坍塌
+                if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
+                    sensor.collapsing()
+                    return false
+                }
             }
-            if (sensor.isCollapsed() && ev.y - downY > touchSlop && scrollY == 0) {
-                sensor.expand() // 坍塌状态，手指向下滑动且处于顶端
-                return false
+            MotionEvent.ACTION_UP -> { // 必须在UP，不要在move否则，向上挪动一下容易引起震荡.
+                // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
+                if (sensor.isCollapsed() && ev.y - downY > touchSlop && scrollY == 0) {
+                    sensor.expand()
+                    return false
+                }
             }
         }
         return super.onTouchEvent(ev)

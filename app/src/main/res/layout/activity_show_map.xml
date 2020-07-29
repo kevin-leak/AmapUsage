@@ -59,39 +59,49 @@
 
     </com.amap.api.maps.TextureMapView>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/controller_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/texture_map_view"
+        android:elevation="1dp"
+        android:orientation="vertical"
         android:layout_marginTop="-10dp">
 
         <RelativeLayout
-            android:id="@+id/rl_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingLeft="20dp"
             android:paddingTop="10dp"
+            android:paddingLeft="20dp"
             android:paddingRight="20dp">
 
-            <ImageButton
-                android:id="@+id/collapse_button"
-                android:layout_width="45dp"
-                android:layout_height="20dp"
-                android:layout_centerHorizontal="true"
-                android:background="@drawable/shape_collapse_button"
-                android:src="@drawable/ic_collapse_button"
-                android:visibility="gone" />
+            <RelativeLayout
+                android:id="@+id/collapse_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <com.example.amapusage.search.LocationSearchView
+                <ImageButton
+                    android:id="@+id/collapse_button"
+                    android:layout_width="45dp"
+                    android:layout_height="20dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:layout_marginTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/shape_collapse_button"
+                    android:src="@drawable/ic_collapse_button"
+                    android:visibility="gone"/>
+
+            </RelativeLayout>
+
+            <com.example.amapusage.search.HintSearchView
                 android:id="@+id/ls_Search_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/collapse_button"
-                android:orientation="horizontal"
+                android:layout_below="@id/collapse_layout"
                 android:paddingTop="10dp"
-                android:paddingBottom="10dp" />
+                android:paddingBottom="10dp"/>
 
         </RelativeLayout>
 
@@ -99,9 +109,8 @@
             android:id="@+id/rv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/rl_search"
             android:scrollbars="vertical" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </com.example.amapusage.collapse.ScrollCollapseLayout>

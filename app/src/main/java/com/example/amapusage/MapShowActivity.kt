@@ -6,8 +6,7 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
+import android.view.animation.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,8 +17,9 @@ import com.amap.api.maps.TextureMapView
 import com.amap.api.maps.model.CameraPosition
 import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
-import com.example.amapusage.search.ILocationSearchView
-import com.example.amapusage.search.LocationSearchView
+import com.example.amapusage.search.IHintSearchView
+import com.example.amapusage.search.HintSearchView
+import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_show_map.*
 
@@ -31,9 +31,10 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
         App.getAppContext().resources.getDrawable(R.drawable.shape_send_button)
     private lateinit var sendLocationButton: Button
     private lateinit var collapseButton: ImageButton
+    private lateinit var collapseLayout: RelativeLayout
     private lateinit var textureMapView: TextureMapView
-    private lateinit var controllerLayout: RelativeLayout
-    private lateinit var lsSearchView: LocationSearchView
+    private lateinit var controllerLayout: LinearLayout
+    private lateinit var lsSearchView: HintSearchView
     private lateinit var scrollCollapseSensor: ScrollCollapseLayout
 
     companion object {
@@ -51,9 +52,10 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
 
         scrollCollapseSensor = findViewById(R.id.scroll_collapse_sensor)
         collapseButton = findViewById(R.id.collapse_button)
+        collapseLayout = findViewById(R.id.collapse_layout)
         controllerLayout = findViewById(R.id.controller_layout)
         lsSearchView = findViewById(R.id.ls_Search_view)
-        sendLocationButton = findViewById<Button>(R.id.send_location_button)
+        sendLocationButton = findViewById(R.id.send_location_button)
 
         linkageAnimation()
 
@@ -68,17 +70,19 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
             }
         })
 
-        lsSearchView.setLocationSearchListener(object : ILocationSearchView.OnLocationSourceChange {
-            override fun onFocusChange(isFocus: Boolean) {
-                when (isFocus) {
+        lsSearchView.setSearchListener(object : IHintSearchView.OnSearchChangeListener {
+            override fun onEnterModeChange(isEnter: Boolean) {
+                when (isEnter) {
                     true -> scrollCollapseSensor.collapsing()
                     false -> scrollCollapseSensor.expand()
                 }
             }
-            override fun locationSourceCome(data: String) {}
-            override fun locationSourceChanging(data: String) {}
-            override fun beforeLocationSourceChange(toString: String) {}
+            override fun sourceCome(data: String) {}
+            override fun sourceChanging(data: String) {}
+            override fun beforeSourceChange(toString: String) {}
         })
+
+
     }
 
     private fun linkageAnimation() {
@@ -86,8 +90,12 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
             ScrollCollapseLayout.CollapsingListenerImpl() {
             override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
                 super.beforeCollapsingStateChange(sensor)
-                // fixme 慢慢显示
-//                collapseButtonAnimation(!sensor.isCollapsed())
+                collapseButtonAnimation(!sensor.isCollapsed())
+                // 在发生扩展之前一定要关闭软键盘
+                if (sensor.isCollapsed()) KeyBoardUtils.closeKeyboard(
+                    lsSearchView.getEditView(),
+                    baseContext
+                )
             }
 
             override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
@@ -101,12 +109,10 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
                     controllerLayout.elevation = 0f
                     collapseButton.visibility = GONE
                 }
-
             }
         })
-        findViewById<RelativeLayout>(R.id.rl_search)
-            .setOnClickListener { scrollCollapseSensor.animation() }
 
+        collapseLayout.setOnClickListener { scrollCollapseSensor.animation() }
         collapseButton.setOnClickListener { scrollCollapseSensor.animation() }
         rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -114,7 +120,6 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
                     scrollCollapseSensor.expand()
                     recyclerView.stopScroll()
                     recyclerView.stopNestedScroll()
-
                 }
             }
         })
@@ -139,23 +144,12 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
     fun collapseButtonAnimation(isShow: Boolean) {
         var start = 0f
         var end = 0f
-        if (isShow) {
-            end = 1f
-            collapseButton.visibility = VISIBLE
-        } else {
-            start = 1f
-            collapseButton.visibility = GONE
-        }
+        if (isShow) end = 1f
+        else start = 1f
         val animation = AlphaAnimation(start, end)
         animation.duration = 10
         animation.fillAfter = true
-        animation.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation?) {}
-            override fun onAnimationRepeat(animation: Animation?) {}
-            override fun onAnimationEnd(animation: Animation?) {
-                collapseButton.clearAnimation()
-            }
-        })
+        animation.interpolator = AccelerateInterpolator(300f)
         collapseButton.animation = animation
         animation.start()
     }
@@ -177,6 +171,8 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
      * 方法必须重写
      */
     override fun onPause() {
+        // 当pause的时候要关闭软键盘
+        KeyBoardUtils.closeKeyboard(lsSearchView.getEditView(), baseContext)
         super.onPause()
         textureMapView.onPause()
     }

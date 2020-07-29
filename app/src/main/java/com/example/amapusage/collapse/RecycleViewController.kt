@@ -9,7 +9,7 @@ import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
 
 class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
-
+    val TAG = "RecycleViewController"
     private lateinit var sensor: ControlSensorPerformer.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
@@ -33,27 +33,28 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
         sensor = temp
     }
 
-    val TAG = "RecycleViewController"
-
     override fun onInterceptTouchEvent(e: MotionEvent?): Boolean {
-        // 防止被消费掉，先记录
-        if (MotionEvent.ACTION_DOWN == e?.action)  downY = e.y
+        if (MotionEvent.ACTION_DOWN == e?.action) downY = e.y // 防止被消费掉，先记录
         return super.onInterceptTouchEvent(e)
     }
 
     // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.action == MotionEvent.ACTION_MOVE){
-            // 非坍塌,手指向上滑动 -> 则坍塌
-            if (!sensor.isCollapsed() && downY - ev.y > touchSlop ) {
-                sensor.collapsing()
-                return false
+        when (ev?.action) {
+            MotionEvent.ACTION_MOVE -> {
+                // 非坍塌,手指向上滑动 -> 则坍塌
+                if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
+                    sensor.collapsing()
+                    return false
+                }
             }
-            // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
-            if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
-                sensor.expand()
-                return false
+            MotionEvent.ACTION_UP -> { // 必须在UP，不要在move否则，向上挪动一下容易引起震荡.
+                // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
+                if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
+                    sensor.expand()
+                    return false
+                }
             }
         }
         return super.onTouchEvent(ev) // 这里对Down事件进行了消费.

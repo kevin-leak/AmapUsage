@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.RelativeLayout
 import androidx.core.animation.doOnEnd
@@ -25,14 +26,14 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     private val collapseDuration: Long = 300L
     var isHeadCollapsing = false
         private set
-    var expandHeight: Float = -1f
-    var collapseHeight: Float = -1f
+    private var expandHeight: Float = -1f
+    private var collapseHeight: Float = -1f
     private var lock = false
     private var listener: ControlSensorPerformer.CollapsingListener? = null
-
     // 不能作为反控制的view, 允许自己设定，默认为第一个子view
-    var collapseView: View? = null
+    private var collapseView: View? = null
     private val linkageMap = mutableMapOf<View, ControlSensorPerformer.Linkage?>()
+
 
     constructor(context: Context?) : this(context, null)
 
@@ -68,7 +69,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         } else {
             ValueAnimator.ofFloat(expandHeight, collapseHeight) // 非坍塌有高到低
         }
-//        collapseAnimation?.interpolator = AccelerateInterpolator(2f)
+        collapseAnimation?.interpolator = AccelerateInterpolator(4f)
         collapseAnimation?.duration = collapseDuration
         collapseAnimation?.startDelay = collapseDelay
         if (listener == null) listener = CollapsingListenerImpl()
@@ -130,7 +131,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
     open class CollapsingListenerImpl(private val doAction: Boolean = false) :
         ControlSensorPerformer.CollapsingListener {
-        private val TAG = "ScrollCollapseLayout"
+        private val TAG = "CollapsingListenerImpl"
         override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
             Log.d(TAG, "beforeCollapsingStateChange: ${sensor.isCollapsed()}")
             if (doAction) actionImpl(BEFORE_COLLLAPSING, sensor)
