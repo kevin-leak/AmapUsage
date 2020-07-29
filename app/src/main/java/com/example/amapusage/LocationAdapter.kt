@@ -14,7 +14,6 @@ import java.util.*
 class LocationAdapter(private var mContext: Context?, private var mList: ArrayList<String>?) :
     RecyclerView.Adapter<LocationAdapter.DataViewHolder>(),CompoundButton.OnCheckedChangeListener {
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
         val view = LayoutInflater.from(mContext).inflate(R.layout.item_location, null)
         return DataViewHolder(view)

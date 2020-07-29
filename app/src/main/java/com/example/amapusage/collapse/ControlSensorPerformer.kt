@@ -23,7 +23,7 @@ interface ControlSensorPerformer {
         fun bindCollapsingView(view: View): Sensor // 默认第一个
 
         // 当view为空表示默认的linkage
-        fun setLinkages(view: View? = null, linkage: Linkage, tag: Int = AFTER_COLLLAPSING): Sensor
+        fun setLinkages(view: View? = null, linkage: Linkage? = null, tag: Int = AFTER_COLLLAPSING): Sensor
         fun getLinkages(): MutableMap<View, Linkage?>
     }
 
@@ -35,7 +35,7 @@ interface ControlSensorPerformer {
 
     interface Linkage {
         var tag: Int
-        fun action(view: View)
+        fun action(view: View, sensor: Sensor){}
     }
 }
 

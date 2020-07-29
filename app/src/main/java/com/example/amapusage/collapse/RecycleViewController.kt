@@ -61,6 +61,6 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
     }
 
     override fun fling(velocityX: Int, velocityY: Int): Boolean {
-        return super.fling(velocityX, (velocityY * 0.3).toInt())
+        return super.fling(velocityX, (velocityY * 0.25).toInt())
     }
 }

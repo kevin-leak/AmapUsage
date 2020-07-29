@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.animation.*
@@ -16,6 +17,7 @@ import com.amap.api.maps.AMap
 import com.amap.api.maps.TextureMapView
 import com.amap.api.maps.model.CameraPosition
 import com.example.amapusage.collapse.ControlSensorPerformer
+import com.example.amapusage.collapse.ControlSensorPerformer.Companion.BEFORE_COLLLAPSING
 import com.example.amapusage.collapse.ScrollCollapseLayout
 import com.example.amapusage.search.IHintSearchView
 import com.example.amapusage.search.HintSearchView
@@ -25,6 +27,7 @@ import kotlinx.android.synthetic.main.activity_show_map.*
 
 
 class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
+    private val TAG = "MapShowActivity"
     private var sendGrayDrawable: Drawable? =
         App.getAppContext().resources.getDrawable(R.drawable.shape_send_botton_gray)
     private var sendDrawable: Drawable? =
@@ -67,22 +70,17 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
             override fun onCameraChange(p0: CameraPosition?) {
                 if (sendLocationButton.background != sendGrayDrawable)
                     sendLocationButton.background = sendGrayDrawable
+                Log.e(TAG, "onCameraChange: ${p0.toString()}")
             }
         })
-
-        lsSearchView.setSearchListener(object : IHintSearchView.OnSearchChangeListener {
+        lsSearchView.setSearchListener(object : HintSearchView.OnSearchChangeListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) {
                 when (isEnter) {
                     true -> scrollCollapseSensor.collapsing()
                     false -> scrollCollapseSensor.expand()
                 }
             }
-            override fun sourceCome(data: String) {}
-            override fun sourceChanging(data: String) {}
-            override fun beforeSourceChange(toString: String) {}
         })
-
-
     }
 
     private fun linkageAnimation() {
@@ -111,18 +109,8 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
                 }
             }
         })
-
         collapseLayout.setOnClickListener { scrollCollapseSensor.animation() }
         collapseButton.setOnClickListener { scrollCollapseSensor.animation() }
-        rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (!scrollCollapseSensor.isHeadCollapsing) {
-                    scrollCollapseSensor.expand()
-                    recyclerView.stopScroll()
-                    recyclerView.stopNestedScroll()
-                }
-            }
-        })
     }
 
     private fun initMap(savedInstanceState: Bundle?) {
@@ -159,17 +147,11 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
 
     }
 
-    /**
-     * 方法必须重写
-     */
     override fun onResume() {
         super.onResume()
         textureMapView.onResume()
     }
 
-    /**
-     * 方法必须重写
-     */
     override fun onPause() {
         // 当pause的时候要关闭软键盘
         KeyBoardUtils.closeKeyboard(lsSearchView.getEditView(), baseContext)
@@ -177,13 +159,8 @@ class MapShowActivity : AppCompatActivity(), IMapClient.InfoArrivals {
         textureMapView.onPause()
     }
 
-    /**
-     * 方法必须重写
-     */
     override fun onDestroy() {
         super.onDestroy()
         textureMapView.onDestroy()
     }
-
-
 }

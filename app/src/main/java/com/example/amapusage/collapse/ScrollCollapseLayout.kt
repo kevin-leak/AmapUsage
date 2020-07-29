@@ -69,6 +69,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         } else {
             ValueAnimator.ofFloat(expandHeight, collapseHeight) // 非坍塌有高到低
         }
+        // fixme 后期改，这里动画不对，要和collapse相关联.
         collapseAnimation?.interpolator = AccelerateInterpolator(4f)
         collapseAnimation?.duration = collapseDuration
         collapseAnimation?.startDelay = collapseDelay
@@ -98,14 +99,12 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
     override fun setLinkages(
         view: View?,
-        linkage: ControlSensorPerformer.Linkage,
+        linkage: ControlSensorPerformer.Linkage?,
         tag: Int
     ): ControlSensorPerformer.Sensor {
-        linkage.tag = tag
+        linkage?.tag = tag
         if (view == null) {
-            linkageMap.entries.forEach {
-                linkageMap[it.key] = linkageMap[it.key] ?: linkage
-            }
+            linkageMap.entries.forEach { linkageMap[it.key] = linkageMap[it.key] ?: linkage }
         } else {
             linkageMap[view] = linkage
         }
@@ -149,7 +148,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
         private fun actionImpl(tag: Int, sensor: ControlSensorPerformer.Sensor) {
             sensor.getLinkages().entries.forEach {
-                if (it.value?.tag == tag) it.value?.action(it.key)
+                if (it.value?.tag == tag) it.value?.action(it.key, sensor)
             }
         }
     }

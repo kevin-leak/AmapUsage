@@ -16,10 +16,12 @@ import com.example.amapusage.R
 
 class HintSearchView : FrameLayout, IHintSearchView {
     private val TAG = "HintSearchView"
+
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
     constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
             : super(context, attr, defStyleAttr)
+
     var listener: IHintSearchView.OnSearchChangeListener? = null
     private val rootLayout: View = View.inflate(context, R.layout.location_search_view, this)
     private val rlEdit: RelativeLayout = rootLayout.findViewById(R.id.rl_edit)
@@ -62,9 +64,11 @@ class HintSearchView : FrameLayout, IHintSearchView {
             override fun afterTextChanged(s: Editable?) {
                 listener?.sourceCome(s.toString())
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 listener?.beforeSourceChange(s.toString())
             }
+
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if (TextUtils.isEmpty(s)) searchDeleteIcon.visibility = View.GONE
                 else searchDeleteIcon.visibility = View.VISIBLE
@@ -144,5 +148,12 @@ class HintSearchView : FrameLayout, IHintSearchView {
         imm.showSoftInput(searchContentEdit, InputMethodManager.RESULT_SHOWN)
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
         Log.d(TAG, "openKeyboard: " + "imm.isActive")
+    }
+
+    open class OnSearchChangeListenerIml : IHintSearchView.OnSearchChangeListener {
+        override fun onEnterModeChange(isEnter: Boolean) {}
+        override fun sourceCome(data: String) {}
+        override fun sourceChanging(data: String) {}
+        override fun beforeSourceChange(toString: String) {}
     }
 }
