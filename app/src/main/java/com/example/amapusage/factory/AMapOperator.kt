@@ -18,26 +18,15 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
     private var centerMarker: Marker? = null
     private lateinit var aMap: AMap
     private var currentLocation: AMapLocation? = null
+    private lateinit var listener: IMapOperator.LocationSourceLister
 
     override fun prepareForWork(aMap: AMap, listener: IMapOperator.LocationSourceLister) {
         AMapOperator.aMap = aMap
-        mLocationClient.setLocationListener { aMapLocation ->
-            currentLocation = aMapLocation
-            if (aMapLocation.errorCode == 0) listener.locationSync(transformData(aMapLocation))
-        }
+        mLocationClient.setLocationListener { aMapLocation -> currentLocation = aMapLocation }
         mLocationClient.startLocation() //启动定位
         buildMapBaseConfig()
         aMap.setOnCameraChangeListener(this)
-    }
-
-    private fun transformData(aMapLocation: AMapLocation): AMapLocation {
-        // todo
-//        return MapOperator.locationDataSource()
-//       return MapOperator.locationDataSource{
-//
-//       }
-        return aMapLocation
-
+        buildCenterMark()
     }
 
     override fun buildMapBaseConfig(): AMap {
@@ -73,13 +62,13 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
         return centerMarker!!
     }
 
-    fun buildMarkAnimation(map: AMap): Marker {
+    fun buildMarkAnimation(): Marker {
         if (centerMarker == null) buildCenterMark()
         //根据屏幕距离计算需要移动的目标点
         val latLng = centerMarker!!.position
-        val point: Point = map.projection.toScreenLocation(latLng)
-        point.y -= ScreenUtils.dip2px(App.getAppContext(), 30f)
-        val target: LatLng = map.projection.fromScreenLocation(point)
+        val point: Point = aMap.projection.toScreenLocation(latLng)
+        point.y -= ScreenUtils.dip2px(App.getAppContext(), 125f)
+        val target: LatLng = aMap.projection.fromScreenLocation(point)
         val animation: Animation = TranslateAnimation(target)
         animation.setInterpolator { input -> // 模拟重加速度的interpolator
             if (input <= 0.5) {
@@ -107,6 +96,8 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
         if (currentLocation == null) return
         val latLng = LatLng(currentLocation!!.latitude, currentLocation!!.longitude)
         getMap().moveCamera(CameraUpdateFactory.changeLatLng(latLng))
+        // 如果来自于moveToCurrent于cheacked那么不需要collapse，但是如果来自于touch
+        // 如果处于搜索状态，moveCurrent则需要移动
     }
 
     override fun endOperate() {
@@ -114,15 +105,15 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
     }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition?) {
-//                sendLocationButton.background = sendDrawable
+        buildMarkAnimation().startAnimation()
+        listener.moveCameraFinish()
     }
 
     override fun onCameraChange(cameraPosition: CameraPosition?) {
-        //                if (sendLocationButton.background != sendGrayDrawable)
-//                    sendLocationButton.background = sendGrayDrawable
+        listener.onMoveChange()
     }
 
-    override fun syncMapCamera(queryText: String) {
+    override fun queryEntry(queryText: String) {
 
     }
 

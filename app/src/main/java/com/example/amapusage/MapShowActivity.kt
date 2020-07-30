@@ -1,5 +1,6 @@
 package com.example.amapusage
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -15,7 +16,6 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.amap.api.location.AMapLocation
 import com.amap.api.maps.TextureMapView
 import com.amap.api.maps.model.LatLng
 import com.example.amapusage.collapse.ControlSensorPerformer
@@ -41,7 +41,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
     private lateinit var collapseLayout: RelativeLayout
     private lateinit var textureMapView: TextureMapView
     private lateinit var controllerLayout: LinearLayout
-    private lateinit var lsSearchView: EntityCheckSearch
+    private lateinit var locationSearchView: EntityCheckSearch
     private lateinit var scrollCollapseSensor: ScrollCollapseLayout
     private lateinit var currentButton: ImageButton
 
@@ -51,6 +51,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ScreenUtils.setStatus(this)
@@ -61,18 +62,21 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
         collapseButton = findViewById(R.id.collapse_button)
         collapseLayout = findViewById(R.id.collapse_layout)
         controllerLayout = findViewById(R.id.controller_layout)
-        lsSearchView = findViewById(R.id.ls_Search_view)
+        locationSearchView = findViewById(R.id.ls_Search_view)
         sendLocationButton = findViewById(R.id.send_location_button)
         currentButton = findViewById(R.id.current_location_button)
+        scrollCollapseSensor.bindCollapsingView(textureMapView)
         linkageAnimation()
-        lsSearchView.setSearchListener(object : EntityCheckSearch.OnSearchChangeListenerIml() {
+        locationSearchView.setSearchListener(object : EntityCheckSearch.OnSearchChangeListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) {
-                when (isEnter) {
-                    true -> scrollCollapseSensor.collapsing()
-                    false -> scrollCollapseSensor.expand()
-                }
+                scrollCollapseSensor.changeCollapseState(isEnter)
             }
         })
+        textureMapView.map.setOnMapTouchListener {
+            if (scrollCollapseSensor.isHeadCollapsing) {
+                scrollCollapseSensor.changeCollapseState(false)
+            }
+        }
     }
 
     private fun linkageAnimation() {
@@ -80,27 +84,30 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
             ScrollCollapseLayout.CollapsingListenerImpl() {
             override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
                 super.beforeCollapsingStateChange(sensor)
-                collapseButtonAnimation(!sensor.isCollapsed())
                 // 在发生扩展之前一定要关闭软键盘
-                if (sensor.isCollapsed())
-                    KeyBoardUtils.closeKeyboard(lsSearchView.windowToken, baseContext)
+                if (sensor.isCollapsed()) { // 扩展
+                    KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
+                }
             }
 
             override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
+                collapseButtonAnimation(sensor.isCollapsed())
                 if (sensor.isCollapsed()) {
                     controllerLayout.background = baseContext.resources
                         .getDrawable(R.drawable.shape_controller_layout)
                     controllerLayout.elevation = 5f
                     collapseButton.visibility = VISIBLE
+                    AMapOperator.getMap().uiSettings.isScaleControlsEnabled = false
                 } else {
                     controllerLayout.background = null
                     controllerLayout.elevation = 0f
                     collapseButton.visibility = GONE
+                    AMapOperator.getMap().uiSettings.isScaleControlsEnabled = true
                 }
             }
         })
-        collapseLayout.setOnClickListener { scrollCollapseSensor.animation() }
-        collapseButton.setOnClickListener { scrollCollapseSensor.animation() }
+        collapseLayout.setOnClickListener { scrollCollapseSensor.autoAnimation() }
+        collapseButton.setOnClickListener { scrollCollapseSensor.autoAnimation() }
     }
 
     private fun initMap(savedInstanceState: Bundle?) {
@@ -135,7 +142,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
 
     override fun onPause() {
         // 当pause的时候要关闭软键盘
-        KeyBoardUtils.closeKeyboard(lsSearchView.windowToken, baseContext)
+        KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
         super.onPause()
         textureMapView.onPause()
     }
@@ -146,11 +153,17 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
     }
 
     fun loadCurrentLocation(view: View) {
+        if (scrollCollapseSensor.isHeadCollapsing && locationSearchView.isEnterEdit)
+            scrollCollapseSensor.changeCollapseState(false)
         AMapOperator.moveToCurrent()
     }
 
-    //    override fun locationSync(dataSource: MapOperator.locationDataSource) {}
-    override fun locationSync(dataSource: AMapLocation) {
-//        TODO("Not yet implemented")
+    override fun moveCameraFinish() {
+        sendLocationButton.background = sendDrawable
+    }
+
+    override fun onMoveChange() {
+        if (sendLocationButton.background != sendGrayDrawable)
+            sendLocationButton.background = sendGrayDrawable
     }
 }

@@ -3,7 +3,6 @@ package com.example.amapusage.collapse
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.widget.ScrollView
@@ -45,14 +44,14 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
             MotionEvent.ACTION_MOVE -> {
                 // 非坍塌,手指向上滑动 -> 则坍塌
                 if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
-                    sensor.collapsing()
+                    sensor.changeCollapseState(true)
                     return false
                 }
             }
             MotionEvent.ACTION_UP -> { // 必须在UP，不要在move否则，向上挪动一下容易引起震荡.
                 // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
                 if (sensor.isCollapsed() && ev.y - downY > touchSlop && scrollY == 0) {
-                    sensor.expand()
+                    sensor.changeCollapseState(false)
                     return false
                 }
             }

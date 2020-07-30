@@ -1,9 +1,7 @@
 package com.example.amapusage.collapse
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
@@ -39,20 +37,19 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
     }
 
     // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
-    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         when (ev?.action) {
             MotionEvent.ACTION_MOVE -> {
                 // 非坍塌,手指向上滑动 -> 则坍塌
                 if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
-                    sensor.collapsing()
+                    sensor.changeCollapseState(true)
                     return false
                 }
             }
             MotionEvent.ACTION_UP -> { // 必须在UP，不要在move否则，向上挪动一下容易引起震荡.
                 // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
                 if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
-                    sensor.expand()
+                    sensor.changeCollapseState(false)
                     return false
                 }
             }

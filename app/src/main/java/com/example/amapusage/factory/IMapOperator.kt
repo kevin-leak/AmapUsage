@@ -13,11 +13,12 @@ interface IMapOperator {
         fun getMap(): AMap
         fun moveToCurrent()                 // 定位
         fun endOperate()
-        fun syncMapCamera(queryText: String)
+        fun queryEntry(queryText: String)
     }
 
     interface LocationSourceLister {
-        fun locationSync(dataSource: AMapLocation)
+        fun moveCameraFinish()
+        fun onMoveChange()
     }
 
 //    interface locationDataSource

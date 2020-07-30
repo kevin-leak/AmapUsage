@@ -6,22 +6,21 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.RelativeLayout
 import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnResume
 import androidx.core.animation.doOnStart
-import com.example.amapusage.collapse.ControlSensorPerformer.Companion.AFTER_COLLLAPSING
-import com.example.amapusage.collapse.ControlSensorPerformer.Companion.BEFORE_COLLLAPSING
-import com.example.amapusage.collapse.ControlSensorPerformer.Companion.ON_COLLLAPSING
 
 
 class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     RelativeLayout(context, attrs), ControlSensorPerformer.Sensor {
-    private val TAG = "ScrollCollapseLayout"
-    private var collapseAnimation: ValueAnimator? = null
+    private var touchSlop: Int = 0
+    private lateinit var collapseAnimation: ValueAnimator
     private val collapseDelay: Long = 0
     private val collapseDuration: Long = 300L
     var isHeadCollapsing = false
@@ -30,12 +29,15 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     private var collapseHeight: Float = -1f
     private var lock = false
     private var listener: ControlSensorPerformer.CollapsingListener? = null
-    // 不能作为反控制的view, 允许自己设定，默认为第一个子view
     private var collapseView: View? = null
-    private val linkageMap = mutableMapOf<View, ControlSensorPerformer.Linkage?>()
-
+    private var downY: Float = 0f
 
     constructor(context: Context?) : this(context, null)
+
+    init {
+        touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+        if (touchSlop == 0) touchSlop = 21
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -47,7 +49,8 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     }
 
     // 判断事件发生是否在当前view的位置
-    private fun isTouchView(view: View, ev: MotionEvent): Boolean {
+    private fun isTouchView(view: View?, ev: MotionEvent?): Boolean {
+        if (view == null || ev == null) return false
         val location = IntArray(2)
         view.getLocationInWindow(location)
         val x = location[0]
@@ -55,102 +58,67 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         return ev.x > x && ev.x < x + view.width && ev.y > y && ev.y < y + view.height
     }
 
-    override fun isCollapsed(): Boolean {
-        return isHeadCollapsing
+
+    override fun changeCollapseState(isToCollapse: Boolean) {
+        return if (isToCollapse) collapsing() else expand()
     }
 
-    override fun animation() {
-        if (lock) {
-            Log.e(TAG, "animation lock state is $lock ")
-            return
-        }
+    override fun autoAnimation() {
+        if (lock) return
         collapseAnimation = if (isHeadCollapsing) {
             ValueAnimator.ofFloat(collapseHeight, expandHeight) // 坍塌由低到高
         } else {
             ValueAnimator.ofFloat(expandHeight, collapseHeight) // 非坍塌有高到低
         }
         // fixme 后期改，这里动画不对，要和collapse相关联.
-        collapseAnimation?.interpolator = AccelerateInterpolator(4f)
-        collapseAnimation?.duration = collapseDuration
-        collapseAnimation?.startDelay = collapseDelay
-        if (listener == null) listener = CollapsingListenerImpl()
-        collapseAnimation?.doOnStart {
+        collapseAnimation.apply {
+            interpolator = AccelerateInterpolator(4f)
+            duration = collapseDuration
+            startDelay = collapseDelay
+        }
+        collapseAnimation.doOnStart {
             lock = true
             listener?.beforeCollapsingStateChange(this)
         }
-        collapseAnimation?.doOnEnd {
+        collapseAnimation.doOnEnd {
             lock = false
             isHeadCollapsing = !isHeadCollapsing
             listener?.collapsingStateChanged(this)
         }
-        collapseAnimation?.addUpdateListener { animation ->
+        collapseAnimation.addUpdateListener { animation ->
             val currentHeight = animation.animatedValue as Float
             collapseView?.layoutParams?.height = currentHeight.toInt()
             collapseView?.requestLayout()
-            if (collapseAnimation?.isRunning == true) listener?.onCollapsingStateChange(this)
+            if (collapseAnimation.isRunning) listener?.onCollapsingStateChange(this)
         }
-        collapseAnimation?.start()
+        collapseAnimation.start()
     }
-
-    override fun bindCollapsingView(view: View): ControlSensorPerformer.Sensor {
-        linkageMap[view] = null
-        return this
-    }
-
-    override fun setLinkages(
-        view: View?,
-        linkage: ControlSensorPerformer.Linkage?,
-        tag: Int
-    ): ControlSensorPerformer.Sensor {
-        linkage?.tag = tag
-        if (view == null) {
-            linkageMap.entries.forEach { linkageMap[it.key] = linkageMap[it.key] ?: linkage }
-        } else {
-            linkageMap[view] = linkage
-        }
-        return this
-    }
-
-    override fun getLinkages(): MutableMap<View, ControlSensorPerformer.Linkage?> {
-        return linkageMap
-    }
-
 
     fun setCollapsingListener(listener: ControlSensorPerformer.CollapsingListener) {
         this.listener = listener
     }
 
-    override fun expand() {
-        if (isHeadCollapsing) animation()
+    private fun expand() {
+        if (isHeadCollapsing && !lock) autoAnimation()
     }
 
-    override fun collapsing() {
-        if (!isHeadCollapsing) animation()
+    private fun collapsing() {
+        if (!isHeadCollapsing && !lock) autoAnimation()
     }
 
-    open class CollapsingListenerImpl(private val doAction: Boolean = false) :
+    override fun isCollapsed(): Boolean {
+        return isHeadCollapsing
+    }
+
+    override fun bindCollapsingView(view: View) {
+        collapseView = view
+    }
+
+    open class CollapsingListenerImpl() :
         ControlSensorPerformer.CollapsingListener {
-        private val TAG = "CollapsingListenerImpl"
-        override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
-            Log.d(TAG, "beforeCollapsingStateChange: ${sensor.isCollapsed()}")
-            if (doAction) actionImpl(BEFORE_COLLLAPSING, sensor)
-        }
-
-        override fun onCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {
-            Log.d(TAG, "onCollapsingStateChange: ${sensor.isCollapsed()}")
-            if (doAction) actionImpl(ON_COLLLAPSING, sensor)
-        }
-
-        override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {
-            Log.d(TAG, "collapsingStateChanged: ${sensor.isCollapsed()}")
-            if (doAction) actionImpl(AFTER_COLLLAPSING, sensor)
-        }
-
-        private fun actionImpl(tag: Int, sensor: ControlSensorPerformer.Sensor) {
-            sensor.getLinkages().entries.forEach {
-                if (it.value?.tag == tag) it.value?.action(it.key, sensor)
-            }
-        }
+        override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {}
+        override fun onCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {}
+        override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {}
     }
 
 }
