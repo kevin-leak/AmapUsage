@@ -1,5 +1,6 @@
 package com.example.amapusage.factory
 
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.view.View
 import android.view.animation.Interpolator
@@ -13,6 +14,7 @@ import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapOptions
 import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MyLocationStyle
@@ -31,12 +33,9 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
     private lateinit var aMap: AMap
     private lateinit var currentLocation: AMapLocation
     private lateinit var listener: IMapOperator.LocationSourceLister
-    private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
+    private const val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
 
-    override fun prepareForWork(
-        aMap: AMap,
-        listener: IMapOperator.LocationSourceLister
-    ): AMapOperator {
+    override fun prepareForWork(aMap: AMap, listener: IMapOperator.LocationSourceLister): AMapOperator {
         AMapOperator.aMap = aMap
         this.listener = listener
         clientOption = AMapLocationClientOption().apply {
@@ -49,15 +48,16 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
             moveToCurrent()
             mLocationClient.stopLocation()
         }
-        mLocationClient.startLocation() //启动定位我当前位置
         buildMapBaseConfig()
+        mLocationClient.startLocation() //启动定位我当前位置
         aMap.setOnCameraChangeListener(this)
         return this
     }
 
     override fun buildMapBaseConfig(): AMap {
         aMap.myLocationStyle = MyLocationStyle().apply {// 蓝点设置
-//            interval(2000) //连续定位模式下的刷新间隔
+            interval(2000) //连续定位模式下的刷新间隔,如果不设置圆圈就会一直放大
+            myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_gps_base))
             strokeColor(Color.parseColor("#2A117DD3"))
             radiusFillColor(Color.parseColor("#2A117DD3"))
             strokeWidth(2f)
@@ -115,9 +115,9 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
     override fun onCameraChangeFinish(cameraPosition: CameraPosition?) {
         val latLng = cameraPosition?.target
         if (abs(latLng!!.latitude - currentLocation.latitude) < deta && abs(latLng.longitude - currentLocation.longitude) < deta) {
-            currentButton.setImageDrawable(currentButton.context.getDrawable(R.drawable.ic_location_blue))
+            currentButton.setImageDrawable(currentButton.context.getDrawable(R.drawable.ic_gps_blue))
         } else {
-            currentButton.setImageDrawable(currentButton.context.getDrawable(R.drawable.ic_location_gray))
+            currentButton.setImageDrawable(currentButton.context.getDrawable(R.drawable.ic_gps_gray))
         }
         mapPin.startAnimation(TranslateAnimation(0f, 0f, 0f, -60f).apply {
             duration = 400

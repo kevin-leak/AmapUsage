@@ -5,6 +5,7 @@
     android:id="@+id/scroll_collapse_sensor"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ffffff"
     android:orientation="vertical">
 
     <com.amap.api.maps.TextureMapView
@@ -16,7 +17,7 @@
         <ImageView
             android:id="@+id/map_pin"
             android:layout_width="50dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:elevation="3dp"
             android:src="@drawable/purple_pin" />
@@ -34,7 +35,8 @@
         android:background="@drawable/shape_location_button"
         android:elevation="10dp"
         android:onClick="loadCurrentLocation"
-        android:src="@drawable/ic_location_blue" />
+        android:padding="10dp"
+        android:src="@drawable/ic_gps_blue" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -103,7 +105,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/collapse_layout"
-                android:padding="15dp"/>
+                android:padding="15dp" />
 
         </RelativeLayout>
 
