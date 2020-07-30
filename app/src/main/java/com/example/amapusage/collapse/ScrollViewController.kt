@@ -40,26 +40,21 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         // 子view没有产生消费，判断父view是否要消费
-        when (ev?.action) {
-            MotionEvent.ACTION_MOVE -> {
-                // 非坍塌,手指向上滑动 -> 则坍塌
-                if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
-                    sensor.changeCollapseState(true)
-                    return false
-                }
-            }
-            MotionEvent.ACTION_UP -> { // 必须在UP，不要在move否则，向上挪动一下容易引起震荡.
+        if (ev?.action == MotionEvent.ACTION_MOVE) {
+            // 非坍塌,手指向上滑动 -> 则坍塌
+            if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
+                sensor.changeCollapseState(true)
+                return false
+            }else if (sensor.isCollapsed() && ev.y - downY > touchSlop && scrollY == 0) {
                 // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
-                if (sensor.isCollapsed() && ev.y - downY > touchSlop && scrollY == 0) {
-                    sensor.changeCollapseState(false)
-                    return false
-                }
+                sensor.changeCollapseState(false)
+                return false
             }
         }
         return super.onTouchEvent(ev)
     }
 
     override fun fling(velocityY: Int) {
-        super.fling((velocityY * 0.3).toInt())
+        super.fling((velocityY * 0.4).toInt())
     }
 }

@@ -7,7 +7,6 @@ import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
 
 class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
-    val TAG = "RecycleViewController"
     private lateinit var sensor: ControlSensorPerformer.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
@@ -38,26 +37,21 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
 
     // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        when (ev?.action) {
-            MotionEvent.ACTION_MOVE -> {
+        if (ev?.action == MotionEvent.ACTION_MOVE) {
+            if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
                 // 非坍塌,手指向上滑动 -> 则坍塌
-                if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
-                    sensor.changeCollapseState(true)
-                    return false
-                }
-            }
-            MotionEvent.ACTION_UP -> { // 必须在UP，不要在move否则，向上挪动一下容易引起震荡.
-                // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
-                if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
-                    sensor.changeCollapseState(false)
-                    return false
-                }
+                sensor.changeCollapseState(true)
+                return false
+            } else if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
+                // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开， 因为有lock可以不用处理抖动
+                sensor.changeCollapseState(false)
+                return false
             }
         }
         return super.onTouchEvent(ev) // 这里对Down事件进行了消费.
     }
 
     override fun fling(velocityX: Int, velocityY: Int): Boolean {
-        return super.fling(velocityX, (velocityY * 0.25).toInt())
+        return super.fling(velocityX, (velocityY * 0.4).toInt())
     }
 }

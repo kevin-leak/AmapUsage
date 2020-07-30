@@ -3,17 +3,12 @@ package com.example.amapusage.collapse
 import android.animation.ValueAnimator
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
-import android.view.animation.DecelerateInterpolator
-import android.view.animation.OvershootInterpolator
 import android.widget.RelativeLayout
 import androidx.core.animation.doOnEnd
-import androidx.core.animation.doOnResume
 import androidx.core.animation.doOnStart
 
 
@@ -23,14 +18,13 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     private lateinit var collapseAnimation: ValueAnimator
     private val collapseDelay: Long = 0
     private val collapseDuration: Long = 300L
-    var isHeadCollapsing = false
+    var isCollapsing = false
         private set
     private var expandHeight: Float = -1f
     private var collapseHeight: Float = -1f
     private var lock = false
     private var listener: ControlSensorPerformer.CollapsingListener? = null
     private var collapseView: View? = null
-    private var downY: Float = 0f
 
     constructor(context: Context?) : this(context, null)
 
@@ -70,7 +64,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
     override fun autoAnimation() {
         if (lock) return
-        collapseAnimation = if (isHeadCollapsing) {
+        collapseAnimation = if (isCollapsing) {
             ValueAnimator.ofFloat(collapseHeight, expandHeight) // 坍塌由低到高
         } else {
             ValueAnimator.ofFloat(expandHeight, collapseHeight) // 非坍塌有高到低
@@ -83,18 +77,18 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         }
         collapseAnimation.doOnStart {
             lock = true
-            listener?.beforeCollapsingStateChange(this)
+            listener?.beforeCollapseStateChange(isCollapsing)
         }
         collapseAnimation.doOnEnd {
             lock = false
-            isHeadCollapsing = !isHeadCollapsing
-            listener?.collapsingStateChanged(this)
+            isCollapsing = !isCollapsing
+            listener?.collapseStateChanged(isCollapsing)
         }
         collapseAnimation.addUpdateListener { animation ->
             val currentHeight = animation.animatedValue as Float
             collapseView?.layoutParams?.height = currentHeight.toInt()
             collapseView?.requestLayout()
-            if (collapseAnimation.isRunning) listener?.onCollapsingStateChange(this)
+            if (collapseAnimation.isRunning) listener?.onCollapseStateChange(isCollapsing)
         }
         collapseAnimation.start()
     }
@@ -104,15 +98,15 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     }
 
     private fun expand() {
-        if (isHeadCollapsing && !lock) autoAnimation()
+        if (isCollapsing && !lock) autoAnimation()
     }
 
     private fun collapsing() {
-        if (!isHeadCollapsing && !lock) autoAnimation()
+        if (!isCollapsing && !lock) autoAnimation()
     }
 
     override fun isCollapsed(): Boolean {
-        return isHeadCollapsing
+        return isCollapsing
     }
 
     override fun bindCollapsingView(view: View) {
@@ -121,9 +115,9 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
     open class CollapsingListenerImpl() :
         ControlSensorPerformer.CollapsingListener {
-        override fun beforeCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {}
-        override fun onCollapsingStateChange(sensor: ControlSensorPerformer.Sensor) {}
-        override fun collapsingStateChanged(sensor: ControlSensorPerformer.Sensor) {}
+        override fun beforeCollapseStateChange(isCollapsed: Boolean) {}
+        override fun onCollapseStateChange(isCollapsed: Boolean) {}
+        override fun collapseStateChanged(isCollapsed: Boolean) {}
     }
 
 }

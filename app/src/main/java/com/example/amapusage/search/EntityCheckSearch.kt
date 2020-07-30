@@ -34,7 +34,7 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
     private val hintLayout = rootLayout.findViewById<RelativeLayout>(R.id.hint_layout)
     private val btnCancel = rootLayout.findViewById<TextView>(R.id.btn_cancel) // 需要失去焦点
 
-    var isEnterEdit = false // 失去了焦点但是还存在文字，也认为是enter
+    var isEnterMode = false // 失去了焦点但是还存在文字，也认为是enter
         private set
 
     init {
@@ -83,8 +83,8 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
             searchContentEdit.clearFocus()
             return
         }
-        isEnterEdit = false
-        listener?.onEnterModeChange(isEnterEdit) // 防止遮盖，先调用
+        isEnterMode = false
+        listener?.onEnterModeChange(isEnterMode) // 防止遮盖，先调用
         hideSoftKeyboard()
         if (TextUtils.isEmpty(searchContentEdit.text)) { // 在提交后，有的失去了焦点但是还会存在文字.
             hintLayout.visibility = View.VISIBLE
@@ -99,8 +99,8 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
             searchContentEdit.requestFocus()
             return
         }
-        isEnterEdit = true
-        listener?.onEnterModeChange(isEnterEdit) // 防止遮盖，先调用
+        isEnterMode = true
+        listener?.onEnterModeChange(isEnterMode) // 防止遮盖，先调用
         openKeyboard()
         rlEdit.visibility = View.VISIBLE
         btnCancel.visibility = View.VISIBLE

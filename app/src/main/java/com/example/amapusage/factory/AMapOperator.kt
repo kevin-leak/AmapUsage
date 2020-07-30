@@ -35,7 +35,10 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
     private lateinit var listener: IMapOperator.LocationSourceLister
     private const val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
 
-    override fun prepareForWork(aMap: AMap, listener: IMapOperator.LocationSourceLister): AMapOperator {
+    override fun prepareForWork(
+        aMap: AMap,
+        listener: IMapOperator.LocationSourceLister
+    ): AMapOperator {
         AMapOperator.aMap = aMap
         this.listener = listener
         clientOption = AMapLocationClientOption().apply {
@@ -115,17 +118,10 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
     override fun onCameraChangeFinish(cameraPosition: CameraPosition?) {
         val latLng = cameraPosition?.target
         if (abs(latLng!!.latitude - currentLocation.latitude) < deta && abs(latLng.longitude - currentLocation.longitude) < deta) {
-            currentButton.setImageDrawable(currentButton.context.getDrawable(R.drawable.ic_gps_blue))
+            currentButton.setImageDrawable(currentButton.context.resources.getDrawable(R.drawable.ic_gps_blue))
         } else {
-            currentButton.setImageDrawable(currentButton.context.getDrawable(R.drawable.ic_gps_gray))
+            currentButton.setImageDrawable(currentButton.context.resources.getDrawable(R.drawable.ic_gps_gray))
         }
-        mapPin.startAnimation(TranslateAnimation(0f, 0f, 0f, -60f).apply {
-            duration = 400
-            repeatMode = Animation.REVERSE
-            repeatCount = 3
-            interpolator = LinearInterpolator()
-        })
-
         //使用TranslateAnimation,填写一个需要移动的目标点
         mapPin.startAnimation((TranslateAnimation(0f, 0f, 0f, -100f).apply {
             interpolator = Interpolator { input -> // 模拟重加速度的interpolator
