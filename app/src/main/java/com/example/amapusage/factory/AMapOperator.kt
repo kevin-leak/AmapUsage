@@ -22,8 +22,9 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
 
     override fun prepareForWork(aMap: AMap, listener: IMapOperator.LocationSourceLister) {
         AMapOperator.aMap = aMap
+        this.listener = listener
         mLocationClient.setLocationListener { aMapLocation -> currentLocation = aMapLocation }
-        mLocationClient.startLocation() //启动定位
+        mLocationClient.startLocation() //启动定位我当前位置
         buildMapBaseConfig()
         aMap.setOnCameraChangeListener(this)
         buildCenterMark()
@@ -62,7 +63,7 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
         return centerMarker!!
     }
 
-    fun buildMarkAnimation(): Marker {
+    private fun buildMarkAnimation(): Marker {
         if (centerMarker == null) buildCenterMark()
         //根据屏幕距离计算需要移动的目标点
         val latLng = centerMarker!!.position

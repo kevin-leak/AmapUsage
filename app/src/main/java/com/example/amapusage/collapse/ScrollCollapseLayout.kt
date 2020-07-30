@@ -48,6 +48,11 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         }
     }
 
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        if (lock) return true
+        return super.onInterceptTouchEvent(ev)
+    }
+
     // 判断事件发生是否在当前view的位置
     private fun isTouchView(view: View?, ev: MotionEvent?): Boolean {
         if (view == null || ev == null) return false

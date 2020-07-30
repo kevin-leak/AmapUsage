@@ -150,6 +150,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
     override fun onDestroy() {
         super.onDestroy()
         textureMapView.onDestroy()
+        AMapOperator.endOperate()
     }
 
     fun loadCurrentLocation(view: View) {
@@ -166,4 +167,8 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
         if (sendLocationButton.background != sendGrayDrawable)
             sendLocationButton.background = sendGrayDrawable
     }
+
+    fun onBack() { finish() }
+
+    fun onSendLocation(view: View) {}
 }
