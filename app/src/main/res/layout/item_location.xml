@@ -3,36 +3,42 @@
     android:id="@+id/locationItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingLeft="20dp"
-    android:paddingRight="20dp"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp"
-    android:minHeight="1dp"
-    android:background="@drawable/selector_item_location_back">
+    android:gravity="center"
+    android:padding="15dp"
+    android:background="@drawable/selector_item_location">
 
-    <TextView
-        android:id="@+id/tvLocationName"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="50dp"
-        android:ellipsize="end"
-        android:textColor="#373636"
-        android:textSize="16sp" />
+        android:layout_toStartOf="@+id/locationChecker">
 
-    <TextView
-        android:id="@+id/tvLocationDesc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvLocationName"
-        android:ellipsize="end"
-        android:layout_marginEnd="50dp"
-        android:textColor="#878787"
-        android:textSize="14sp" />
+        <TextView
+            android:id="@+id/tvLocationName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#373636"
+            android:ellipsize="end"
+            android:textSize="16sp"
+            android:gravity="start"/>
+
+        <TextView
+            android:id="@+id/tvLocationDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_below="@id/tvLocationName"
+            android:ellipsize="end"
+            android:textColor="#AAAAAA"
+            android:textSize="14sp" />
+
+    </RelativeLayout>
 
     <RadioButton
         android:id="@+id/locationChecker"
         android:layout_width="30dp"
         android:layout_height="30dp"
+        android:gravity="center"
+        android:layout_marginStart="10dp"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:background="@drawable/selector_check_state"

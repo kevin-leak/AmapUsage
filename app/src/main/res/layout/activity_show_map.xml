@@ -13,29 +13,28 @@
         android:layout_height="450dp"
         android:minHeight="250dp">
 
+        <ImageView
+            android:id="@+id/map_pin"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:elevation="3dp"
+            android:src="@drawable/purple_pin" />
+
     </com.amap.api.maps.TextureMapView>
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_alignBottom="@id/texture_map_view"
-        android:layout_alignParentEnd="true">
-
-        <ImageButton
-            android:id="@+id/current_location_button"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:layout_alignParentBottom="true"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="25dp"
-            android:layout_marginBottom="25dp"
-            android:background="@drawable/shape_location_button"
-            android:elevation="3dp"
-            android:onClick="loadCurrentLocation"
-            android:src="@drawable/ic_location_blue" />
-
-    </RelativeLayout>
-
+    <ImageButton
+        android:id="@+id/current_location_button"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_above="@id/controller_layout"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/shape_location_button"
+        android:elevation="10dp"
+        android:onClick="loadCurrentLocation"
+        android:src="@drawable/ic_location_blue" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -53,7 +52,8 @@
             android:layout_marginStart="20dp"
             android:background="#00000000"
             android:onClick="onBack"
-            android:text="@string/cancel" />
+            android:text="@string/cancel"
+            android:textColor="#ffffff" />
 
         <Button
             android:id="@+id/send_location_button"
@@ -62,44 +62,37 @@
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="20dp"
             android:background="@drawable/shape_send_button"
-            android:text="@string/send"
             android:onClick="onSendLocation"
-            android:textAllCaps="false" />
+            android:text="@string/send"
+            android:textAllCaps="false"
+            android:textColor="#ffffff" />
 
     </RelativeLayout>
-
 
     <LinearLayout
         android:id="@+id/controller_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/texture_map_view"
-        android:layout_marginTop="-10dp"
-        android:elevation="1dp"
+        android:elevation="10dp"
         android:orientation="vertical">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="20dp"
-            android:paddingTop="10dp"
-            android:paddingRight="20dp">
+            android:layout_height="wrap_content">
 
             <RelativeLayout
                 android:id="@+id/collapse_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:paddingTop="15dp">
 
                 <ImageButton
                     android:id="@+id/collapse_button"
                     android:layout_width="45dp"
                     android:layout_height="20dp"
                     android:layout_centerHorizontal="true"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
                     android:background="@drawable/shape_collapse_button"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
                     android:src="@drawable/ic_collapse_button"
                     android:visibility="gone" />
 
@@ -110,8 +103,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/collapse_layout"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp" />
+                android:padding="15dp"/>
 
         </RelativeLayout>
 

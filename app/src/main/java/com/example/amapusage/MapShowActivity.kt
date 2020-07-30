@@ -3,6 +3,7 @@ package com.example.amapusage
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
@@ -10,10 +11,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amap.api.maps.TextureMapView
@@ -30,12 +28,6 @@ import kotlinx.android.synthetic.main.activity_show_map.*
 
 
 class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
-    private var latLng: LatLng? = null
-    private val TAG = "MapShowActivity"
-    private var sendGrayDrawable: Drawable? =
-        App.getAppContext().resources.getDrawable(R.drawable.shape_send_botton_gray)
-    private var sendDrawable: Drawable? =
-        App.getAppContext().resources.getDrawable(R.drawable.shape_send_button)
     private lateinit var sendLocationButton: Button
     private lateinit var collapseButton: ImageButton
     private lateinit var collapseLayout: RelativeLayout
@@ -43,7 +35,6 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
     private lateinit var controllerLayout: LinearLayout
     private lateinit var locationSearchView: EntityCheckSearch
     private lateinit var scrollCollapseSensor: ScrollCollapseLayout
-    private lateinit var currentButton: ImageButton
 
     companion object {
         fun show(context: Context, cls: Class<out MapShowActivity>) {
@@ -64,18 +55,17 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
         controllerLayout = findViewById(R.id.controller_layout)
         locationSearchView = findViewById(R.id.ls_Search_view)
         sendLocationButton = findViewById(R.id.send_location_button)
-        currentButton = findViewById(R.id.current_location_button)
         scrollCollapseSensor.bindCollapsingView(textureMapView)
         linkageAnimation()
-        locationSearchView.setSearchListener(object : EntityCheckSearch.OnSearchChangeListenerIml() {
+        locationSearchView.setSearchListener(object :
+            EntityCheckSearch.OnSearchChangeListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) {
                 scrollCollapseSensor.changeCollapseState(isEnter)
             }
         })
         textureMapView.map.setOnMapTouchListener {
-            if (scrollCollapseSensor.isHeadCollapsing) {
+            if (scrollCollapseSensor.isHeadCollapsing)
                 scrollCollapseSensor.changeCollapseState(false)
-            }
         }
     }
 
@@ -113,6 +103,8 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
     private fun initMap(savedInstanceState: Bundle?) {
         textureMapView = findViewById(R.id.texture_map_view)
         AMapOperator.prepareForWork(textureMapView.map, this)
+            .bindCurrentButton(findViewById(R.id.current_location_button))
+            .bindMapPin(findViewById(R.id.map_pin))
         textureMapView.onCreate(savedInstanceState) // 此方法必须重写
     }
 
@@ -141,7 +133,6 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
     }
 
     override fun onPause() {
-        // 当pause的时候要关闭软键盘
         KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
         super.onPause()
         textureMapView.onPause()
@@ -160,15 +151,31 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
     }
 
     override fun moveCameraFinish() {
-        sendLocationButton.background = sendDrawable
+        changeSendButtonActive(true)
     }
 
     override fun onMoveChange() {
-        if (sendLocationButton.background != sendGrayDrawable)
-            sendLocationButton.background = sendGrayDrawable
+        changeSendButtonActive(false)
     }
 
-    fun onBack() { finish() }
+    private fun changeSendButtonActive(isClickAble: Boolean) {
+        if (isClickAble) sendLocationButton.apply {
+            isClickable = true
+            background = getDrawable(R.drawable.shape_send_button)
+            setTextColor(Color.parseColor("#ffffff"))
+        }
+        else sendLocationButton.apply {
+            isClickable = false
+            background = getDrawable(R.drawable.shape_send_button_gray)
+            setTextColor(Color.parseColor("#808080"))
+        }
+    }
 
-    fun onSendLocation(view: View) {}
+    fun onSendLocation(view: View) {
+        Toast.makeText(this, "send location txt", Toast.LENGTH_LONG).show()
+    }
+
+    fun onBack(view: View) {
+        finish()
+    }
 }
