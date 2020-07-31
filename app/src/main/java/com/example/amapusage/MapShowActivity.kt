@@ -48,8 +48,6 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         }
     }
 
-    val TAG = "MapShowActivity"
-
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

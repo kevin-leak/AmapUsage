@@ -1,12 +1,14 @@
 package com.example.amapusage.factory
 
+import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import android.view.View
 import android.view.animation.Interpolator
 import android.view.animation.TranslateAnimation
 import android.widget.ImageButton
 import android.widget.ImageView
-import androidx.core.view.isVisible
+import android.widget.Toast
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
@@ -18,13 +20,19 @@ import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MyLocationStyle
-import com.example.amapusage.App
+import com.amap.api.services.core.AMapException
+import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.core.PoiItem
+import com.amap.api.services.poisearch.PoiResult
+import com.amap.api.services.poisearch.PoiSearch
 import com.example.amapusage.R
 import kotlin.math.abs
 import kotlin.math.sqrt
 
 
-object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
+object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
+    PoiSearch.OnPoiSearchListener {
+    private val currentPage: Int = 0
     private lateinit var animationPin: TranslateAnimation
     private lateinit var clientOption: AMapLocationClientOption
     private lateinit var mapPin: ImageView
@@ -34,11 +42,14 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
     private lateinit var currentLocation: AMapLocation
     private lateinit var listener: IMapOperator.LocationSourceLister
     private const val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
+    private lateinit var context: Context
+    private lateinit var query: PoiSearch.Query
 
     override fun preWork(tMV: TextureMapView, lt: IMapOperator.LocationSourceLister): AMapOperator {
+        context = tMV.context
         aMap = tMV.map
         this.listener = lt
-        mLocationClient = AMapLocationClient(tMV.context)
+        mLocationClient = AMapLocationClient(context)
         clientOption = AMapLocationClientOption().apply {
             isOnceLocation = true
             locationMode = AMapLocationClientOption.AMapLocationMode.Hight_Accuracy
@@ -120,6 +131,40 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
 
     override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
 
-    override fun queryEntry(queryText: String) {}
+    override fun queryEntry(queryText: String) {
+        query = PoiSearch.Query("", "", "")
+        query.pageSize = 10 // 设置每页最多返回多少条poiitem
+        query.pageNum = currentPage //设置查询页码
+        val poiSearch = PoiSearch(context, query)
+        poiSearch.setOnPoiSearchListener(this)
+        poiSearch.bound = PoiSearch.SearchBound(
+            LatLonPoint(currentLocation.latitude, currentLocation.longitude),
+            1000
+        )
+        poiSearch.searchPOIAsyn()
+    }
+
+    override fun onPoiItemSearched(p0: PoiItem?, p1: Int) {
+        Log.e(TAG, "onPoiItemSearched: " + p0.toString())
+    }
+
+    val TAG = "AMapOperator"
+    override fun onPoiSearched(poiResult: PoiResult?, resultCode: Int) {
+        if (resultCode == AMapException.CODE_AMAP_SUCCESS) {
+            if (poiResult != null && poiResult.query != null) {
+                if (poiResult.query == query) {
+                    var poiItems = poiResult.pois
+                    if (poiItems != null && poiItems.size > 0) {
+//                        updateListview(poiItems)
+                        Log.e(TAG, "onPoiSearched: $poiItems")
+                    } else {
+                        Toast.makeText(context, "无搜索结果", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(context, "无搜索结果", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
 }

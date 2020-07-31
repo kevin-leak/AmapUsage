@@ -9,23 +9,23 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.Log
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.core.widget.doOnTextChanged
 import com.example.amapusage.R
 
-class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
+@SuppressLint("NewApi")
+class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int) :
+    FrameLayout(context, attr, defStyleAttr, defStyleAttr), IEntityCheckSearch {
     private val TAG = "HintSearchView"
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
-
-    @SuppressLint("NewApi")
-    constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
-            : super(context, attr, defStyleAttr, defStyleAttr)
 
     var listener: IEntityCheckSearch.OnSearchListener? = null
     private val rootLayout: View = View.inflate(context, R.layout.location_search_view, this)
@@ -47,8 +47,22 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
         btnCancel.visibility = View.GONE
         searchDeleteIcon.visibility = View.GONE
         initListener()
+        attr?.let {
+            initStyle(attr, defStyleAttr)
+        }
     }
 
+    private fun initStyle(attrs: AttributeSet, defStyleAttr: Int) {
+        val a =
+            context.obtainStyledAttributes(attrs, R.styleable.EntityCheckSearch, defStyleAttr, 0)
+        if (a.hasValue(R.styleable.EntityCheckSearch_text)) {
+            val queryText = a.getString(R.styleable.EntityCheckSearch_text)
+            searchContentEdit.setText(queryText)
+        }
+    }
+
+
+    @SuppressLint("ClickableViewAccessibility")
     private fun initListener() {
         // 第一次取消是关闭键盘，第二次是清楚数据, 同时发生坍塌
         btnCancel.setOnClickListener {
@@ -60,15 +74,20 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
             searchContentEdit.setText("")
             enterEditMode()
         }
-        searchContentEdit.setOnClickListener { if (searchContentEdit.isFocused) enterEditMode() }
+        searchContentEdit.setOnTouchListener(object :OnTouchListener{
+            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                if (event?.action == MotionEvent.ACTION_MOVE) return true
+                else if (searchContentEdit.isFocused) enterEditMode()
+                return false
+            }
+        })
+//        searchContentEdit.setOnClickListener { if (searchContentEdit.isFocused) enterEditMode() }
         searchContentEdit.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) enterEditMode()
             else outEditMode()
         }
         searchContentEdit.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                listener?.sourceCome(s.toString())
-            }
+            override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 listener?.beforeSourceChange(s.toString())
             }
@@ -79,6 +98,12 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
                 listener?.sourceChanging(s.toString())
             }
         })
+        searchContentEdit.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                listener?.sourceCome(searchContentEdit.text.toString())
+            }
+            false
+        }
     }
 
     override fun outEditMode() {

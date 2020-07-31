@@ -25,6 +25,7 @@ interface IMapOperator {
     interface LocationSourceLister {
         fun moveCameraFinish()
         fun onMoveChange()
+        fun sourceCome()
     }
 
 //    interface locationDataSource

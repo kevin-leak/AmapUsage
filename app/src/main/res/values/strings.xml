@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AmapUsage</string>
+    <string name="app_name">AMapUsage</string>
     <string name="get_location">get Location</string>
     <string name="cancel">Cancel</string>
     <string name="search_place">Search Place</string>

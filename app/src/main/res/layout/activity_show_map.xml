@@ -92,11 +92,11 @@
                 <ImageButton
                     android:id="@+id/collapse_button"
                     android:layout_width="45dp"
-                    android:layout_height="20dp"
+                    android:layout_height="24dp"
                     android:layout_centerHorizontal="true"
                     android:background="@drawable/shape_collapse_button"
                     android:src="@drawable/ic_collapse_button"
-                    android:visibility="gone" />
+                    android:visibility="visible" />
 
             </RelativeLayout>
 
