@@ -133,7 +133,14 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
     override fun collapseStateChanged(isCollapsed: Boolean) {
         AMapOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
-        collapseButton.apply { visibility = if (isCollapsed) VISIBLE else GONE }
+        collapseButton.apply {
+            visibility = if (isCollapsed) VISIBLE else GONE
+            animation = AlphaAnimation(if (isCollapsed) 0f else 1f, if (isCollapsed) 1f else 0f)
+            animation.duration = 10
+            animation.fillAfter = true
+            animation.interpolator = AccelerateInterpolator(300f)
+            animation.start()
+        }
         controllerLayout.apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 elevation = if (isCollapsed) 5f else 0f
