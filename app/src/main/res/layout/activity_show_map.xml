@@ -96,7 +96,7 @@
                     android:layout_centerHorizontal="true"
                     android:background="@drawable/shape_collapse_button"
                     android:src="@drawable/ic_collapse_button"
-                    android:visibility="visible" />
+                    android:visibility="gone" />
 
             </RelativeLayout>
 

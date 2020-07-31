@@ -1,8 +1,9 @@
-package com.example.amapusage
+package com.example.amapusage.model
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.amapusage.model.LocationModel
 
 open class LocationViewModel : ViewModel() {
     // 构建三种需要通知的数据，分别是：

@@ -1,4 +1,4 @@
-package com.example.amapusage
+package com.example.amapusage.model
 
 import androidx.lifecycle.LiveData
 

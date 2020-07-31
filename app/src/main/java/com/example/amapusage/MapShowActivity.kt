@@ -6,8 +6,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -15,7 +13,6 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,6 +21,8 @@ import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
 import com.example.amapusage.factory.AMapOperator
 import com.example.amapusage.factory.IMapOperator
+import com.example.amapusage.model.LocationModel
+import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.search.EntityCheckAdapter
 import com.example.amapusage.search.EntityCheckSearch
 import com.example.amapusage.utils.KeyBoardUtils
@@ -60,9 +59,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
             if (it != null) changeSendButtonActive(true)
             else changeSendButtonActive(false)
         })
-        viewModel.searchModelList.observe(this, Observer<MutableList<LocationModel>> {
-        })
-
+        viewModel.searchModelList.observe(this, Observer<MutableList<LocationModel>> {})
         AMapOperator.preWork(textureMapView, this)
             .bindCurrentButton(findViewById(R.id.current_location_button))
             .bindMapPin(findViewById(R.id.map_pin))

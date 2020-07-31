@@ -15,18 +15,12 @@ class EntityCheckAdapter(private var mContext: Context?, private var mList: Arra
     RecyclerView.Adapter<EntityCheckAdapter.DataViewHolder>(),
     CompoundButton.OnCheckedChangeListener, IEntityCheckSearch.IHintAdapter {
 
-    // 两份数据，在搜索之前的一份数据，是地图大头针指向的位置为距离搜
-    // 第二份是，搜索的数据，这两份数据进行切换.
-    // 当发送check的时候，显示在地图上，并取出.
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
         val view = LayoutInflater.from(mContext).inflate(R.layout.item_location, null)
         return DataViewHolder(view)
     }
 
-    override fun getItemCount(): Int {
-        return mList!!.size
-    }
+    override fun getItemCount(): Int = mList!!.size
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: DataViewHolder, position: Int) {

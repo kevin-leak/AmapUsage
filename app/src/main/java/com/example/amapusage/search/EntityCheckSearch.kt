@@ -61,7 +61,6 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         }
     }
 
-
     @SuppressLint("ClickableViewAccessibility")
     private fun initListener() {
         // 第一次取消是关闭键盘，第二次是清楚数据, 同时发生坍塌
@@ -74,14 +73,10 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             searchContentEdit.setText("")
             enterEditMode()
         }
-        searchContentEdit.setOnTouchListener(object :OnTouchListener{
-            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-                if (event?.action == MotionEvent.ACTION_MOVE) return true
-                else if (searchContentEdit.isFocused) enterEditMode()
-                return false
-            }
-        })
-//        searchContentEdit.setOnClickListener { if (searchContentEdit.isFocused) enterEditMode() }
+        searchContentEdit.setOnTouchListener { _, _ ->
+            if (searchContentEdit.isFocused) enterEditMode()
+            false
+        }
         searchContentEdit.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) enterEditMode()
             else outEditMode()
