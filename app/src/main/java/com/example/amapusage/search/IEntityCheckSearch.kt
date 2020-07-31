@@ -1,11 +1,9 @@
 package com.example.amapusage.search
 
-import android.os.IBinder
 import android.text.Editable
-import android.widget.EditText
 
 interface IEntityCheckSearch {
-    interface OnSearchChangeListener {
+    interface OnSearchListener {
         fun onEnterModeChange(isEnter: Boolean)
         fun sourceCome(data: String)
         fun sourceChanging(data: String)
@@ -16,7 +14,7 @@ interface IEntityCheckSearch {
 
     fun outEditMode()
     fun enterEditMode()
-    fun setSearchListener(listener: OnSearchChangeListener)
+    fun setSearchListener(lt: OnSearchListener)
     fun setText(text: String)
     fun getText(): Editable?
 }

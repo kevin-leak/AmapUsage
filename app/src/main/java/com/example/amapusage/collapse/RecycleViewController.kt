@@ -1,5 +1,6 @@
 package com.example.amapusage.collapse
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -35,11 +36,10 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
         return super.onInterceptTouchEvent(e)
     }
 
-    // 父view设置了clickable则会收到UP事件，但是如果DOWN事件为true，同样也不收到UP
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         if (ev?.action == MotionEvent.ACTION_MOVE) {
-            if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
-                // 非坍塌,手指向上滑动 -> 则坍塌
+            if (!sensor.isCollapsed() && downY - ev.y > touchSlop) { // 非坍塌,手指向上滑动 -> 则坍塌
                 sensor.changeCollapseState(true)
                 return false
             } else if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {

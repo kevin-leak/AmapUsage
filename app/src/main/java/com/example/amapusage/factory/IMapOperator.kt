@@ -5,16 +5,17 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
+import com.amap.api.maps.TextureMapView
 import com.amap.api.maps.model.Marker
 
 interface IMapOperator {
     interface Operator {
-        fun prepareForWork(aMap: AMap, listener: LocationSourceLister):Operator    // 必须实现.
+        fun preWork(tMV: TextureMapView, lt: LocationSourceLister): Operator  // 不持有tMV
         fun buildMapBaseConfig(): AMap      // 配置
-        fun bindCurrentButton(button:ImageButton):Operator
-        fun bindMapPin(mapPin: ImageView):Operator
-        fun clearMapPin()
-        fun setUpMapPin()
+        fun bindCurrentButton(btn: ImageButton): Operator
+        fun bindMapPin(pin: ImageView): Operator
+        fun clearMapPin(): Operator
+        fun setUpMapPin(): Operator
         fun getMap(): AMap
         fun moveToCurrent()                 // 定位
         fun endOperate()

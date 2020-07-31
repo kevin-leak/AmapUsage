@@ -10,6 +10,11 @@ class LocationViewModel : ViewModel() {
     // 2. 搜索产生的字符串
     // 3. checked 的item
     var queryText = MutableLiveData<String>()
-    var locationModelList = MutableLiveData<LocationModel>()
+    private var locationModelList = MutableLiveData<MutableList<LocationModel>>()
     var sendLocationModel = MutableLiveData<LocationModel>()
+
+    fun getLocationModelList(): LiveData<MutableList<LocationModel>> = locationModelList
+    fun getSendLocationModel(): LiveData<LocationModel> = sendLocationModel
+    fun getQueryText(): LiveData<String> = queryText
+
 }

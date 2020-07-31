@@ -32,16 +32,14 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
     }
 
     override fun onInterceptTouchEvent(e: MotionEvent?): Boolean {
-        // 防止被子view消费掉，先记录
-        if (MotionEvent.ACTION_DOWN == e?.action) downY = e.y
+        if (MotionEvent.ACTION_DOWN == e?.action) downY = e.y // 防止被子view消费掉，先记录
         return super.onInterceptTouchEvent(e)
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         // 子view没有产生消费，判断父view是否要消费
-        if (ev?.action == MotionEvent.ACTION_MOVE) {
-            // 非坍塌,手指向上滑动 -> 则坍塌
+        if (ev?.action == MotionEvent.ACTION_MOVE) {  // 非坍塌,手指向上滑动 -> 则坍塌
             if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {
                 sensor.changeCollapseState(true)
                 return false

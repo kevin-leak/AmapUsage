@@ -14,6 +14,7 @@ import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.core.widget.doOnTextChanged
 import com.example.amapusage.R
 
 class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
@@ -21,11 +22,12 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
+
     @SuppressLint("NewApi")
     constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
             : super(context, attr, defStyleAttr, defStyleAttr)
 
-    var listener: IEntityCheckSearch.OnSearchChangeListener? = null
+    var listener: IEntityCheckSearch.OnSearchListener? = null
     private val rootLayout: View = View.inflate(context, R.layout.location_search_view, this)
     private val rlEdit: RelativeLayout = rootLayout.findViewById(R.id.rl_edit)
     private val searchLeftIcon = rootLayout.findViewById<ImageView>(R.id.search_left_icon)
@@ -67,7 +69,6 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
             override fun afterTextChanged(s: Editable?) {
                 listener?.sourceCome(s.toString())
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 listener?.beforeSourceChange(s.toString())
             }
@@ -132,13 +133,9 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
         )
     }
 
-    override fun setSearchListener(listener: IEntityCheckSearch.OnSearchChangeListener) {
-        this.listener = listener
-    }
-
-    override fun getWindowToken(): IBinder {
-        return searchContentEdit.windowToken
-    }
+    override fun setSearchListener(lt: IEntityCheckSearch.OnSearchListener) = let { listener = lt }
+    override fun getWindowToken(): IBinder = searchContentEdit.windowToken
+    override fun getText(): Editable? = searchContentEdit.text
 
     private fun hideSoftKeyboard() {
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -153,20 +150,15 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
         Log.d(TAG, "openKeyboard: " + "imm.isActive")
     }
 
-    open class OnSearchChangeListenerIml : IEntityCheckSearch.OnSearchChangeListener {
+    open class OnSearchListenerIml : IEntityCheckSearch.OnSearchListener {
         override fun onEnterModeChange(isEnter: Boolean) {}
         override fun sourceCome(data: String) {}
         override fun sourceChanging(data: String) {}
         override fun beforeSourceChange(toString: String) {}
     }
 
-
     override fun setText(text: String) {
         enterEditMode()
         searchContentEdit.setText(text)
-    }
-
-    override fun getText(): Editable? {
-        return searchContentEdit.text
     }
 }

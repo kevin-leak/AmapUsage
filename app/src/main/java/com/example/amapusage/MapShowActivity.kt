@@ -58,7 +58,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         sendLocationButton = findViewById(R.id.send_location_button)
         sensor.bindCollapsingView(textureMapView)
 
-        AMapOperator.prepareForWork(textureMapView.map, this)
+        AMapOperator.preWork(textureMapView, this)
             .bindCurrentButton(findViewById(R.id.current_location_button))
             .bindMapPin(findViewById(R.id.map_pin))
         initAdapter()
@@ -70,12 +70,12 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         collapseLayout.setOnClickListener { sensor.autoAnimation() }
         collapseButton.setOnClickListener { sensor.autoAnimation() }
         locationSearchView.setSearchListener(object :
-            EntityCheckSearch.OnSearchChangeListenerIml() {
+            EntityCheckSearch.OnSearchListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) {
-                sensor.changeCollapseState(isEnter)
+                sensor.changeCollapseState(isEnter) // search输入与collapse连锁
             }
         })
-        textureMapView.map.setOnMapTouchListener {
+        textureMapView.map.setOnMapTouchListener { // collapsed下不可滑动
             if (sensor.isCollapsing) sensor.changeCollapseState(false)
         }
     }
@@ -88,14 +88,11 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         rv.adapter = EntityCheckAdapter(this, arrayList)
     }
 
-    override fun onResume() {
-        super.onResume()
-        textureMapView.onResume()
-    }
+    override fun onResume() = super.onResume().also { textureMapView.onResume() }
 
     override fun onPause() {
-        KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
         super.onPause()
+        KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
         textureMapView.onPause()
     }
 
@@ -110,19 +107,14 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         if (sensor.isCollapsing && locationSearchView.isEnterMode) sensor.changeCollapseState(false)
     }
 
-    override fun moveCameraFinish() {
-        changeSendButtonActive(true)
-    }
-
-    override fun onMoveChange() {
-        changeSendButtonActive(false)
-    }
+    override fun moveCameraFinish() = changeSendButtonActive(true)
+    override fun onMoveChange() = changeSendButtonActive(false)
 
     private fun changeSendButtonActive(isClickable: Boolean) {
         sendLocationButton.isClickable = isClickable
         sendLocationButton.setTextColor(Color.parseColor(if (isClickable) "#ffffff" else "#808080"))
-        val tmp =
-            if (isClickable) R.drawable.shape_send_clickable else R.drawable.shape_send_unclikable
+        val tmp = if (isClickable) R.drawable.shape_send_clickable
+        else R.drawable.shape_send_unclikable
         sendLocationButton.background = resources.getDrawable(tmp)
     }
 
@@ -130,9 +122,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         Toast.makeText(this, "send location txt", Toast.LENGTH_LONG).show()
     }
 
-    fun onBack(view: View) {
-        finish()
-    }
+    fun onBack(view: View) = finish()
 
     override fun beforeCollapseStateChange(isCollapsed: Boolean) {
         // 在发生扩展之前一定要关闭软键盘
@@ -142,6 +132,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     override fun onCollapseStateChange(isCollapsed: Boolean) {}
 
     override fun collapseStateChanged(isCollapsed: Boolean) {
+        AMapOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
         collapseButton.apply {
             visibility = if (isCollapsed) VISIBLE else GONE
             animation = AlphaAnimation(if (isCollapsed) 0f else 1f, if (isCollapsed) 1f else 0f)
@@ -151,13 +142,11 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
                 interpolator = AccelerateInterpolator(300f)
             }.start()
         }
-        AMapOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
         controllerLayout.apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 elevation = if (isCollapsed) 5f else 0f
-            }
-            background =
-                if (isCollapsed) null else resources.getDrawable(R.drawable.shape_controller_layout)
+            background = if (isCollapsed) null
+            else resources.getDrawable(R.drawable.shape_controller_layout)
         }
     }
 }

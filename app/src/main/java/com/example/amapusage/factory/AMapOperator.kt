@@ -1,24 +1,23 @@
 package com.example.amapusage.factory
 
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.view.View
 import android.view.animation.Interpolator
-import android.view.animation.LinearInterpolator
 import android.view.animation.TranslateAnimation
 import android.widget.ImageButton
 import android.widget.ImageView
+import androidx.core.view.isVisible
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapOptions
 import com.amap.api.maps.CameraUpdateFactory
+import com.amap.api.maps.TextureMapView
 import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MyLocationStyle
-import com.amap.api.maps.model.animation.Animation
 import com.example.amapusage.App
 import com.example.amapusage.R
 import kotlin.math.abs
@@ -26,21 +25,20 @@ import kotlin.math.sqrt
 
 
 object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
+    private lateinit var animationPin: TranslateAnimation
     private lateinit var clientOption: AMapLocationClientOption
     private lateinit var mapPin: ImageView
     private lateinit var currentButton: ImageButton
-    private val mLocationClient: AMapLocationClient = AMapLocationClient(App.getAppContext())
+    private lateinit var mLocationClient: AMapLocationClient
     private lateinit var aMap: AMap
     private lateinit var currentLocation: AMapLocation
     private lateinit var listener: IMapOperator.LocationSourceLister
     private const val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
 
-    override fun prepareForWork(
-        aMap: AMap,
-        listener: IMapOperator.LocationSourceLister
-    ): AMapOperator {
-        AMapOperator.aMap = aMap
-        this.listener = listener
+    override fun preWork(tMV: TextureMapView, lt: IMapOperator.LocationSourceLister): AMapOperator {
+        aMap = tMV.map
+        this.listener = lt
+        mLocationClient = AMapLocationClient(tMV.context)
         clientOption = AMapLocationClientOption().apply {
             isOnceLocation = true
             locationMode = AMapLocationClientOption.AMapLocationMode.Hight_Accuracy
@@ -79,26 +77,23 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
         return aMap
     }
 
-    override fun bindCurrentButton(button: ImageButton): AMapOperator {
-        this.currentButton = button
+    override fun bindCurrentButton(btn: ImageButton): AMapOperator = apply { currentButton = btn }
+    override fun clearMapPin(): AMapOperator = apply { mapPin.visibility = View.GONE }
+    override fun setUpMapPin(): AMapOperator = apply { mapPin.visibility = View.VISIBLE }
+    override fun endOperate() = mLocationClient.stopLocation()
+    override fun getMap(): AMap = aMap
+
+    override fun bindMapPin(pin: ImageView): AMapOperator {
+        mapPin = pin
+        animationPin = TranslateAnimation(0f, 0f, 0f, -100f)
+        animationPin.apply {
+            duration = 600
+            interpolator = Interpolator { input -> // 模拟重加速度的interpolator
+                if (input <= 0.5) (0.5f - 2 * (0.5 - input) * (0.5 - input)).toFloat()
+                else (0.5f - sqrt((input - 0.5f) * (1.5f - input).toDouble())).toFloat()
+            }
+        }
         return this
-    }
-
-    override fun bindMapPin(mapPin: ImageView): AMapOperator {
-        this.mapPin = mapPin
-        return this
-    }
-
-    override fun clearMapPin() {
-        mapPin.visibility = View.GONE
-    }
-
-    override fun setUpMapPin() {
-        mapPin.visibility = View.VISIBLE
-    }
-
-    override fun getMap(): AMap {
-        return aMap
     }
 
     override fun moveToCurrent() {
@@ -111,37 +106,20 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator {
             })
     }
 
-    override fun endOperate() {
-        mLocationClient.stopLocation()
-    }
-
-    override fun onCameraChangeFinish(cameraPosition: CameraPosition?) {
-        val latLng = cameraPosition?.target
-        if (abs(latLng!!.latitude - currentLocation.latitude) < deta && abs(latLng.longitude - currentLocation.longitude) < deta) {
-            currentButton.setImageDrawable(currentButton.context.resources.getDrawable(R.drawable.ic_gps_blue))
+    override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
+        if (abs(cameraPosition.target.latitude - currentLocation.latitude) < deta
+            && abs(cameraPosition.target.longitude - currentLocation.longitude) < deta
+        ) {
+            currentButton.apply { setImageDrawable(resources.getDrawable(R.drawable.ic_gps_blue)) }
         } else {
-            currentButton.setImageDrawable(currentButton.context.resources.getDrawable(R.drawable.ic_gps_gray))
+            currentButton.apply { setImageDrawable(resources.getDrawable(R.drawable.ic_gps_gray)) }
         }
-        //使用TranslateAnimation,填写一个需要移动的目标点
-        mapPin.startAnimation((TranslateAnimation(0f, 0f, 0f, -100f).apply {
-            interpolator = Interpolator { input -> // 模拟重加速度的interpolator
-                if (input <= 0.5) {
-                    (0.5f - 2 * (0.5 - input) * (0.5 - input)).toFloat()
-                } else {
-                    (0.5f - sqrt((input - 0.5f) * (1.5f - input).toDouble())).toFloat()
-                }
-            }
-            duration = 600
-        }))
+        mapPin.startAnimation(animationPin)
         listener.moveCameraFinish()
     }
 
-    override fun onCameraChange(cameraPosition: CameraPosition?) {
-        listener.onMoveChange()
-    }
+    override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
 
-    override fun queryEntry(queryText: String) {
-
-    }
+    override fun queryEntry(queryText: String) {}
 
 }

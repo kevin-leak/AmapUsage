@@ -43,7 +43,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
-        if (lock) return true
+        if (lock) return true // 处理抖动问题
         return super.onInterceptTouchEvent(ev)
     }
 
@@ -55,11 +55,6 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         val x = location[0]
         val y = location[1]
         return ev.x > x && ev.x < x + view.width && ev.y > y && ev.y < y + view.height
-    }
-
-
-    override fun changeCollapseState(isToCollapse: Boolean) {
-        return if (isToCollapse) collapsing() else expand()
     }
 
     override fun autoAnimation() {
@@ -97,17 +92,10 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         this.listener = listener
     }
 
-    private fun expand() {
-        if (isCollapsing && !lock) autoAnimation()
-    }
-
-    private fun collapsing() {
-        if (!isCollapsing && !lock) autoAnimation()
-    }
-
-    override fun isCollapsed(): Boolean {
-        return isCollapsing
-    }
+    override fun changeCollapseState(isToCollapse: Boolean): Unit = if (isToCollapse) collapsing() else expand()
+    private fun expand(): Unit = if (isCollapsing && !lock) autoAnimation() else Unit
+    private fun collapsing(): Unit = if (!isCollapsing && !lock) autoAnimation() else Unit
+    override fun isCollapsed() = isCollapsing
 
     override fun bindCollapsingView(view: View) {
         collapseView = view
