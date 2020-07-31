@@ -1,5 +1,6 @@
 package com.example.amapusage.search
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.IBinder
 import android.os.SystemClock
@@ -20,6 +21,7 @@ class EntityCheckSearch : FrameLayout, IEntityCheckSearch {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
+    @SuppressLint("NewApi")
     constructor(context: Context, attr: AttributeSet?, defStyleAttr: Int)
             : super(context, attr, defStyleAttr, defStyleAttr)
 

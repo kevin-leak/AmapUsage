@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
@@ -122,7 +123,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         sendLocationButton.setTextColor(Color.parseColor(if (isClickable) "#ffffff" else "#808080"))
         val tmp =
             if (isClickable) R.drawable.shape_send_clickable else R.drawable.shape_send_unclikable
-        sendLocationButton.background = getDrawable(tmp)
+        sendLocationButton.background = resources.getDrawable(tmp)
     }
 
     fun onSendLocation(view: View) {
@@ -152,8 +153,11 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         }
         AMapOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
         controllerLayout.apply {
-            elevation = if (isCollapsed) 5f else 0f
-            background = if (isCollapsed) null else getDrawable(R.drawable.shape_controller_layout)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                elevation = if (isCollapsed) 5f else 0f
+            }
+            background =
+                if (isCollapsed) null else resources.getDrawable(R.drawable.shape_controller_layout)
         }
     }
 }
