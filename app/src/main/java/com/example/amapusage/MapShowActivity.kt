@@ -6,6 +6,8 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -13,14 +15,17 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.amap.api.maps.TextureMapView
 import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
 import com.example.amapusage.factory.AMapOperator
 import com.example.amapusage.factory.IMapOperator
-import com.example.amapusage.search.EntityCheckSearch
 import com.example.amapusage.search.EntityCheckAdapter
+import com.example.amapusage.search.EntityCheckSearch
 import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_show_map.*
@@ -28,6 +33,7 @@ import kotlinx.android.synthetic.main.activity_show_map.*
 
 class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     ControlSensorPerformer.CollapsingListener {
+    private lateinit var viewModel: LocationViewModel
     private lateinit var sendLocationButton: Button
     private lateinit var collapseButton: ImageButton
     private lateinit var collapseLayout: RelativeLayout
@@ -42,12 +48,31 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         }
     }
 
+    val TAG = "MapShowActivity"
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ScreenUtils.setStatus(this)
         setContentView(R.layout.activity_show_map)
+        initView(savedInstanceState)
+        viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
+        viewModel.getQueryText().observe(this, Observer<String> { AMapOperator.queryEntry(it) })
+        viewModel.sendModel.observe(this, Observer<LocationModel?> {
+            if (it != null) changeSendButtonActive(true)
+            else changeSendButtonActive(false)
+        })
+        viewModel.searchModelList.observe(this, Observer<MutableList<LocationModel>> {
+        })
 
+        AMapOperator.preWork(textureMapView, this)
+            .bindCurrentButton(findViewById(R.id.current_location_button))
+            .bindMapPin(findViewById(R.id.map_pin))
+        initAdapter()
+        initListener()
+    }
+
+    private fun initView(savedInstanceState: Bundle?) {
         textureMapView = findViewById(R.id.texture_map_view)
         textureMapView.onCreate(savedInstanceState) // 此方法必须重写
         sensor = findViewById(R.id.scroll_collapse_sensor)
@@ -57,29 +82,33 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         locationSearchView = findViewById(R.id.ls_Search_view)
         sendLocationButton = findViewById(R.id.send_location_button)
         sensor.bindCollapsingView(textureMapView)
-
-        AMapOperator.preWork(textureMapView, this)
-            .bindCurrentButton(findViewById(R.id.current_location_button))
-            .bindMapPin(findViewById(R.id.map_pin))
-        initAdapter()
-        initListener()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initListener() {
         sensor.setCollapsingListener(this)
-        collapseLayout.setOnClickListener { sensor.autoAnimation() }
-        collapseButton.setOnClickListener { sensor.autoAnimation() }
+        collapseLayout.setOnTouchListener { _, _ ->
+            sensor.changeCollapseState(false)
+            true
+        }
+        collapseButton.setOnTouchListener { _, _ ->
+            sensor.changeCollapseState(false)
+            true
+        }
         locationSearchView.setSearchListener(object :
             EntityCheckSearch.OnSearchListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) {
                 sensor.changeCollapseState(isEnter) // search输入与collapse连锁
+            }
+            override fun sourceCome(data: String) {
+                super.sourceCome(data)
+                viewModel.setQueryText(data)
             }
         })
         textureMapView.map.setOnMapTouchListener { // collapsed下不可滑动
             if (sensor.isCollapsing) sensor.changeCollapseState(false)
         }
     }
-
 
     private fun initAdapter() {
         rv.layoutManager = LinearLayoutManager(this) //线性
@@ -92,12 +121,12 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
     override fun onPause() {
         super.onPause()
-        KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
         textureMapView.onPause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
         textureMapView.onDestroy()
         AMapOperator.endOperate()
     }
@@ -109,6 +138,9 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
     override fun moveCameraFinish() = changeSendButtonActive(true)
     override fun onMoveChange() = changeSendButtonActive(false)
+    override fun sourceCome() {
+
+    }
 
     private fun changeSendButtonActive(isClickable: Boolean) {
         sendLocationButton.isClickable = isClickable
