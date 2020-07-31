@@ -12,7 +12,7 @@ interface IEntityCheckSearch {
 
     interface IHintAdapter
 
-    fun outEditMode()
+    fun exitEditMode()
     fun enterEditMode()
     fun setSearchListener(lt: OnSearchListener)
     fun setText(text: String)

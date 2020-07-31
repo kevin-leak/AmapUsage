@@ -175,4 +175,12 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
             else resources.getDrawable(R.drawable.shape_controller_layout)
         }
     }
+
+    override fun onBackPressed() {
+        if (locationSearchView.isEnterMode) {
+            locationSearchView.exitEditMode()
+            return
+        }
+        super.onBackPressed()
+    }
 }

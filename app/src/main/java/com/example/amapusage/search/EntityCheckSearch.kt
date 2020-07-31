@@ -9,14 +9,12 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.Log
-import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.core.widget.doOnTextChanged
 import com.example.amapusage.R
 
 @SuppressLint("NewApi")
@@ -79,7 +77,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         }
         searchContentEdit.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) enterEditMode()
-            else outEditMode()
+            else exitEditMode()
         }
         searchContentEdit.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
@@ -101,7 +99,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         }
     }
 
-    override fun outEditMode() {
+    override fun exitEditMode() {
         if (searchContentEdit.isFocused) {
             searchContentEdit.clearFocus()
             return
