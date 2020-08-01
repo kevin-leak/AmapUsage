@@ -15,6 +15,11 @@ open class LocationViewModel : ViewModel() {
     var searchModelList = MutableLiveData<MutableList<LocationModel>>() // search的时候的list
     var sendModel = MutableLiveData<LocationModel?>() // 最终要修改的数据.
 
+    init {
+        currentModelList.value = ArrayList()
+        searchModelList.value = ArrayList()
+    }
+
     fun getQueryText(): LiveData<String> = queryText
 
     open fun setQueryText(string: String) {

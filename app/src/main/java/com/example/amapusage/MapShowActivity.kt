@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -34,6 +35,8 @@ import kotlinx.android.synthetic.main.activity_show_map.*
 
 class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     ControlSensorPerformer.CollapsingListener {
+    val TAG = "MapShowActivity"
+    private lateinit var entityCheckAdapter: EntityCheckAdapter
     private lateinit var currentLocationButton: ImageButton
     private lateinit var viewModel: LocationViewModel
     private lateinit var sendLocationButton: Button
@@ -97,6 +100,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
             EntityCheckSearch.OnSearchListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) {
                 sensor.changeCollapseState(isEnter) // search输入与collapse连锁
+                entityCheckAdapter.isSearch = isEnter
             }
 
             override fun sourceCome(data: String) {
@@ -111,9 +115,14 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
     private fun initAdapter() {
         rv.layoutManager = LinearLayoutManager(this) //线性
-        val arrayList: ArrayList<String> = ArrayList()
-        for (i in 0..49) arrayList.add("第" + i + "条数据")
-        rv.adapter = EntityCheckAdapter(this, arrayList)
+        val arrayList: ArrayList<LocationModel> = ArrayList()
+        for (i in 1..49) {
+            val tmp = LocationModel(false, "this is Title: $i", "this is details$i")
+            arrayList.add(tmp)
+        }
+        viewModel.currentModelList.value = arrayList.toMutableList()
+        entityCheckAdapter = EntityCheckAdapter(this, viewModel)
+        rv.adapter = entityCheckAdapter
     }
 
     override fun onDestroy() {
@@ -128,11 +137,11 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         if (sensor.isCollapsing && locationSearchView.isEnterMode) sensor.changeCollapseState(false)
     }
 
-    override fun moveCameraFinish() = changeSendButtonActive(true)
-    override fun onMoveChange() = changeSendButtonActive(false)
+    override fun moveCameraFinish() {}
+    override fun onMoveChange() {}
     override fun onResume() = super.onResume().also { textureMapView.onResume() }
     override fun onPause() = super.onPause().also { textureMapView.onPause() }
-    fun outMap() = finish()
+    fun outMap(v: View) = finish()
     override fun sourceCome() {
 
     }
@@ -146,7 +155,8 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     }
 
     fun onSendLocation(view: View) {
-        Toast.makeText(this, "send location txt", Toast.LENGTH_LONG).show()
+        if (viewModel.sendModel.value != null)
+            Toast.makeText(this, viewModel.sendModel.value.toString(), Toast.LENGTH_LONG).show()
     }
 
 

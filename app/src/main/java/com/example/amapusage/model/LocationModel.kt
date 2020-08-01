@@ -2,7 +2,10 @@ package com.example.amapusage.model
 
 import androidx.lifecycle.LiveData
 
-class LocationModel : LiveData<LocationModel>() {
+class LocationModel(var isChecked: Boolean = false, var placeTitle: String, var details: String) :
+    LiveData<LocationModel>() {
     // 建立与map产生的数据的关系.做好解析和翻译.
-    var isChecked: Boolean = false
+    override fun toString(): String {
+        return "LocationModel(isChecked=$isChecked, placeTitle='$placeTitle', details='$details')"
+    }
 }
