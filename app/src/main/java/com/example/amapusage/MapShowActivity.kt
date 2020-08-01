@@ -57,7 +57,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
         viewModel.getQueryText()
             .observe(this, Observer<String> { GetLocationOperator.queryEntry(it) })
-        viewModel.sendModel.observe(this, Observer<LocationModel?> {
+        viewModel.sendModel.observe(this, Observer {
             if (it != null) changeSendButtonActive(true)
             else changeSendButtonActive(false)
         })
@@ -115,18 +115,11 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         rv.adapter = EntityCheckAdapter(this, arrayList)
     }
 
-    override fun onResume() = super.onResume().also { textureMapView.onResume() }
-
-    override fun onPause() {
-        super.onPause()
-        textureMapView.onPause()
-    }
-
     override fun onDestroy() {
-        super.onDestroy()
         KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
         textureMapView.onDestroy()
         GetLocationOperator.endOperate()
+        super.onDestroy()
     }
 
     fun loadCurrentLocation(view: View) {
@@ -136,6 +129,8 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
     override fun moveCameraFinish() = changeSendButtonActive(true)
     override fun onMoveChange() = changeSendButtonActive(false)
+    override fun onResume() = super.onResume().also { textureMapView.onResume() }
+    override fun onPause() = super.onPause().also { textureMapView.onPause() }
     fun outMap() = finish()
     override fun sourceCome() {
 
@@ -155,7 +150,6 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
 
     override fun beforeCollapseStateChange(isCollapsed: Boolean) {
-        // 在发生扩展之前一定要关闭软键盘
         if (isCollapsed) KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
     }
 
@@ -177,7 +171,6 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
                 if (isCollapsed) null else resources.getDrawable(R.drawable.shape_controller_layout)
         }
     }
-
 
     override fun onBackPressed() {
         if (locationSearchView.isEnterMode) {
