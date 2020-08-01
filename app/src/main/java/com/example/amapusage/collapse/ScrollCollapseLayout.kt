@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.widget.RelativeLayout
 import androidx.core.animation.doOnEnd
@@ -17,7 +18,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     private var touchSlop: Int = 0
     private lateinit var collapseAnimation: ValueAnimator
     private val collapseDelay: Long = 0
-    private val collapseDuration: Long = 300L
+    val collapseDuration: Long = 100L
     var isCollapsing = false
         private set
     private var expandHeight: Float = -1f
@@ -64,9 +65,8 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         } else {
             ValueAnimator.ofFloat(expandHeight, collapseHeight) // 非坍塌有高到低
         }
-        // fixme 后期改，这里动画不对，要和collapse相关联.
         collapseAnimation.apply {
-            interpolator = AccelerateInterpolator(4f)
+            interpolator = AccelerateDecelerateInterpolator()
             duration = collapseDuration
             startDelay = collapseDelay
         }

@@ -30,25 +30,33 @@ import kotlin.math.abs
 import kotlin.math.sqrt
 
 
-object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
+open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     PoiSearch.OnPoiSearchListener {
-    private val currentPage: Int = 0
+
     private lateinit var animationPin: TranslateAnimation
     private lateinit var clientOption: AMapLocationClientOption
-    private lateinit var mapPin: ImageView
+    private var mapPin: ImageView? = null
     private lateinit var currentButton: ImageButton
     private lateinit var mLocationClient: AMapLocationClient
     private lateinit var aMap: AMap
-    private lateinit var currentLocation: AMapLocation
+    lateinit var currentLocation: AMapLocation
     private lateinit var listener: IMapOperator.LocationSourceLister
-    private const val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
-    private lateinit var context: Context
-    private lateinit var query: PoiSearch.Query
+    private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
+    lateinit var context: Context
+    private var isFirst = true
 
     override fun preWork(tMV: TextureMapView, lt: IMapOperator.LocationSourceLister): AMapOperator {
         context = tMV.context
         aMap = tMV.map
         this.listener = lt
+        buildMapBaseConfig()
+        setUpClient()
+        mLocationClient.startLocation() //启动定位我当前位置
+        aMap.setOnCameraChangeListener(this)
+        return this
+    }
+
+    private fun setUpClient() {
         mLocationClient = AMapLocationClient(context)
         clientOption = AMapLocationClientOption().apply {
             isOnceLocation = true
@@ -60,10 +68,6 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
             moveToCurrent()
             mLocationClient.stopLocation()
         }
-        buildMapBaseConfig()
-        mLocationClient.startLocation() //启动定位我当前位置
-        aMap.setOnCameraChangeListener(this)
-        return this
     }
 
     override fun buildMapBaseConfig(): AMap {
@@ -89,8 +93,8 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun bindCurrentButton(btn: ImageButton): AMapOperator = apply { currentButton = btn }
-    override fun clearMapPin(): AMapOperator = apply { mapPin.visibility = View.GONE }
-    override fun setUpMapPin(): AMapOperator = apply { mapPin.visibility = View.VISIBLE }
+    override fun clearMapPin(): AMapOperator = apply { mapPin?.visibility = View.GONE }
+    override fun setUpMapPin(): AMapOperator = apply { mapPin?.visibility = View.VISIBLE }
     override fun endOperate() = mLocationClient.stopLocation()
     override fun getMap(): AMap = aMap
 
@@ -125,46 +129,18 @@ object AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         } else {
             currentButton.apply { setImageDrawable(resources.getDrawable(R.drawable.ic_gps_gray)) }
         }
-        mapPin.startAnimation(animationPin)
+        mapPin?.startAnimation(animationPin)
         listener.moveCameraFinish()
     }
 
     override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
 
     override fun queryEntry(queryText: String) {
-        query = PoiSearch.Query("", "", "")
-        query.pageSize = 10 // 设置每页最多返回多少条poiitem
-        query.pageNum = currentPage //设置查询页码
-        val poiSearch = PoiSearch(context, query)
-        poiSearch.setOnPoiSearchListener(this)
-        poiSearch.bound = PoiSearch.SearchBound(
-            LatLonPoint(currentLocation.latitude, currentLocation.longitude),
-            1000
-        )
-        poiSearch.searchPOIAsyn()
+
     }
 
-    override fun onPoiItemSearched(p0: PoiItem?, p1: Int) {
-        Log.e(TAG, "onPoiItemSearched: " + p0.toString())
-    }
+    override fun onPoiItemSearched(p0: PoiItem?, p1: Int) {}
 
-    val TAG = "AMapOperator"
-    override fun onPoiSearched(poiResult: PoiResult?, resultCode: Int) {
-        if (resultCode == AMapException.CODE_AMAP_SUCCESS) {
-            if (poiResult != null && poiResult.query != null) {
-                if (poiResult.query == query) {
-                    var poiItems = poiResult.pois
-                    if (poiItems != null && poiItems.size > 0) {
-//                        updateListview(poiItems)
-                        Log.e(TAG, "onPoiSearched: $poiItems")
-                    } else {
-                        Toast.makeText(context, "无搜索结果", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } else {
-                Toast.makeText(context, "无搜索结果", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+    override fun onPoiSearched(poiResult: PoiResult?, resultCode: Int) {}
 
 }

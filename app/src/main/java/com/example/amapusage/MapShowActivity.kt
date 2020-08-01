@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.widget.*
@@ -20,6 +21,7 @@ import com.amap.api.maps.TextureMapView
 import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
 import com.example.amapusage.factory.AMapOperator
+import com.example.amapusage.factory.GetLocationOperator
 import com.example.amapusage.factory.IMapOperator
 import com.example.amapusage.model.LocationModel
 import com.example.amapusage.model.LocationViewModel
@@ -54,13 +56,13 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         setContentView(R.layout.activity_show_map)
         initView(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
-        viewModel.getQueryText().observe(this, Observer<String> { AMapOperator.queryEntry(it) })
+        viewModel.getQueryText().observe(this, Observer<String> { GetLocationOperator.queryEntry(it) })
         viewModel.sendModel.observe(this, Observer<LocationModel?> {
             if (it != null) changeSendButtonActive(true)
             else changeSendButtonActive(false)
         })
         viewModel.searchModelList.observe(this, Observer<MutableList<LocationModel>> {})
-        AMapOperator.preWork(textureMapView, this)
+        GetLocationOperator.preWork(textureMapView, this)
             .bindCurrentButton(findViewById(R.id.current_location_button))
             .bindMapPin(findViewById(R.id.map_pin))
         initAdapter()
@@ -123,11 +125,11 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         super.onDestroy()
         KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
         textureMapView.onDestroy()
-        AMapOperator.endOperate()
+        GetLocationOperator.endOperate()
     }
 
     fun loadCurrentLocation(view: View) {
-        AMapOperator.moveToCurrent()
+        GetLocationOperator.moveToCurrent()
         if (sensor.isCollapsing && locationSearchView.isEnterMode) sensor.changeCollapseState(false)
     }
 
@@ -149,7 +151,6 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         Toast.makeText(this, "send location txt", Toast.LENGTH_LONG).show()
     }
 
-    fun onBack(view: View) = finish()
 
     override fun beforeCollapseStateChange(isCollapsed: Boolean) {
         // 在发生扩展之前一定要关闭软键盘
@@ -159,13 +160,13 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     override fun onCollapseStateChange(isCollapsed: Boolean) {}
 
     override fun collapseStateChanged(isCollapsed: Boolean) {
-        AMapOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
+        GetLocationOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
         collapseButton.apply {
             visibility = if (isCollapsed) VISIBLE else GONE
             animation = AlphaAnimation(if (isCollapsed) 0f else 1f, if (isCollapsed) 1f else 0f)
-            animation.duration = 10
+            animation.duration = sensor.collapseDuration - 80
             animation.fillAfter = true
-            animation.interpolator = AccelerateInterpolator(300f)
+            animation.interpolator = AccelerateInterpolator()
             animation.start()
         }
         controllerLayout.apply {
@@ -175,6 +176,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
             else resources.getDrawable(R.drawable.shape_controller_layout)
         }
     }
+
 
     override fun onBackPressed() {
         if (locationSearchView.isEnterMode) {
