@@ -105,8 +105,8 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             return
         }
         isEnterMode = false
-        listener?.onEnterModeChange(isEnterMode) // 防止遮盖，先调用
         hideSoftKeyboard()
+        listener?.onEnterModeChange(isEnterMode) // 防止遮盖，先调用
         if (TextUtils.isEmpty(searchContentEdit.text)) { // 在提交后，有的失去了焦点但是还会存在文字.
             hintLayout.visibility = View.VISIBLE
             btnCancel.visibility = View.GONE

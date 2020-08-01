@@ -88,8 +88,8 @@ class EntityCheckAdapter() : RecyclerView.Adapter<EntityCheckAdapter.DataViewHol
     }
 
 
-    private var checkPosition: Int = -1 // item 和 position相互绑定
-        set(value) {
+    var checkPosition: Int = -1 // item 和 position相互绑定
+        private set(value) {
             if (field != -1 && currentList.size > 0) {
                 currentList[field].isChecked = false
                 notifyItemChanged(field)

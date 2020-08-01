@@ -14,7 +14,7 @@ interface ControlSensorPerformer {
     }
 
     interface CollapsingListener {
-        fun beforeCollapseStateChange(isCollapsed: Boolean)
+        fun beforeCollapseStateChange(isCollapsing: Boolean)
         fun onCollapseStateChange(isCollapsed: Boolean)
         fun collapseStateChanged(isCollapsed: Boolean)
     }

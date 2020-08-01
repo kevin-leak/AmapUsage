@@ -101,7 +101,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
     open class CollapsingListenerImpl() :
         ControlSensorPerformer.CollapsingListener {
-        override fun beforeCollapseStateChange(isCollapsed: Boolean) {}
+        override fun beforeCollapseStateChange(isCollapsing: Boolean) {}
         override fun onCollapseStateChange(isCollapsed: Boolean) {}
         override fun collapseStateChanged(isCollapsed: Boolean) {}
     }

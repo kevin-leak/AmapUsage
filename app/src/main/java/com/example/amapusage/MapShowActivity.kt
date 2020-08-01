@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -19,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.amap.api.maps.TextureMapView
 import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
@@ -30,7 +30,6 @@ import com.example.amapusage.search.EntityCheckAdapter
 import com.example.amapusage.search.EntityCheckSearch
 import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
-import kotlinx.android.synthetic.main.activity_show_map.*
 
 
 class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
@@ -45,6 +44,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     private lateinit var textureMapView: TextureMapView
     private lateinit var locationSearchView: EntityCheckSearch
     private lateinit var sensor: ScrollCollapseLayout
+    private lateinit var entityRecycleView: RecyclerView
 
     companion object {
         fun show(context: Context, cls: Class<out MapShowActivity>) {
@@ -82,6 +82,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         locationSearchView = findViewById(R.id.ls_Search_view)
         sendLocationButton = findViewById(R.id.send_location_button)
         currentLocationButton = findViewById(R.id.current_location_button)
+        entityRecycleView = findViewById(R.id.entity_recycle_view)
         sensor.bindCollapsingView(textureMapView)
     }
 
@@ -114,7 +115,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     }
 
     private fun initAdapter() {
-        rv.layoutManager = LinearLayoutManager(this) //线性
+        entityRecycleView.layoutManager = LinearLayoutManager(this) //线性
         val arrayList: ArrayList<LocationModel> = ArrayList()
         for (i in 1..49) {
             val tmp = LocationModel(false, "this is Title: $i", "this is details$i")
@@ -122,7 +123,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         }
         viewModel.currentModelList.value = arrayList.toMutableList()
         entityCheckAdapter = EntityCheckAdapter(this, viewModel)
-        rv.adapter = entityCheckAdapter
+        entityRecycleView.adapter = entityCheckAdapter
     }
 
     override fun onDestroy() {
@@ -160,13 +161,18 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     }
 
 
-    override fun beforeCollapseStateChange(isCollapsed: Boolean) {
-        if (isCollapsed) KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
+    override fun beforeCollapseStateChange(isCollapsing: Boolean) {
+        if (isCollapsing) KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
     }
 
     override fun onCollapseStateChange(isCollapsed: Boolean) {}
 
     override fun collapseStateChanged(isCollapsed: Boolean) {
+        if (!isCollapsed) {
+            with(entityRecycleView.layoutManager as LinearLayoutManager) {
+                this.scrollToPositionWithOffset(entityCheckAdapter.checkPosition, 0)
+            }
+        }
         GetLocationOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
         collapseButton.apply {
             visibility = if (isCollapsed) VISIBLE else GONE
@@ -179,8 +185,8 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
         collapseButtonLayout.apply {
             visibility = if (isCollapsed) VISIBLE else GONE
-            background =
-                if (!isCollapsed) null else resources.getDrawable(R.drawable.shape_collapse_button_layout)
+            background = if (!isCollapsed) null
+            else resources.getDrawable(R.drawable.shape_collapse_button_layout)
         }
     }
 
