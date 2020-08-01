@@ -38,17 +38,16 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.action == MotionEvent.ACTION_MOVE) {
-            if (!sensor.isCollapsed() && downY - ev.y > touchSlop) { // 非坍塌,手指向上滑动 -> 则坍塌
-                sensor.changeCollapseState(true)
-                return false
-            } else if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
-                // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开， 因为有lock可以不用处理抖动
-                sensor.changeCollapseState(false)
-                return false
-            }
+        if (ev?.action != MotionEvent.ACTION_MOVE) return super.onTouchEvent(ev)
+        if (!sensor.isCollapsed() && downY - ev.y > touchSlop) { // 非坍塌,手指向上滑动 -> 则坍塌
+            sensor.changeCollapseState(true)
+            return false
+        } else if (sensor.isCollapsed() && ev.y - downY > touchSlop && !canScrollVertically(-1)) {
+            // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开， 因为有lock可以不用处理抖动
+            sensor.changeCollapseState(false)
+            return false
         }
-        return super.onTouchEvent(ev) // 这里对Down事件进行了消费.
+        return super.onTouchEvent(ev)
     }
 
     override fun fling(velocityX: Int, velocityY: Int): Boolean {

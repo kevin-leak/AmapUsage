@@ -38,7 +38,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         if (expandHeight < 0) {
             collapseView = collapseView ?: getChildAt(0)
-            expandHeight = collapseView?.measuredHeight?.toFloat() ?: 0f // 获取测量的最初值
+            expandHeight = collapseView?.measuredHeight?.toFloat() ?: 0f
             collapseHeight = collapseView?.minimumHeight?.toFloat() ?: 0f
         }
     }
@@ -48,7 +48,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         return super.onInterceptTouchEvent(ev)
     }
 
-    // 判断事件发生是否在当前view的位置
+
     private fun isTouchView(view: View?, ev: MotionEvent?): Boolean {
         if (view == null || ev == null) return false
         val location = IntArray(2)
@@ -60,11 +60,8 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
 
     override fun autoAnimation() {
         if (lock) return
-        collapseAnimation = if (isCollapsing) {
-            ValueAnimator.ofFloat(collapseHeight, expandHeight) // 坍塌由低到高
-        } else {
-            ValueAnimator.ofFloat(expandHeight, collapseHeight) // 非坍塌有高到低
-        }
+        collapseAnimation = if (isCollapsing) ValueAnimator.ofFloat(collapseHeight, expandHeight)
+        else ValueAnimator.ofFloat(expandHeight, collapseHeight)
         collapseAnimation.apply {
             interpolator = AccelerateDecelerateInterpolator()
             duration = collapseDuration
@@ -92,7 +89,9 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         this.listener = listener
     }
 
-    override fun changeCollapseState(isToCollapse: Boolean): Unit = if (isToCollapse) collapsing() else expand()
+    override fun changeCollapseState(isToCollapse: Boolean): Unit =
+        if (isToCollapse) collapsing() else expand()
+
     private fun expand(): Unit = if (isCollapsing && !lock) autoAnimation() else Unit
     private fun collapsing(): Unit = if (!isCollapsing && !lock) autoAnimation() else Unit
     override fun isCollapsed() = isCollapsing

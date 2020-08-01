@@ -4,12 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build
+import android.os.Build.VERSION.SDK_INT
+import android.os.Build.VERSION_CODES.LOLLIPOP
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.widget.*
@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.amap.api.maps.TextureMapView
 import com.example.amapusage.collapse.ControlSensorPerformer
 import com.example.amapusage.collapse.ScrollCollapseLayout
-import com.example.amapusage.factory.AMapOperator
 import com.example.amapusage.factory.GetLocationOperator
 import com.example.amapusage.factory.IMapOperator
 import com.example.amapusage.model.LocationModel
@@ -56,7 +55,8 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         setContentView(R.layout.activity_show_map)
         initView(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
-        viewModel.getQueryText().observe(this, Observer<String> { GetLocationOperator.queryEntry(it) })
+        viewModel.getQueryText()
+            .observe(this, Observer<String> { GetLocationOperator.queryEntry(it) })
         viewModel.sendModel.observe(this, Observer<LocationModel?> {
             if (it != null) changeSendButtonActive(true)
             else changeSendButtonActive(false)
@@ -97,6 +97,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
             override fun onEnterModeChange(isEnter: Boolean) {
                 sensor.changeCollapseState(isEnter) // search输入与collapse连锁
             }
+
             override fun sourceCome(data: String) {
                 super.sourceCome(data)
                 viewModel.setQueryText(data)
@@ -135,6 +136,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
     override fun moveCameraFinish() = changeSendButtonActive(true)
     override fun onMoveChange() = changeSendButtonActive(false)
+    fun outMap() = finish()
     override fun sourceCome() {
 
     }
@@ -170,10 +172,9 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
             animation.start()
         }
         controllerLayout.apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                elevation = if (isCollapsed) 5f else 0f
-            background = if (isCollapsed) null
-            else resources.getDrawable(R.drawable.shape_controller_layout)
+            if (SDK_INT >= LOLLIPOP) elevation = if (isCollapsed) 5f else 0f
+            background =
+                if (isCollapsed) null else resources.getDrawable(R.drawable.shape_controller_layout)
         }
     }
 
@@ -185,4 +186,5 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         }
         super.onBackPressed()
     }
+
 }
