@@ -4,10 +4,7 @@
     <string name="cancel">Cancel</string>
     <string name="search_place">Search Place</string>
     <string name="send">Send</string>
-    <drawable name="item_normal">#FBFAFA</drawable>
+    <drawable name="item_normal">#FFFFFF</drawable>
     <drawable name="item_pressed">#52392D2D</drawable>
-
-
-
 
 </resources>

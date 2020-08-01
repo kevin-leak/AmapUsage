@@ -4,15 +4,16 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build.VERSION.SDK_INT
-import android.os.Build.VERSION_CODES.LOLLIPOP
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -33,12 +34,12 @@ import kotlinx.android.synthetic.main.activity_show_map.*
 
 class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     ControlSensorPerformer.CollapsingListener {
+    private lateinit var currentLocationButton: ImageButton
     private lateinit var viewModel: LocationViewModel
     private lateinit var sendLocationButton: Button
     private lateinit var collapseButton: ImageButton
-    private lateinit var collapseLayout: RelativeLayout
+    private lateinit var collapseButtonLayout: RelativeLayout
     private lateinit var textureMapView: TextureMapView
-    private lateinit var controllerLayout: LinearLayout
     private lateinit var locationSearchView: EntityCheckSearch
     private lateinit var sensor: ScrollCollapseLayout
 
@@ -74,17 +75,17 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
         textureMapView.onCreate(savedInstanceState) // 此方法必须重写
         sensor = findViewById(R.id.scroll_collapse_sensor)
         collapseButton = findViewById(R.id.collapse_button)
-        collapseLayout = findViewById(R.id.collapse_layout)
-        controllerLayout = findViewById(R.id.controller_layout)
+        collapseButtonLayout = findViewById(R.id.collapse_button_layout)
         locationSearchView = findViewById(R.id.ls_Search_view)
         sendLocationButton = findViewById(R.id.send_location_button)
+        currentLocationButton = findViewById(R.id.current_location_button)
         sensor.bindCollapsingView(textureMapView)
     }
 
     @SuppressLint("ClickableViewAccessibility")
     private fun initListener() {
         sensor.setCollapsingListener(this)
-        collapseLayout.setOnTouchListener { _, _ ->
+        collapseButtonLayout.setOnTouchListener { _, _ ->
             sensor.changeCollapseState(false)
             true
         }
@@ -165,10 +166,11 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
             animation.interpolator = AccelerateInterpolator()
             animation.start()
         }
-        controllerLayout.apply {
-            if (SDK_INT >= LOLLIPOP) elevation = if (isCollapsed) 5f else 0f
+
+        collapseButtonLayout.apply {
+            visibility = if (isCollapsed) VISIBLE else GONE
             background =
-                if (isCollapsed) null else resources.getDrawable(R.drawable.shape_controller_layout)
+                if (!isCollapsed) null else resources.getDrawable(R.drawable.shape_collapse_button_layout)
         }
     }
 

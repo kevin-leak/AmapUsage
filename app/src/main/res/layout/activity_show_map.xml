@@ -11,8 +11,8 @@
     <com.amap.api.maps.TextureMapView
         android:id="@+id/texture_map_view"
         android:layout_width="match_parent"
-        android:layout_height="450dp"
-        android:minHeight="250dp">
+        android:layout_height="500dp"
+        android:minHeight="300dp">
 
         <ImageView
             android:id="@+id/map_pin"
@@ -23,20 +23,6 @@
             android:src="@drawable/purple_pin" />
 
     </com.amap.api.maps.TextureMapView>
-
-    <ImageButton
-        android:id="@+id/current_location_button"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_above="@id/controller_layout"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="25dp"
-        android:layout_marginBottom="25dp"
-        android:background="@drawable/shape_location_button"
-        android:elevation="10dp"
-        android:onClick="loadCurrentLocation"
-        android:padding="10dp"
-        android:src="@drawable/ic_gps_blue" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -70,43 +56,55 @@
 
     </RelativeLayout>
 
+    <ImageButton
+        android:id="@+id/current_location_button"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_above="@id/collapse_button_layout"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/shape_location_button"
+        android:elevation="10dp"
+        android:onClick="loadCurrentLocation"
+        android:padding="10dp"
+        android:src="@drawable/ic_gps_blue"
+        tools:targetApi="lollipop" />
+
+    <RelativeLayout
+        android:id="@+id/collapse_button_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/controller_layout"
+        android:background="@drawable/shape_collapse_button_layout"
+        android:paddingTop="15dp"
+        android:paddingBottom="1dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/collapse_button"
+            android:layout_width="45dp"
+            android:layout_height="24dp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/shape_collapse_button"
+            android:src="@drawable/ic_collapse_button"
+            android:visibility="visible" />
+
+    </RelativeLayout>
+
     <LinearLayout
         android:id="@+id/controller_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/texture_map_view"
-        android:elevation="10dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:targetApi="lollipop">
 
-        <RelativeLayout
+        <com.example.amapusage.search.EntityCheckSearch
+            android:id="@+id/ls_Search_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <RelativeLayout
-                android:id="@+id/collapse_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="15dp">
-
-                <ImageButton
-                    android:id="@+id/collapse_button"
-                    android:layout_width="45dp"
-                    android:layout_height="24dp"
-                    android:layout_centerHorizontal="true"
-                    android:background="@drawable/shape_collapse_button"
-                    android:src="@drawable/ic_collapse_button"
-                    android:visibility="gone" />
-
-            </RelativeLayout>
-
-            <com.example.amapusage.search.EntityCheckSearch
-                android:id="@+id/ls_Search_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/collapse_layout"
-                android:padding="15dp" />
-
-        </RelativeLayout>
+            android:layout_height="wrap_content"
+            android:padding="15dp" />
 
         <com.example.amapusage.collapse.RecycleViewController
             android:id="@+id/rv"
