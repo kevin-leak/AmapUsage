@@ -4,7 +4,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import com.amap.api.maps.AMap
 import com.amap.api.maps.TextureMapView
-import com.example.amapusage.model.LocationModel
+import com.example.amapusage.search.CheckModel
 
 interface IMapOperator {
     interface Operator {
@@ -24,7 +24,7 @@ interface IMapOperator {
     interface LocationSourceLister {
         fun moveCameraFinish()
         fun onMoveChange()
-        fun sourceCome(data: MutableList<LocationModel>)
+        fun sourceCome(data: MutableList<CheckModel>, isMore: Boolean)
     }
 
 //    interface locationDataSource

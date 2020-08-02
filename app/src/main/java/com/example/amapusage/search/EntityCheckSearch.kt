@@ -65,8 +65,12 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         btnCancel.setOnClickListener {
             searchContentEdit.setText("")
             searchContentEdit.clearFocus()
+            listener?.onSearchModeChange(false)
         }
-        hintLayout.setOnClickListener { flashyEditClick() } //模拟searchContentEdit发生点击.
+        hintLayout.setOnClickListener {
+            flashyEditClick()
+            listener?.onSearchModeChange(true)
+        } //模拟searchContentEdit发生点击.
         searchDeleteIcon.setOnClickListener {
             searchContentEdit.setText("")
             enterEditMode()
@@ -173,6 +177,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         override fun sourceCome(data: String) {}
         override fun sourceChanging(data: String) {}
         override fun beforeSourceChange(toString: String) {}
+        override fun onSearchModeChange(isSearch: Boolean) {}
     }
 
     override fun setText(text: String) {

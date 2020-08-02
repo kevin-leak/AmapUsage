@@ -2,13 +2,11 @@ package com.example.amapusage.factory
 
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
 import android.view.View
 import android.view.animation.Interpolator
 import android.view.animation.TranslateAnimation
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.Toast
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
@@ -20,7 +18,6 @@ import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MyLocationStyle
-import com.amap.api.services.core.AMapException
 import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.core.PoiItem
 import com.amap.api.services.poisearch.PoiResult
@@ -29,7 +26,9 @@ import com.example.amapusage.R
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-
+/**
+ * 设置基础的UI且可扩展，内置client，query空实现.
+ * */
 open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     PoiSearch.OnPoiSearchListener {
 
@@ -37,13 +36,14 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private lateinit var clientOption: AMapLocationClientOption
     private var mapPin: ImageView? = null
     private lateinit var currentButton: ImageButton
-    private lateinit var mLocationClient: AMapLocationClient
-    private lateinit var aMap: AMap
-    var currentLocation: AMapLocation? = null
+    internal lateinit var mLocationClient: AMapLocationClient
+    internal lateinit var aMap: AMap
+    internal var currentLocation: AMapLocation? = null
     lateinit var listener: IMapOperator.LocationSourceLister
     private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
     lateinit var context: Context
-    private var isFirst = true
+
+    private var isFirst = true // 状态
 
     override fun preWork(tMV: TextureMapView, lt: IMapOperator.LocationSourceLister): AMapOperator {
         context = tMV.context
@@ -67,7 +67,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
             currentLocation = aMapLocation
             moveToCurrent()
             mLocationClient.stopLocation()
-            initData()
         }
     }
 
@@ -121,6 +120,10 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
                 override fun onFinish() {}
                 override fun onCancel() {}
             })
+        if (isFirst) {
+            initData()
+            isFirst = !isFirst
+        }
     }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
@@ -137,13 +140,9 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
 
     override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
 
-    override fun queryEntry(queryText: String) {
+    override fun queryEntry(queryText: String) {}
 
-    }
-
-    override fun initData() {
-
-    }
+    override fun initData() {}
 
     override fun onPoiItemSearched(p0: PoiItem?, p1: Int) {}
 
