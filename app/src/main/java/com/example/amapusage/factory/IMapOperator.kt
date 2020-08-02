@@ -1,12 +1,10 @@
 package com.example.amapusage.factory
 
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
-import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
 import com.amap.api.maps.TextureMapView
-import com.amap.api.maps.model.Marker
+import com.example.amapusage.model.LocationModel
 
 interface IMapOperator {
     interface Operator {
@@ -20,12 +18,13 @@ interface IMapOperator {
         fun moveToCurrent()                 // 定位
         fun endOperate()
         fun queryEntry(queryText: String)
+        fun initData()
     }
 
     interface LocationSourceLister {
         fun moveCameraFinish()
         fun onMoveChange()
-        fun sourceCome()
+        fun sourceCome(data: MutableList<LocationModel>)
     }
 
 //    interface locationDataSource

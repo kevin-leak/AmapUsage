@@ -1,6 +1,7 @@
 package com.example.amapusage.search
 
 import android.text.Editable
+import com.example.amapusage.model.LocationModel
 
 interface IEntityCheckSearch {
     interface OnSearchListener {
@@ -10,7 +11,10 @@ interface IEntityCheckSearch {
         fun beforeSourceChange(toString: String)
     }
 
-    interface IHintAdapter
+    interface IHintAdapter {
+        fun addEntity(it: MutableList<LocationModel>)
+        fun insertEntity(it:MutableList<LocationModel>)
+    }
 
     fun exitEditMode()
     fun enterEditMode()

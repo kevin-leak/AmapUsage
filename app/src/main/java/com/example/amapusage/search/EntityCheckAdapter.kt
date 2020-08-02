@@ -36,10 +36,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<EntityCheckAdapter.DataViewHol
     constructor(mContext: Context, model: LocationViewModel) : this() {
         this.mContext = mContext
         this.model = model
-        // 默认是current以及checkPosition
-        currentList = model.currentModelList.value!!
-        currentCheckPosition = 0
-        checkPosition = currentCheckPosition
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
@@ -103,9 +100,23 @@ class EntityCheckAdapter() : RecyclerView.Adapter<EntityCheckAdapter.DataViewHol
             }
             field = value
         }
-    private var currentCheckPosition: Int = 0 // tmp，默认为0
+    private var currentCheckPosition: Int = -1 // tmp，默认为0
 
     override fun onClick(buttonView: View) { // 只改变position
         checkPosition = buttonView.tag as Int
+    }
+
+    override fun addEntity(it: MutableList<LocationModel>) {
+        currentList = it
+        notifyDataSetChanged()
+        if (currentCheckPosition == -1 && it.size > 0 && !isSearch) {
+            currentCheckPosition = 0
+            checkPosition = currentCheckPosition
+        }
+    }
+
+    override fun insertEntity(it: MutableList<LocationModel>) {
+        currentList.addAll(it)
+        notifyDataSetChanged()
     }
 }

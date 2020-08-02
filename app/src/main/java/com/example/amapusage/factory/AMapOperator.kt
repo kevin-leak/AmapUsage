@@ -39,8 +39,8 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private lateinit var currentButton: ImageButton
     private lateinit var mLocationClient: AMapLocationClient
     private lateinit var aMap: AMap
-    lateinit var currentLocation: AMapLocation
-    private lateinit var listener: IMapOperator.LocationSourceLister
+    var currentLocation: AMapLocation? = null
+    lateinit var listener: IMapOperator.LocationSourceLister
     private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
     lateinit var context: Context
     private var isFirst = true
@@ -67,6 +67,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
             currentLocation = aMapLocation
             moveToCurrent()
             mLocationClient.stopLocation()
+            initData()
         }
     }
 
@@ -112,8 +113,9 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun moveToCurrent() {
+        if (currentLocation == null) return
         mLocationClient.startLocation()
-        val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
+        val latLng = LatLng(currentLocation!!.latitude, currentLocation!!.longitude)
         getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600,
             object : AMap.CancelableCallback {
                 override fun onFinish() {}
@@ -122,8 +124,8 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
-        if (abs(cameraPosition.target.latitude - currentLocation.latitude) < deta
-            && abs(cameraPosition.target.longitude - currentLocation.longitude) < deta
+        if (abs(cameraPosition.target.latitude - currentLocation!!.latitude) < deta
+            && abs(cameraPosition.target.longitude - currentLocation!!.longitude) < deta
         ) {
             currentButton.apply { setImageDrawable(resources.getDrawable(R.drawable.ic_gps_blue)) }
         } else {
@@ -136,6 +138,10 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
 
     override fun queryEntry(queryText: String) {
+
+    }
+
+    override fun initData() {
 
     }
 

@@ -3,9 +3,12 @@
     android:id="@+id/locationItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/selector_item_location"
     android:gravity="center"
-    android:padding="15dp"
-    android:background="@drawable/selector_item_location">
+    android:paddingLeft="15dp"
+    android:paddingRight="15dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -16,20 +19,21 @@
             android:id="@+id/tvLocationName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#373636"
             android:ellipsize="end"
-            android:textSize="16sp"
-            android:gravity="start"/>
+            android:gravity="center_vertical|start"
+            android:textColor="#373636"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/tvLocationDesc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
             android:layout_below="@id/tvLocationName"
+            android:layout_marginTop="2dp"
             android:ellipsize="end"
+            android:gravity="center_vertical|start"
             android:textColor="#AAAAAA"
-            android:textSize="14sp" />
+            android:textSize="12sp" />
 
     </RelativeLayout>
 
@@ -37,11 +41,11 @@
         android:id="@+id/locationChecker"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:gravity="center"
-        android:layout_marginStart="10dp"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
+        android:layout_marginStart="10dp"
         android:background="@drawable/selector_check_state"
-        android:button="@null" />
+        android:button="@null"
+        android:gravity="center" />
 
 </RelativeLayout>

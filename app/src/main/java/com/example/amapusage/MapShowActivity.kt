@@ -66,9 +66,12 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
             else changeSendButtonActive(false)
         })
         viewModel.searchModelList.observe(this, Observer<MutableList<LocationModel>> {})
+        viewModel.currentModelList.observe(this, Observer<MutableList<LocationModel>> {
+            entityCheckAdapter.addEntity(it)
+        })
         GetLocationOperator.preWork(textureMapView, this)
             .bindCurrentButton(findViewById(R.id.current_location_button))
-            .bindMapPin(findViewById(R.id.map_pin))
+            .bindMapPin(findViewById(R.id.map_pin)).initData()
         initAdapter()
         initListener()
     }
@@ -116,12 +119,6 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
 
     private fun initAdapter() {
         entityRecycleView.layoutManager = LinearLayoutManager(this) //线性
-        val arrayList: ArrayList<LocationModel> = ArrayList()
-        for (i in 1..49) {
-            val tmp = LocationModel(false, "this is Title: $i", "this is details$i")
-            arrayList.add(tmp)
-        }
-        viewModel.currentModelList.value = arrayList.toMutableList()
         entityCheckAdapter = EntityCheckAdapter(this, viewModel)
         entityRecycleView.adapter = entityCheckAdapter
     }
@@ -143,12 +140,11 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     override fun onResume() = super.onResume().also { textureMapView.onResume() }
     override fun onPause() = super.onPause().also { textureMapView.onPause() }
     fun outMap(v: View) = finish()
-    override fun sourceCome() {
-
+    override fun sourceCome(data: MutableList<LocationModel>) {
+        viewModel.currentModelList.value = data
     }
 
     private fun changeSendButtonActive(isClickable: Boolean) {
-        sendLocationButton.isClickable = isClickable
         sendLocationButton.setTextColor(Color.parseColor(if (isClickable) "#ffffff" else "#808080"))
         val tmp = if (isClickable) R.drawable.shape_send_clickable
         else R.drawable.shape_send_unclikable
@@ -156,7 +152,7 @@ class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     }
 
     fun onSendLocation(view: View) {
-        if (viewModel.sendModel.value != null)
+        if (viewModel.sendModel.value != null) //必须，不可设置为不可点击，否则会触发其它事件.
             Toast.makeText(this, viewModel.sendModel.value.toString(), Toast.LENGTH_LONG).show()
     }
 
