@@ -1,70 +1,69 @@
 package com.example.amapusage.search
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.amapusage.R
-import com.example.amapusage.factory.GetLocationOperator
 import com.example.amapusage.model.LocationViewModel
 import kotlinx.android.synthetic.main.item_location.view.*
 
 /**
  * 默认展示和搜索展示的切换.向外通知数据的变化.
  * */
-class EntityCheckAdapter() : RecyclerView.Adapter<EntityCheckAdapter.DataViewHolder>(),
+class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     IEntityCheckSearch.IHintAdapter, View.OnClickListener {
     // search 变化, check 变化.
 
-    private lateinit var currentList: MutableList<CheckModel>
-    var isSearch = false // 只做数据交换
-        set(value) {
-            if (value) {
-                currentCheckPosition = checkPosition // 保存
-                currentList = model.searchModelList.value!!
-                notifyDataSetChanged()
-            } else {
-                model.searchModelList.value?.clear() // 清空数据
-                currentList = model.currentModelList.value!!
-                if (currentCheckPosition <= 0) {
-                    field = value
-                    return
-                }
-                GetLocationOperator.moveToSelect(currentList[currentCheckPosition].model.latLonPoint)
-                notifyDataSetChanged()
-            }
-            checkPosition = if (value) -1 else currentCheckPosition
-            field = value
-        }
-
+    private lateinit var currentList: MutableLiveData<MutableList<CheckModel>>
     private lateinit var mContext: Context
     private lateinit var model: LocationViewModel
-    lateinit var listener: IEntityCheckSearch.CheckListener
+    var listener: IEntityCheckSearch.CheckListener? = null
+
+    private var footView: View? = null
+    private val VIEW_TYPE_FOOT = 1
 
     constructor(mContext: Context, model: LocationViewModel) : this() {
         this.mContext = mContext
         this.model = model
-        currentList = ArrayList()
+        currentList = model.currentModelList
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DataViewHolder {
-        val view = LayoutInflater.from(mContext).inflate(R.layout.item_location, null)
-        return DataViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType != VIEW_TYPE_FOOT) {
+            val view = LayoutInflater.from(mContext).inflate(R.layout.item_location, null)
+            DataViewHolder(view)
+        } else {
+            footView = LayoutInflater.from(mContext).inflate(R.layout.item_location_foot, parent, false)
+            object : RecyclerView.ViewHolder(footView!!) {}
+        }
     }
 
-    override fun getItemCount(): Int = currentList.size
+    override fun getItemViewType(position: Int): Int {
+        //当position是最后一个的时候，也就是比list的数量多一个的时候，则表示FooterView
+        return if (position + 1 == currentList.value!!.size) {
+            VIEW_TYPE_FOOT
+        } else super.getItemViewType(position)
+    }
 
-    @SuppressLint("SetTextI18n")
-    override fun onBindViewHolder(holder: DataViewHolder, position: Int) {
+    override fun getItemCount(): Int = currentList.value!!.size
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (position == itemCount - 1) return
         holder.itemView.locationChecker.tag = position // 标记
         holder.itemView.locationChecker.setOnClickListener(this)
-        holder.itemView.tvLocationName.text = currentList[position].model.placeTitle
-        holder.itemView.tvLocationDesc.text = currentList[position].model.details
-        holder.itemView.locationChecker.isChecked = currentList[position].isChecked
+        holder.itemView.tvLocationName.text = currentList.value!![position].sendModel.placeTitle
+        holder.itemView.tvLocationDesc.text = currentList.value!![position].sendModel.details
+        holder.itemView.locationChecker.isChecked = currentList.value!![position].isChecked
+        if (currentList.value!![position].isChecked) {
+            model.checkModel.value = currentList.value!![position]
+            lastPosition = position
+            this.listener?.hasBeChecked(position)
+        }
     }
 
     class DataViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -96,61 +95,32 @@ class EntityCheckAdapter() : RecyclerView.Adapter<EntityCheckAdapter.DataViewHol
         }
     }
 
-    var checkPosition: Int = -1 // item 和 position相互绑定
-        private set(value) {
-            if (field != -1 && currentList.size > 0 && field < currentList.size) {
-                currentList[field].isChecked = false
-                notifyItemChanged(field)
-            }
-            if (value == -1) {
-                model.checkModel.value = null
-            } else if (currentList.size > 0) {
-                model.checkModel.value = currentList[value]
-                currentList[value].isChecked = true
-                notifyItemChanged(value)
-            }
-            field = value
-        }
-    private var currentCheckPosition: Int = 0 // tmp，默认为0
 
-    override fun onClick(buttonView: View) { // 只改变position
-        checkPosition = buttonView.tag as Int
-        listener.checkByClick(currentList[checkPosition])
-    }
-
-    override fun clearAddEntity(it: MutableList<CheckModel>) { // 这是清空再加
-        currentList.clear()
-        currentList.addAll(it)
-        if (it.size == 0) {
-            currentCheckPosition = -1
-            checkPosition = -1
-            return
-        }
-        notifyDataSetChanged()
-        if (it.size > 0 && !isSearch) {
-            currentCheckPosition = 0
-            checkPosition = currentCheckPosition
-        } else {
-            checkPosition = -1
-        }
-    }
-
-    override fun insertEntity(it: MutableList<CheckModel>, index: Int) {
-        currentList.addAll(it)
+    override fun switchData(data: MutableLiveData<MutableList<CheckModel>>) {
+        currentList = data
         notifyDataSetChanged()
     }
 
-    override fun addMoreEntity(it: MutableList<CheckModel>) {
-        currentList.addAll(it)
+    override fun removeFootItem() {
+        footView?.visibility = View.GONE
         notifyDataSetChanged()
     }
 
-    fun addRefreshItem() {
-
+    override fun addFootItem() {
+        if (currentList.value == null || currentList.value?.size!! <= 0 ) return
+        footView?.visibility = View.VISIBLE
+        notifyDataSetChanged()
     }
 
-    open class CheckListenerImpl : IEntityCheckSearch.CheckListener {
-        override fun checkByClick(model: CheckModel) {}
-        override fun checkByAuto(model: CheckModel) {}
+    private var lastPosition = -1
+    override fun onClick(buttonView: View) {
+        if (lastPosition != -1) {
+            currentList.value!![lastPosition].isChecked = false
+            notifyItemChanged(lastPosition)
+        }
+        currentList.value!![buttonView.tag as Int].isChecked = true
+        notifyItemChanged(buttonView.tag as Int)
     }
+
 }
+

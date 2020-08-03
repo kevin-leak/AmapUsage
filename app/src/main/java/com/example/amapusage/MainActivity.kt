@@ -2,7 +2,6 @@ package com.example.amapusage
 
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.opengl.Visibility
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -24,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (data != null){
+        if (data != null) {
             val bis = data.getByteArrayExtra("bitmap")
             val bitmap = BitmapFactory.decodeByteArray(bis, 0, bis.size)
             val tvTitle = data.getStringExtra("title")

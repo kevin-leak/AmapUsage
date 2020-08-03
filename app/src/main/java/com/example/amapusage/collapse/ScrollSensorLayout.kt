@@ -17,7 +17,7 @@ class ScrollSensorLayout(context: Context?, attrs: AttributeSet?) :
     private var touchSlop: Int = 0
     private lateinit var collapseAnimation: ValueAnimator
     private val collapseDelay: Long = 0
-    val collapseDuration: Long = 150L
+    private val collapseDuration: Long = 150L
     var isCollapsing = false
         private set
     private var expandHeight: Float = -1f

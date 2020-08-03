@@ -98,6 +98,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         })
         searchContentEdit.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                if (TextUtils.isEmpty(searchContentEdit.text)) searchContentEdit.requestFocus()
                 listener?.sourceCome(searchContentEdit.text.toString())
             }
             false

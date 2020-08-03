@@ -36,14 +36,13 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private lateinit var clientOption: AMapLocationClientOption
     private var mapPin: ImageView? = null
     private lateinit var currentButton: ImageButton
-    internal lateinit var mLocationClient: AMapLocationClient
+    private lateinit var mLocationClient: AMapLocationClient
     internal lateinit var aMap: AMap
     internal var currentLocation: AMapLocation? = null
     lateinit var listener: IMapOperator.LocationSourceLister
     private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
     lateinit var context: Context
 
-    private var isFirst = true // 状态
 
     override fun preWork(tMV: TextureMapView, lt: IMapOperator.LocationSourceLister): AMapOperator {
         context = tMV.context
@@ -120,10 +119,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
                 override fun onFinish() {}
                 override fun onCancel() {}
             })
-        if (isFirst) {
-            initData()
-            isFirst = !isFirst
-        }
     }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
@@ -140,9 +135,8 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
 
     override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
 
-    override fun queryEntry(queryText: String) {}
+    override fun queryByText(queryText: String) {}
 
-    override fun initData() {}
 
     override fun onPoiItemSearched(p0: PoiItem?, p1: Int) {}
 

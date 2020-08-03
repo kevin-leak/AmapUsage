@@ -12,7 +12,7 @@
         android:id="@+id/texture_map_view"
         android:layout_width="match_parent"
         android:layout_height="500dp"
-        android:minHeight="300dp">
+        android:minHeight="250dp">
 
         <ImageView
             android:id="@+id/map_pin"
@@ -110,12 +110,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <ProgressBar
-                android:id="@+id/progress_bar"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_centerInParent="true"
-                android:visibility="gone"/>
 
             <com.example.amapusage.collapse.RecycleViewController
                 android:id="@+id/entity_recycle_view"
@@ -123,8 +117,16 @@
                 android:layout_height="match_parent"
                 android:scrollbars="vertical" />
 
-        </RelativeLayout>
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="60dp"
+                android:indeterminateDrawable="@drawable/shape_progressbar"
+                android:visibility="visible" />
 
+        </RelativeLayout>
 
     </LinearLayout>
 

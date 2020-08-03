@@ -12,66 +12,86 @@ import com.amap.api.services.core.PoiItem
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
 import com.example.amapusage.model.LocationModel
+import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.search.CheckModel
 
 object GetLocationOperator : AMapOperator() {
 
-    // 两种move，touch move, select move(currentButton， checked)
+
+    private var page: Int = 0
+    private lateinit var model: LocationViewModel
+    val TAG = "GetLocationOperator"
     private var lock = false
     var isNeedQuery = true
     private var searchScope = 100
     private lateinit var currentCenterQuery: PoiSearch.Query
     private lateinit var currentCenterPoint: LatLonPoint
-    private var loadMoreQuery: PoiSearch.Query? = null
+    private lateinit var loadMoreQuery: PoiSearch.Query
+    private var searchByText: PoiSearch.Query? = null
+
+    fun bindModel(model: LocationViewModel) = apply { this.model = model }
+
+    fun moveToSelect(latLonPoint: LatLonPoint) {
+        isNeedQuery = false
+        val latLng = LatLng(latLonPoint.latitude, latLonPoint.longitude)
+        getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600, null)
+    }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
         super.onCameraChangeFinish(cameraPosition)
         if (isNeedQuery) { // 自动搜索的，移动到屏幕中心.
+            listener.startLoadData()
             val target = cameraPosition.target
             queryByMove(LatLonPoint(target.latitude, target.longitude))
-        } else if (!isNeedQuery) isNeedQuery = !isNeedQuery
+        } else if (!isNeedQuery) {
+            isNeedQuery = !isNeedQuery
+        }
     }
 
-    override fun queryEntry(queryText: String) {
+    override fun queryByText(queryText: String) {
         if (lock) return
         lock = true
-        currentCenterQuery = PoiSearch.Query(queryText, "", currentLocation?.cityCode)
-        currentCenterQuery.pageSize = 20
-        currentCenterQuery.pageNum = 0
+        searchByText = PoiSearch.Query(queryText, "", currentLocation?.city)
+        searchByText!!.pageSize = 20
+        searchByText!!.pageNum = 0
+        val poiSearch = PoiSearch(context, searchByText)
+        poiSearch.setOnPoiSearchListener(this)
+        poiSearch.query.isDistanceSort = true
+        poiSearch.searchPOIAsyn()
+    }
+
+    fun loadMoreInSearch() {
+        if (lock) return
+        if (searchByText == null) return
+        lock = true
+        searchByText?.pageNum = ++page
         val poiSearch = PoiSearch(context, currentCenterQuery)
         poiSearch.setOnPoiSearchListener(this)
         poiSearch.searchPOIAsyn()
     }
 
-    // 三种肯能，第一次moveCurrent，touchMove，currentButton
     private fun queryByMove(latLonPoint: LatLonPoint) {
         if (lock) return
         lock = true
         currentCenterPoint = latLonPoint
         currentCenterQuery = PoiSearch.Query("", "", "")
-        searchScope = 100
-        currentCenterQuery.pageSize = 20
         currentCenterQuery.pageNum = 0
+        currentCenterQuery.pageSize = 20
+        currentCenterQuery.isDistanceSort = true
         val poiSearch = PoiSearch(context, currentCenterQuery)
         poiSearch.setOnPoiSearchListener(this)
-        poiSearch.bound = PoiSearch.SearchBound(latLonPoint, searchScope)
+        poiSearch.bound = PoiSearch.SearchBound(latLonPoint, 1000000000)
         poiSearch.searchPOIAsyn()
     }
 
-    fun loadMore(latLonPoint: LatLonPoint) {
+    fun loadMoreInCurrent() {
         if (lock) return
-        loadMoreQuery = PoiSearch.Query("", "", "")
-        loadMoreQuery!!.pageNum = loadMoreQuery!!.pageNum + 1
-        val poiSearch = PoiSearch(context, loadMoreQuery)
+        lock = true
+        currentCenterQuery.pageNum = ++page
+        val poiSearch = PoiSearch(context, currentCenterQuery)
         poiSearch.setOnPoiSearchListener(this)
-        poiSearch.bound = PoiSearch.SearchBound(latLonPoint, searchScope + searchScope)
+        poiSearch.bound = PoiSearch.SearchBound(currentCenterPoint, 100000000)
         poiSearch.searchPOIAsyn()
-    }
-
-    fun moveToSelect(latLonPoint: LatLonPoint) { // 不搜索，只移动
-        isNeedQuery = false
-        val latLng = LatLng(latLonPoint.latitude, latLonPoint.longitude)
-        getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600, null)
     }
 
 
@@ -82,23 +102,30 @@ object GetLocationOperator : AMapOperator() {
             if (poiResult?.query != null) {
                 when (poiResult.query) {
                     currentCenterQuery -> dealCenterQuery(poiResult) // 一个新的搜索
-                    loadMoreQuery -> dealLoadMoreQuery(poiResult)
+                    searchByText -> dealQueryByText(poiResult)
                 }
             } else {
                 Log.e(TAG, "onPoiSearched: ")
             }
+        } else {
+            Log.e(TAG, "onPoiSearched: " + "load fail")
         }
+        listener.loadDataDone()
     }
 
-    val TAG = "GetLocationOperator"
-
-    private fun dealLoadMoreQuery(poiResult: PoiResult) {
-        listener.sourceCome(buildItem(poiResult), true)
+    private fun dealQueryByText(poiResult: PoiResult) {
+        val data: MutableList<CheckModel> = buildItem(poiResult)
+        model.searchModelList.value = data
     }
+
 
     private fun dealCenterQuery(poiResult: PoiResult) {
         val data: MutableList<CheckModel> = buildItem(poiResult)
-        listener.sourceCome(data, false)
+        var value = model.currentModelList.value
+        if (poiResult.query.pageNum == 0) value = data
+        else value?.addAll(data)
+        model.currentModelList.value = value
+        if (data.size > 0) model.currentModelList.value!![0].isChecked = true
     }
 
     private fun buildItem(poiResult: PoiResult): MutableList<CheckModel> {

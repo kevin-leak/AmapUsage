@@ -15,8 +15,8 @@ open class LocationViewModel : ViewModel() {
     var checkModel = MutableLiveData<CheckModel?>() // 最终要修改的数据.
 
     init {
-        currentModelList.value = ArrayList()
-        searchModelList.value = ArrayList()
+        currentModelList.value = mutableListOf()
+        searchModelList.value = mutableListOf()
     }
 
 }

@@ -1,6 +1,7 @@
 package com.example.amapusage.search
 
 import android.text.Editable
+import androidx.lifecycle.MutableLiveData
 
 interface IEntityCheckSearch {
     interface OnSearchListener {
@@ -12,14 +13,13 @@ interface IEntityCheckSearch {
     }
 
     interface IHintAdapter {
-        fun clearAddEntity(it: MutableList<CheckModel>)
-        fun insertEntity(it:MutableList<CheckModel>, index:Int)
-        fun addMoreEntity(it: MutableList<CheckModel>)
+        fun switchData(data: MutableLiveData<MutableList<CheckModel>>)
+        fun removeFootItem()
+        fun addFootItem()
     }
 
     interface CheckListener {
-        fun checkByClick(model :CheckModel)
-        fun checkByAuto(model :CheckModel)
+        fun hasBeChecked(position: Int)
     }
 
     fun exitEditMode()

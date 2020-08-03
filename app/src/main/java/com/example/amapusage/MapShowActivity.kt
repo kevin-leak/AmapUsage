@@ -10,8 +10,6 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.AlphaAnimation
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -28,6 +26,7 @@ import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.search.CheckModel
 import com.example.amapusage.search.EntityCheckAdapter
 import com.example.amapusage.search.EntityCheckSearch
+import com.example.amapusage.search.IEntityCheckSearch
 import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
 import java.io.ByteArrayOutputStream
@@ -66,14 +65,17 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
             else changeSendButtonActive(false)
         })
         viewModel.searchModelList.observe(this, Observer<MutableList<CheckModel>> {
-            entityCheckAdapter.clearAddEntity(it)
+            entityCheckAdapter.notifyDataSetChanged()
+            entityCheckAdapter.removeFootItem()
         })
         viewModel.currentModelList.observe(this, Observer<MutableList<CheckModel>> {
-            entityCheckAdapter.clearAddEntity(it)
+            entityCheckAdapter.notifyDataSetChanged()
+            entityCheckAdapter.removeFootItem()
         })
         GetLocationOperator.preWork(textureMapView, this)
             .bindCurrentButton(findViewById(R.id.current_location_button))
-            .bindMapPin(findViewById(R.id.map_pin)).initData()
+            .bindMapPin(findViewById(R.id.map_pin))
+        GetLocationOperator.bindModel(viewModel)
         initAdapter()
         initListener()
     }
@@ -109,14 +111,22 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                 sensor.changeCollapseState(isEnter) // search聚焦与collapse连锁
             }
 
-            override fun sourceCome(data: String) {
-                if (!TextUtils.isEmpty(data)) GetLocationOperator.queryEntry(data)
-                else progressBar.visibility = GONE
+            override fun sourceChanging(data: String) {
+                progressBar.visibility = VISIBLE
+                if (!TextUtils.isEmpty(data)) GetLocationOperator.queryByText(data)
+                else viewModel.searchModelList.value?.clear()
             }
 
             override fun onSearchModeChange(isSearch: Boolean) {
-                progressBar.visibility = if (isSearch) VISIBLE else GONE
-                entityCheckAdapter.isSearch = isSearch
+                if (isSearch) {
+                    viewModel.checkModel.value = null
+                    entityCheckAdapter.switchData(viewModel.searchModelList)
+                } else {
+                    progressBar.visibility = GONE
+                    viewModel.checkModel.value = null
+                    viewModel.searchModelList.value?.clear()
+                    entityCheckAdapter.switchData(viewModel.currentModelList)
+                }
             }
         })
         textureMapView.map.setOnMapTouchListener { // collapsed下不可滑动
@@ -126,8 +136,12 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         entityRecycleView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (!entityRecycleView.canScrollVertically(1)) {
-//                    Toast.makeText(baseContext, "dafa", Toast.LENGTH_SHORT).show()
-                    entityCheckAdapter.addRefreshItem()
+                    entityCheckAdapter.addFootItem()
+                    if (locationSearchView.isEnterMode) {
+                        GetLocationOperator.loadMoreInSearch()
+                    } else {
+                        GetLocationOperator.loadMoreInCurrent()
+                    }
                 }
             }
         })
@@ -136,12 +150,12 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private fun initAdapter() {
         entityRecycleView.layoutManager = LinearLayoutManager(this) //线性
         entityCheckAdapter = EntityCheckAdapter(this, viewModel)
-        entityRecycleView.adapter = entityCheckAdapter
-        entityCheckAdapter.listener = object : EntityCheckAdapter.CheckListenerImpl() {
-            override fun checkByClick(model: CheckModel) {
-                GetLocationOperator.moveToSelect(model.model.latLonPoint)
+        entityCheckAdapter.listener = object : IEntityCheckSearch.CheckListener {
+            override fun hasBeChecked(position: Int) {
+                GetLocationOperator.moveToSelect(viewModel.checkModel.value?.sendModel!!.latLonPoint)
             }
         }
+        entityRecycleView.adapter = entityCheckAdapter
     }
 
     override fun onDestroy() {
@@ -156,25 +170,25 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         if (sensor.isCollapsing && locationSearchView.isEnterMode) sensor.changeCollapseState(false)
     }
 
+
     override fun moveCameraFinish() {}
 
     override fun onMoveChange() {}
+
+    override fun startLoadData() {
+        progressBar.visibility = VISIBLE
+        viewModel.checkModel.value = null
+        viewModel.searchModelList.value?.clear()
+        viewModel.currentModelList.value?.clear()
+    }
+
+    override fun loadDataDone() {
+        progressBar.visibility = GONE
+    }
+
     override fun onResume() = super.onResume().also { textureMapView.onResume() }
     override fun onPause() = super.onPause().also { textureMapView.onPause() }
     fun outMap(v: View) = finish()
-    override fun sourceCome(data: MutableList<CheckModel>, isMore: Boolean) {
-        if (isMore) {
-            viewModel.currentModelList.value!!.addAll(data)
-            entityCheckAdapter.addMoreEntity(data)
-        } else {
-            if (entityCheckAdapter.isSearch) {
-                viewModel.searchModelList.value = data
-                progressBar.visibility = GONE
-            } else {
-                viewModel.currentModelList.value = data
-            }
-        }
-    }
 
     private fun changeSendButtonActive(isClickable: Boolean) {
         sendLocationButton.setTextColor(Color.parseColor(if (isClickable) "#ffffff" else "#808080"))
@@ -192,12 +206,14 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                     val bitmapByte: ByteArray = baos.toByteArray()
                     val intent = Intent()
                     intent.putExtra("bitmap", bitmapByte)
-                    intent.putExtra("title", viewModel.checkModel.value!!.model.placeTitle)
+                    intent.putExtra("title", viewModel.checkModel.value!!.sendModel.placeTitle)
                     setResult(200, intent)
+                    locationSearchView.exitEditMode()
                     textureMapView.onDestroy()
                     GetLocationOperator.endOperate()
                     finish()
                 }
+
                 override fun onMapScreenShot(p0: Bitmap?, p1: Int) {}
             })
         }
@@ -211,18 +227,8 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     override fun onCollapseStateChange(isCollapsed: Boolean) {}
 
     override fun collapseStateChanged(isCollapsed: Boolean) {
-        if (!isCollapsed) {
-            entityRecycleView.scrollToPosition(entityCheckAdapter.checkPosition)
-        }
         GetLocationOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
-        collapseButtonLayout.apply {
-            visibility = if (isCollapsed) VISIBLE else GONE
-            animation = AlphaAnimation(if (isCollapsed) 0f else 1f, if (isCollapsed) 1f else 0f)
-            animation.duration = sensor.collapseDuration - 80
-            animation.fillAfter = true
-            animation.interpolator = AccelerateInterpolator()
-            animation.start()
-        }
+        collapseButtonLayout.visibility = if (isCollapsed) VISIBLE else GONE
     }
 
     override fun onBackPressed() {

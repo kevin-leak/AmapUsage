@@ -17,14 +17,14 @@ interface IMapOperator {
         fun getMap(): AMap
         fun moveToCurrent()                 // 定位
         fun endOperate()
-        fun queryEntry(queryText: String)
-        fun initData()
+        fun queryByText(queryText: String)
     }
 
     interface LocationSourceLister {
         fun moveCameraFinish()
         fun onMoveChange()
-        fun sourceCome(data: MutableList<CheckModel>, isMore: Boolean)
+        fun startLoadData()
+        fun loadDataDone()
     }
 
 //    interface locationDataSource
