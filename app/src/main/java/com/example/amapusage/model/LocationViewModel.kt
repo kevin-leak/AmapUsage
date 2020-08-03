@@ -10,7 +10,6 @@ open class LocationViewModel : ViewModel() {
     // 1. 移动地图直接产生的locationModelList
     // 2. 搜索产生的字符串
     // 3. checked 的item
-    var queryText = MutableLiveData<String>()
     var currentModelList = MutableLiveData<MutableList<CheckModel>>()
     var searchModelList = MutableLiveData<MutableList<CheckModel>>() // search的时候的list
     var checkModel = MutableLiveData<CheckModel?>() // 最终要修改的数据.
@@ -18,12 +17,6 @@ open class LocationViewModel : ViewModel() {
     init {
         currentModelList.value = ArrayList()
         searchModelList.value = ArrayList()
-    }
-
-    fun getQueryText(): LiveData<String> = queryText
-
-    open fun setQueryText(string: String) {
-        this.queryText.value = string
     }
 
 }

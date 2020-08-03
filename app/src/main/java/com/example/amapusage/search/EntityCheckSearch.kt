@@ -63,8 +63,9 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
     private fun initListener() {
         // 第一次取消是关闭键盘，第二次是清楚数据, 同时发生坍塌
         btnCancel.setOnClickListener {
-            searchContentEdit.setText("")
-            searchContentEdit.clearFocus()
+            searchContentEdit.setText("") // 可能存在没有本身在搜索完就没有焦点的状态
+            if (!searchContentEdit.isFocused) exitEditMode()
+            else searchContentEdit.clearFocus()
             listener?.onSearchModeChange(false)
         }
         hintLayout.setOnClickListener {

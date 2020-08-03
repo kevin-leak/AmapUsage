@@ -65,10 +65,6 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         setContentView(R.layout.activity_show_map)
         initView(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
-        viewModel.getQueryText().observe(this, Observer<String> {
-            if (!TextUtils.isEmpty(it)) GetLocationOperator.queryEntry(it)
-            else progressBar.visibility = GONE
-        })
         viewModel.checkModel.observe(this, Observer {
             if (it != null) changeSendButtonActive(true)
             else changeSendButtonActive(false)
@@ -118,8 +114,8 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
             }
 
             override fun sourceCome(data: String) {
-                super.sourceCome(data)
-                viewModel.setQueryText(data)
+                if (!TextUtils.isEmpty(data)) GetLocationOperator.queryEntry(data)
+                else progressBar.visibility = GONE
             }
 
             override fun onSearchModeChange(isSearch: Boolean) {
@@ -134,7 +130,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         entityRecycleView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (!entityRecycleView.canScrollVertically(1)) {
-                    Toast.makeText(baseContext, "dafa", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(baseContext, "dafa", Toast.LENGTH_SHORT).show()
                     entityCheckAdapter.addRefreshItem()
                 }
             }
@@ -206,7 +202,6 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                     GetLocationOperator.endOperate()
                     finish()
                 }
-
                 override fun onMapScreenShot(p0: Bitmap?, p1: Int) {}
             })
         }
@@ -224,7 +219,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
             entityRecycleView.scrollToPosition(entityCheckAdapter.checkPosition)
         }
         GetLocationOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
-        collapseButton.apply {
+        collapseButtonLayout.apply {
             visibility = if (isCollapsed) VISIBLE else GONE
             animation = AlphaAnimation(if (isCollapsed) 0f else 1f, if (isCollapsed) 1f else 0f)
             animation.duration = sensor.collapseDuration - 80
@@ -232,8 +227,6 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
             animation.interpolator = AccelerateInterpolator()
             animation.start()
         }
-
-        collapseButtonLayout.visibility = if (isCollapsed) VISIBLE else GONE
     }
 
     override fun onBackPressed() {
