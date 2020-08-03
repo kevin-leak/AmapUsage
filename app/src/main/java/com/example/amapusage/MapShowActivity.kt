@@ -1,8 +1,6 @@
 package com.example.amapusage
 
-import android.R.attr.bitmap
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -16,16 +14,14 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.amap.api.maps.AMap
 import com.amap.api.maps.TextureMapView
-import com.example.amapusage.collapse.ControlSensorPerformer
-import com.example.amapusage.collapse.ScrollCollapseLayout
+import com.example.amapusage.collapse.IScrollSensor
+import com.example.amapusage.collapse.ScrollSensorLayout
 import com.example.amapusage.factory.GetLocationOperator
 import com.example.amapusage.factory.IMapOperator
 import com.example.amapusage.model.LocationViewModel
@@ -38,7 +34,7 @@ import java.io.ByteArrayOutputStream
 
 
 open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
-    ControlSensorPerformer.CollapsingListener {
+    IScrollSensor.CollapsingListener {
     private lateinit var progressBar: ProgressBar
     val TAG = "MapShowActivity"
     private lateinit var entityCheckAdapter: EntityCheckAdapter
@@ -49,7 +45,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private lateinit var collapseButtonLayout: RelativeLayout
     private lateinit var textureMapView: TextureMapView
     private lateinit var locationSearchView: EntityCheckSearch
-    private lateinit var sensor: ScrollCollapseLayout
+    private lateinit var sensor: ScrollSensorLayout
     private lateinit var entityRecycleView: RecyclerView
 
     companion object {

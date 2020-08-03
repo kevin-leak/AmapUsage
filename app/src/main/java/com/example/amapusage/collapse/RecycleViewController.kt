@@ -7,8 +7,8 @@ import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
 
-class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
-    private lateinit var sensor: ControlSensorPerformer.Sensor
+class RecycleViewController : RecyclerView, IScrollSensor.Controller {
+    private lateinit var sensor: IScrollSensor.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
 
@@ -27,7 +27,7 @@ class RecycleViewController : RecyclerView, ControlSensorPerformer.Controller {
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
         super.onMeasure(widthSpec, heightSpec)
         var temp = parent
-        while (temp !is ControlSensorPerformer.Sensor) temp = temp.parent
+        while (temp !is IScrollSensor.Sensor) temp = temp.parent
         sensor = temp
     }
 

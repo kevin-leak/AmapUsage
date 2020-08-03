@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.amapusage.collapse.ScrollCollapseLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.amapusage.collapse.ScrollSensorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scroll_collapse_sensor"
@@ -128,4 +128,4 @@
 
     </LinearLayout>
 
-</com.example.amapusage.collapse.ScrollCollapseLayout>
+</com.example.amapusage.collapse.ScrollSensorLayout>

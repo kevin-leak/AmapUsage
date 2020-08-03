@@ -12,18 +12,18 @@ import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 
 
-class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
-    RelativeLayout(context, attrs), ControlSensorPerformer.Sensor {
+class ScrollSensorLayout(context: Context?, attrs: AttributeSet?) :
+    RelativeLayout(context, attrs), IScrollSensor.Sensor {
     private var touchSlop: Int = 0
     private lateinit var collapseAnimation: ValueAnimator
     private val collapseDelay: Long = 0
-    val collapseDuration: Long = 100L
+    val collapseDuration: Long = 150L
     var isCollapsing = false
         private set
     private var expandHeight: Float = -1f
     private var collapseHeight: Float = -1f
     private var lock = false
-    private var listener: ControlSensorPerformer.CollapsingListener? = null
+    private var listener: IScrollSensor.CollapsingListener? = null
     private var collapseView: View? = null
 
     constructor(context: Context?) : this(context, null)
@@ -84,7 +84,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
         collapseAnimation.start()
     }
 
-    fun setCollapsingListener(listener: ControlSensorPerformer.CollapsingListener) {
+    fun setCollapsingListener(listener: IScrollSensor.CollapsingListener) {
         this.listener = listener
     }
 
@@ -100,7 +100,7 @@ class ScrollCollapseLayout(context: Context?, attrs: AttributeSet?) :
     }
 
     open class CollapsingListenerImpl() :
-        ControlSensorPerformer.CollapsingListener {
+        IScrollSensor.CollapsingListener {
         override fun beforeCollapseStateChange(isCollapsing: Boolean) {}
         override fun onCollapseStateChange(isCollapsed: Boolean) {}
         override fun collapseStateChanged(isCollapsed: Boolean) {}

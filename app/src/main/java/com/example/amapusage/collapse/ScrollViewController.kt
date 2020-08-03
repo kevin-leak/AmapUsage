@@ -1,6 +1,5 @@
 package com.example.amapusage.collapse
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -8,9 +7,9 @@ import android.view.ViewConfiguration
 import android.widget.ScrollView
 
 
-class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
+class ScrollViewController : ScrollView, IScrollSensor.Controller {
 
-    private lateinit var sensor: ControlSensorPerformer.Sensor
+    private lateinit var sensor: IScrollSensor.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
 
@@ -27,7 +26,7 @@ class ScrollViewController : ScrollView, ControlSensorPerformer.Controller {
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
         super.onMeasure(widthSpec, heightSpec)
         var temp = parent
-        while (temp !is ControlSensorPerformer.Sensor) temp = temp.parent
+        while (temp !is IScrollSensor.Sensor) temp = temp.parent
         sensor = temp
     }
 

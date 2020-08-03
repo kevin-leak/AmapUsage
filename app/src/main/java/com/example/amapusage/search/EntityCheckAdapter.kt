@@ -26,6 +26,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<EntityCheckAdapter.DataViewHol
             if (value) {
                 currentCheckPosition = checkPosition // 保存
                 currentList = model.searchModelList.value!!
+                notifyDataSetChanged()
             } else {
                 model.searchModelList.value?.clear() // 清空数据
                 currentList = model.currentModelList.value!!
@@ -34,6 +35,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<EntityCheckAdapter.DataViewHol
                     return
                 }
                 GetLocationOperator.moveToSelect(currentList[currentCheckPosition].model.latLonPoint)
+                notifyDataSetChanged()
             }
             checkPosition = if (value) -1 else currentCheckPosition
             field = value

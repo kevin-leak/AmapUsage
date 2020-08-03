@@ -4,7 +4,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.Animation
 
-interface ControlSensorPerformer {
+interface IScrollSensor {
     interface Controller
     interface Sensor {
         fun isCollapsed(): Boolean
@@ -18,7 +18,6 @@ interface ControlSensorPerformer {
         fun onCollapseStateChange(isCollapsed: Boolean)
         fun collapseStateChanged(isCollapsed: Boolean)
     }
-
 }
 
 
