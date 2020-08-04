@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -68,7 +69,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
             entityCheckAdapter.removeFootItem()
         })
         GetLocationOperator.preWork(textureMapView, this)
-            .bindCurrentButton(findViewById(R.id.currentLocationButton))
+            .bindCurrentButton(currentLocationButton)
         GetLocationOperator.bindModel(viewModel)
         initAdapter()
         initListener()
@@ -110,7 +111,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                     progressBar.visibility = GONE
                     viewModel.checkModel.value = viewModel.tmp
                     viewModel.tmp = null
-                    GetLocationOperator.moveToSelect(viewModel.checkModel.value?.sendModel!!.latLonPoint)
+                    GetLocationOperator.moveToSelect(viewModel.checkModel.value!!.lonPoint)
                     viewModel.searchModelList.value?.clear()
                     entityCheckAdapter.switchData(viewModel.currentModelList)
                 }
@@ -141,7 +142,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         entityCheckAdapter = EntityCheckAdapter(this, viewModel)
         entityCheckAdapter.listener = object : IEntityCheckSearch.CheckListener {
             override fun hasBeChecked(position: Int) {
-                GetLocationOperator.moveToSelect(viewModel.checkModel.value?.sendModel!!.latLonPoint)
+                GetLocationOperator.moveToSelect(viewModel.checkModel.value!!.lonPoint)
             }
         }
         entityRecycleView.adapter = entityCheckAdapter
@@ -191,14 +192,14 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         if (viewModel.checkModel.value != null) {
             GetLocationOperator.aMap.getMapScreenShot(object : AMap.OnMapScreenShotListener {
                 override fun onMapScreenShot(bitmap: Bitmap) {
-                    val bit = BitmapUtils.scaleBitmap(bitmap, 0.8f)
+                    val bit = BitmapUtils.createScaledBitmap(bitmap, 100, 50)
                     val baos = ByteArrayOutputStream()
                     bit.compress(Bitmap.CompressFormat.PNG, 100, baos)
                     val bitmapByte: ByteArray = baos.toByteArray()
+                    baos.close()
                     val intent = Intent()
                     intent.putExtra("bitmap", bitmapByte)
-                    intent.putExtra("title", viewModel.checkModel.value!!.sendModel.placeTitle)
-                    intent.putExtra("details", viewModel.checkModel.value!!.sendModel.details)
+                    intent.putExtra("sendModel", viewModel.checkModel.value!!.sendModel)
                     setResult(200, intent)
                     locationSearchView.exitEditMode()
                     textureMapView.onDestroy()

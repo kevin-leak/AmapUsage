@@ -58,7 +58,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         holder.itemView.locationChecker.tag = position // 标记
         holder.itemView.locationChecker.setOnClickListener(this)
         holder.itemView.tvLocationName.text = currentList.value!![position].sendModel.placeTitle
-        holder.itemView.tvLocationDesc.text = currentList.value!![position].sendModel.details
+        holder.itemView.tvLocationDesc.text = currentList.value!![position].distanceDetails
         holder.itemView.locationChecker.isChecked = currentList.value!![position].isChecked
         if (currentList.value!![position].isChecked) { // 复用的时候也会被调用.
             lastPosition = position

@@ -11,10 +11,8 @@ import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.core.PoiItem
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
-import com.example.amapusage.model.LocationModel
 import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.search.CheckModel
-import kotlin.math.floor
 
 object GetLocationOperator : AMapOperator() {
 
@@ -173,32 +171,26 @@ object GetLocationOperator : AMapOperator() {
         val data: MutableList<CheckModel> = ArrayList()
         if (poiItems.isNotEmpty()) {
             for (poiItem in poiItems) {
-                val locationModel = LocationModel(poiItem.latLonPoint).apply {
-                    placeTitle = poiItem.title
-                    details = buildDetailsLocation(poiItem.snippet, poiItem.latLonPoint)
+                val checkModel = CheckModel(poiItem.latLonPoint).apply {
+                    sendModel.placeTitle = poiItem.title
+                    sendModel.placeDesc =  poiItem.snippet
+                    distanceDetails = buildDetailsLocation(poiItem.latLonPoint) + " | " + poiItem.snippet
                 }
-                data.add(CheckModel(locationModel))
+                data.add(checkModel)
             }
         }
         return data
     }
 
-    private fun buildDetailsLocation(s: String, point: LatLonPoint): String {
+    private fun buildDetailsLocation(point: LatLonPoint): String {
         val start = LatLng(myLocation!!.latitude, myLocation!!.longitude)
         val end = LatLng(point.latitude, point.longitude)
         val distant = AMapUtils.calculateLineDistance(start, end)
-        val distantString = when {
-            distant < 100 -> {
-                "100m内"
-            }
-            distant > 1000 -> {
-                String.format("%.1f", (distant / 1000)) + "km"
-            }
-            else -> {
-                distant.toInt().toString() + "m"
-            }
+        return when {
+            distant < 100 -> { "100m内" }
+            distant > 1000 -> { String.format("%.1f", (distant / 1000)) + "km" }
+            else -> { distant.toInt().toString() + "m" }
         }
-        return "$distantString | $s"
     }
 
 

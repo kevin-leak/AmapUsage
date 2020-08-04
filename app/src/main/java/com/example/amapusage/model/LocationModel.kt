@@ -1,15 +1,41 @@
 package com.example.amapusage.model
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.lifecycle.LiveData
-import com.amap.api.services.core.LatLonPoint
+import kotlin.properties.Delegates
 
-open class LocationModel(var latLonPoint: LatLonPoint) :
-    LiveData<LocationModel>() {
+open class LocationModel() : LiveData<LocationModel>(), Parcelable {
 
     lateinit var placeTitle: String
-    lateinit var details: String
-    // 建立与map产生的数据的关系.做好解析和翻译.
-    override fun toString(): String {
-        return "LocationModel( placeTitle='$placeTitle', details='$details')"
+    lateinit var placeDesc: String
+    var latitude by Delegates.notNull<Double>()
+    var longitude by Delegates.notNull<Double>()
+
+    constructor(parcel: Parcel) : this() {
+        placeTitle = parcel.readString()!!
+        placeDesc = parcel.readString()!!
     }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(placeTitle)
+        parcel.writeString(placeDesc)
+        parcel.writeDouble(latitude)
+        parcel.writeDouble(longitude)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<LocationModel> {
+        override fun createFromParcel(parcel: Parcel): LocationModel {
+            return LocationModel(parcel)
+        }
+
+        override fun newArray(size: Int): Array<LocationModel?> {
+            return arrayOfNulls(size)
+        }
+    }
+
 }

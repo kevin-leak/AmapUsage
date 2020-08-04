@@ -42,7 +42,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
     lateinit var context: Context
 
-    private lateinit var centerMarker: Marker
+    private var centerMarker: Marker? = null
 
     override fun preWork(tMV: TextureMapView, lt: IMapOperator.LocationSourceLister): AMapOperator {
         context = tMV.context
@@ -66,16 +66,16 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     fun resetCenterMark() {
-        centerMarker.isVisible = true
+        centerMarker?.isVisible = true
         val latLng = aMap.cameraPosition.target
         val screenPosition = aMap.projection.toScreenLocation(latLng)
         //设置Marker在屏幕上,不跟随地图移动
-        centerMarker.setPositionByPixels(screenPosition.x, screenPosition.y)
+        centerMarker?.setPositionByPixels(screenPosition.x, screenPosition.y)
     }
 
     open fun startJumpAnimation() {
         //根据屏幕距离计算需要移动的目标点
-        val latLng: LatLng = centerMarker.position
+        val latLng: LatLng = centerMarker!!.position
         val point = aMap.projection.toScreenLocation(latLng)
         point.y -= ScreenUtils.dip2px(context, 30f)
         val target = aMap.projection
@@ -90,12 +90,11 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
                 (0.5f - sqrt((input - 0.5f) * (1.5f - input).toDouble())).toFloat()
             }
         }
-        //整个移动所需要的时间
-        animation.setDuration(600)
+        animation?.setDuration(600)
         //设置动画
-        centerMarker.setAnimation(animation)
+        centerMarker?.setAnimation(animation)
         //开始动画
-        centerMarker.startAnimation()
+        centerMarker?.startAnimation()
     }
 
     private fun setUpClient() {
@@ -135,8 +134,8 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun bindCurrentButton(btn: ImageButton): AMapOperator = apply { currentButton = btn }
-    override fun clearMapPin(): AMapOperator = apply { centerMarker.isVisible = false }
-    override fun setUpMapPin(): AMapOperator = apply { centerMarker.isVisible = true }
+    override fun clearMapPin(): AMapOperator = apply { centerMarker?.isVisible = false }
+    override fun setUpMapPin(): AMapOperator = apply { centerMarker?.isVisible = true }
     override fun endOperate() = mLocationClient.stopLocation()
     override fun getMap(): AMap = aMap
 
