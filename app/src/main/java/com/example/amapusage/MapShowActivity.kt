@@ -27,6 +27,7 @@ import com.example.amapusage.search.CheckModel
 import com.example.amapusage.search.EntityCheckAdapter
 import com.example.amapusage.search.EntityCheckSearch
 import com.example.amapusage.search.IEntityCheckSearch
+import com.example.amapusage.utils.BitmapUtils
 import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_show_map.*
@@ -212,12 +213,14 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         if (viewModel.checkModel.value != null) {
             GetLocationOperator.aMap.getMapScreenShot(object : AMap.OnMapScreenShotListener {
                 override fun onMapScreenShot(bitmap: Bitmap?) {
+                    val bit = BitmapUtils.cropBitmap(bitmap!!)
                     val baos = ByteArrayOutputStream()
-                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, baos)
+                    bit?.compress(Bitmap.CompressFormat.PNG, 100, baos)
                     val bitmapByte: ByteArray = baos.toByteArray()
                     val intent = Intent()
                     intent.putExtra("bitmap", bitmapByte)
                     intent.putExtra("title", viewModel.checkModel.value!!.sendModel.placeTitle)
+                    intent.putExtra("details", viewModel.checkModel.value!!.sendModel.details)
                     setResult(200, intent)
                     locationSearchView.exitEditMode()
                     textureMapView.onDestroy()
