@@ -2,14 +2,14 @@
 <com.example.amapusage.collapse.ScrollSensorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/scroll_collapse_sensor"
+    android:id="@+id/sensor"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffffff"
     android:orientation="vertical">
 
     <com.amap.api.maps.TextureMapView
-        android:id="@+id/texture_map_view"
+        android:id="@+id/textureMapView"
         android:layout_width="match_parent"
         android:layout_height="500dp"
         android:minHeight="250dp"/>
@@ -34,7 +34,7 @@
             android:textColor="#ffffff" />
 
         <Button
-            android:id="@+id/send_location_button"
+            android:id="@+id/sendLocationButton"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentEnd="true"
@@ -48,10 +48,10 @@
     </RelativeLayout>
 
     <ImageButton
-        android:id="@+id/current_location_button"
+        android:id="@+id/currentLocationButton"
         android:layout_width="45dp"
         android:layout_height="45dp"
-        android:layout_above="@id/collapse_button_layout"
+        android:layout_above="@id/collapseButtonLayout"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="25dp"
         android:layout_marginBottom="25dp"
@@ -63,7 +63,7 @@
         tools:targetApi="lollipop" />
 
     <RelativeLayout
-        android:id="@+id/collapse_button_layout"
+        android:id="@+id/collapseButtonLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/controller_layout"
@@ -73,7 +73,7 @@
         android:visibility="gone">
 
         <ImageButton
-            android:id="@+id/collapse_button"
+            android:id="@+id/collapseButton"
             android:layout_width="45dp"
             android:layout_height="24dp"
             android:layout_centerHorizontal="true"
@@ -87,12 +87,12 @@
         android:id="@+id/controller_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/texture_map_view"
+        android:layout_below="@id/textureMapView"
         android:orientation="vertical"
         tools:targetApi="lollipop">
 
         <com.example.amapusage.search.EntityCheckSearch
-            android:id="@+id/ls_Search_view"
+            android:id="@+id/locationSearchView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="15dp" />
@@ -103,13 +103,13 @@
 
 
             <com.example.amapusage.collapse.RecycleViewController
-                android:id="@+id/entity_recycle_view"
+                android:id="@+id/entityRecycleView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scrollbars="vertical" />
 
             <ProgressBar
-                android:id="@+id/progress_bar"
+                android:id="@+id/progressBar"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_centerHorizontal="true"

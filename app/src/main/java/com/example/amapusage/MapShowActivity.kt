@@ -38,26 +38,17 @@ import java.io.ByteArrayOutputStream
 
 open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     IScrollSensor.CollapsingListener {
-    private lateinit var progressBar: ProgressBar
     val TAG = "MapShowActivity"
     private lateinit var entityCheckAdapter: EntityCheckAdapter
-    private lateinit var currentLocationButton: ImageButton
     private lateinit var viewModel: LocationViewModel
-    private lateinit var sendLocationButton: Button
-    private lateinit var collapseButton: ImageButton
-    private lateinit var collapseButtonLayout: RelativeLayout
-    private lateinit var textureMapView: TextureMapView
-    private lateinit var locationSearchView: EntityCheckSearch
-    private lateinit var sensor: ScrollSensorLayout
-    private lateinit var entityRecycleView: RecyclerView
-
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ScreenUtils.setStatus(this)
         setContentView(R.layout.activity_show_map)
-        initView(savedInstanceState)
+        textureMapView.onCreate(savedInstanceState) // 此方法必须重写
+        sensor.bindCollapsingView(textureMapView)
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
         viewModel.checkModel.observe(this, Observer {
             if (it != null) {
@@ -77,24 +68,10 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
             entityCheckAdapter.removeFootItem()
         })
         GetLocationOperator.preWork(textureMapView, this)
-            .bindCurrentButton(findViewById(R.id.current_location_button))
+            .bindCurrentButton(findViewById(R.id.currentLocationButton))
         GetLocationOperator.bindModel(viewModel)
         initAdapter()
         initListener()
-    }
-
-    private fun initView(savedInstanceState: Bundle?) {
-        textureMapView = findViewById(R.id.texture_map_view)
-        textureMapView.onCreate(savedInstanceState) // 此方法必须重写
-        sensor = findViewById(R.id.scroll_collapse_sensor)
-        collapseButton = findViewById(R.id.collapse_button)
-        collapseButtonLayout = findViewById(R.id.collapse_button_layout)
-        locationSearchView = findViewById(R.id.ls_Search_view)
-        sendLocationButton = findViewById(R.id.send_location_button)
-        currentLocationButton = findViewById(R.id.current_location_button)
-        entityRecycleView = findViewById(R.id.entity_recycle_view)
-        progressBar = findViewById(R.id.progress_bar)
-        sensor.bindCollapsingView(textureMapView)
     }
 
     @SuppressLint("ClickableViewAccessibility")
