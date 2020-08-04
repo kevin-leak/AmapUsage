@@ -23,7 +23,7 @@ interface IMapOperator {
     interface LocationSourceLister {
         fun moveCameraFinish()
         fun onMoveChange()
-        fun startLoadData()
+        fun startLoadNewData()
         fun loadDataDone()
     }
 

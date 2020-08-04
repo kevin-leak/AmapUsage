@@ -29,6 +29,7 @@ import com.example.amapusage.search.EntityCheckSearch
 import com.example.amapusage.search.IEntityCheckSearch
 import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
+import kotlinx.android.synthetic.main.activity_show_map.*
 import java.io.ByteArrayOutputStream
 
 
@@ -47,11 +48,6 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private lateinit var sensor: ScrollSensorLayout
     private lateinit var entityRecycleView: RecyclerView
 
-    companion object {
-        fun show(context: Context, cls: Class<out MapShowActivity>) {
-            context.startActivity(Intent(context, cls))
-        }
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,8 +57,13 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         initView(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
         viewModel.checkModel.observe(this, Observer {
-            if (it != null) changeSendButtonActive(true)
-            else changeSendButtonActive(false)
+            if (it != null) {
+                GetLocationOperator.setUpMapPin()
+                changeSendButtonActive(true)
+            } else {
+                GetLocationOperator.clearMapPin() // search状态不移动
+                changeSendButtonActive(false)
+            }
         })
         viewModel.searchModelList.observe(this, Observer<MutableList<CheckModel>> {
             entityCheckAdapter.notifyDataSetChanged()
@@ -112,18 +113,25 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
             }
 
             override fun sourceChanging(data: String) {
-                progressBar.visibility = VISIBLE
-                if (!TextUtils.isEmpty(data)) GetLocationOperator.queryByText(data)
-                else viewModel.searchModelList.value?.clear()
+                if (!TextUtils.isEmpty(data)) {
+                    progressBar.visibility = VISIBLE
+                    GetLocationOperator.queryByText(data)
+                } else {
+                    viewModel.searchModelList.value = mutableListOf()
+                    viewModel.checkModel.value = null
+                    progressBar.visibility = GONE
+                }
             }
 
             override fun onSearchModeChange(isSearch: Boolean) {
                 if (isSearch) {
-                    viewModel.checkModel.value = null
+                    viewModel.tmp = viewModel.checkModel.value
                     entityCheckAdapter.switchData(viewModel.searchModelList)
                 } else {
                     progressBar.visibility = GONE
-                    viewModel.checkModel.value = null
+                    viewModel.checkModel.value = viewModel.tmp
+                    viewModel.tmp = null
+                    GetLocationOperator.moveToSelect(viewModel.checkModel.value?.sendModel!!.latLonPoint)
                     viewModel.searchModelList.value?.clear()
                     entityCheckAdapter.switchData(viewModel.currentModelList)
                 }
@@ -131,16 +139,18 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         })
         textureMapView.map.setOnMapTouchListener { // collapsed下不可滑动
             if (sensor.isCollapsing) sensor.changeCollapseState(false)
+            // search状态不移动查询.
+            if (locationSearchView.isSearch) GetLocationOperator.isNeedQuery = false
         }
 
         entityRecycleView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 if (!entityRecycleView.canScrollVertically(1)) {
                     entityCheckAdapter.addFootItem()
                     if (locationSearchView.isEnterMode) {
-                        GetLocationOperator.loadMoreInSearch()
+                        GetLocationOperator.loadMoreByText()
                     } else {
-                        GetLocationOperator.loadMoreInCurrent()
+                        GetLocationOperator.loadMoreByMove()
                     }
                 }
             }
@@ -175,7 +185,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
     override fun onMoveChange() {}
 
-    override fun startLoadData() {
+    override fun startLoadNewData() {
         progressBar.visibility = VISIBLE
         viewModel.checkModel.value = null
         viewModel.searchModelList.value?.clear()
@@ -184,6 +194,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
     override fun loadDataDone() {
         progressBar.visibility = GONE
+        entityCheckAdapter.removeFootItem()
     }
 
     override fun onResume() = super.onResume().also { textureMapView.onResume() }

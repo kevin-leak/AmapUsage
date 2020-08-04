@@ -38,7 +38,8 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
             val view = LayoutInflater.from(mContext).inflate(R.layout.item_location, null)
             DataViewHolder(view)
         } else {
-            footView = LayoutInflater.from(mContext).inflate(R.layout.item_location_foot, parent, false)
+            footView =
+                LayoutInflater.from(mContext).inflate(R.layout.item_location_foot, parent, false)
             object : RecyclerView.ViewHolder(footView!!) {}
         }
     }
@@ -59,10 +60,8 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         holder.itemView.tvLocationName.text = currentList.value!![position].sendModel.placeTitle
         holder.itemView.tvLocationDesc.text = currentList.value!![position].sendModel.details
         holder.itemView.locationChecker.isChecked = currentList.value!![position].isChecked
-        if (currentList.value!![position].isChecked) {
-            model.checkModel.value = currentList.value!![position]
+        if (currentList.value!![position].isChecked) { // 复用的时候也会被调用.
             lastPosition = position
-            this.listener?.hasBeChecked(position)
         }
     }
 
@@ -98,6 +97,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
 
     override fun switchData(data: MutableLiveData<MutableList<CheckModel>>) {
         currentList = data
+        lastPosition = -1
         notifyDataSetChanged()
     }
 
@@ -107,7 +107,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     override fun addFootItem() {
-        if (currentList.value == null || currentList.value?.size!! <= 0 ) return
+        if (currentList.value == null || currentList.value?.size!! <= 0) return
         footView?.visibility = View.VISIBLE
         notifyDataSetChanged()
     }
@@ -119,7 +119,11 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
             notifyItemChanged(lastPosition)
         }
         currentList.value!![buttonView.tag as Int].isChecked = true
+        model.checkModel.value = currentList.value!![buttonView.tag as Int]
         notifyItemChanged(buttonView.tag as Int)
+        // 不能放在绑定的位置，复用的时候回调用，放在这里同时可以保证
+        // 默认为第一个的时候，不发生移动
+        listener?.hasBeChecked((buttonView.tag as Int))
     }
 
 }

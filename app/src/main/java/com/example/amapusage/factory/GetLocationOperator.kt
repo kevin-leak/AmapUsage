@@ -1,8 +1,7 @@
 package com.example.amapusage.factory
 
-import android.graphics.Bitmap
 import android.util.Log
-import com.amap.api.maps.AMap
+import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
@@ -14,44 +13,58 @@ import com.amap.api.services.poisearch.PoiSearch
 import com.example.amapusage.model.LocationModel
 import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.search.CheckModel
+import kotlin.math.floor
 
 object GetLocationOperator : AMapOperator() {
 
 
-    private var page: Int = 0
     private lateinit var model: LocationViewModel
     val TAG = "GetLocationOperator"
-    private var lock = false
+    private var lock = false // 选择和重新搜索有个判断，camera没有完成移动的时候，快速点击另外一个item，导致数据被刷新.
     var isNeedQuery = true
-    private var searchScope = 100
     private lateinit var currentCenterQuery: PoiSearch.Query
     private lateinit var currentCenterPoint: LatLonPoint
-    private lateinit var loadMoreQuery: PoiSearch.Query
     private var searchByText: PoiSearch.Query? = null
+    private const val searchType = "190403|190100|190400|190600|190000|170204|" +
+            "050000|060000|070000|120000|180000" +
+            "|080000|090000|100000|110000|130000" +
+            "|140000|150000|170000|190000" +
+            "|200000|210000|220000|010000|020000|160000"
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
 
     fun moveToSelect(latLonPoint: LatLonPoint) {
+        if (lock) return
+        lock = true
         isNeedQuery = false
         val latLng = LatLng(latLonPoint.latitude, latLonPoint.longitude)
         getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600, null)
     }
 
+    override fun onCameraChange(cameraPosition: CameraPosition?) {
+        super.onCameraChange(cameraPosition)
+        if (lock) return
+        if (isNeedQuery) {
+            lock = true
+            listener.startLoadNewData()
+        }
+    }
+
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
         super.onCameraChangeFinish(cameraPosition)
         if (isNeedQuery) { // 自动搜索的，移动到屏幕中心.
-            listener.startLoadData()
             val target = cameraPosition.target
             queryByMove(LatLonPoint(target.latitude, target.longitude))
         } else if (!isNeedQuery) {
             isNeedQuery = !isNeedQuery
+            lock = false
         }
     }
 
     override fun queryByText(queryText: String) {
         if (lock) return
         lock = true
-        searchByText = PoiSearch.Query(queryText, "", currentLocation?.city)
+        searchByText = PoiSearch.Query(queryText, "", myLocation?.city)
         searchByText!!.pageSize = 20
         searchByText!!.pageNum = 0
         val poiSearch = PoiSearch(context, searchByText)
@@ -60,21 +73,19 @@ object GetLocationOperator : AMapOperator() {
         poiSearch.searchPOIAsyn()
     }
 
-    fun loadMoreInSearch() {
+    fun loadMoreByText() {
         if (lock) return
         if (searchByText == null) return
         lock = true
-        searchByText?.pageNum = ++page
-        val poiSearch = PoiSearch(context, currentCenterQuery)
+        searchByText!!.pageNum += 1
+        val poiSearch = PoiSearch(context, searchByText)
         poiSearch.setOnPoiSearchListener(this)
         poiSearch.searchPOIAsyn()
     }
 
     private fun queryByMove(latLonPoint: LatLonPoint) {
-        if (lock) return
-        lock = true
         currentCenterPoint = latLonPoint
-        currentCenterQuery = PoiSearch.Query("", "", "")
+        currentCenterQuery = PoiSearch.Query("", "", myLocation?.city)
         currentCenterQuery.pageNum = 0
         currentCenterQuery.pageSize = 20
         currentCenterQuery.isDistanceSort = true
@@ -84,10 +95,10 @@ object GetLocationOperator : AMapOperator() {
         poiSearch.searchPOIAsyn()
     }
 
-    fun loadMoreInCurrent() {
+    fun loadMoreByMove() {
         if (lock) return
         lock = true
-        currentCenterQuery.pageNum = ++page
+        currentCenterQuery.pageNum += 1
         val poiSearch = PoiSearch(context, currentCenterQuery)
         poiSearch.setOnPoiSearchListener(this)
         poiSearch.bound = PoiSearch.SearchBound(currentCenterPoint, 100000000)
@@ -115,7 +126,10 @@ object GetLocationOperator : AMapOperator() {
 
     private fun dealQueryByText(poiResult: PoiResult) {
         val data: MutableList<CheckModel> = buildItem(poiResult)
-        model.searchModelList.value = data
+        var value = model.searchModelList.value
+        if (poiResult.query.pageNum == 0) value = data
+        else value?.addAll(data)
+        model.searchModelList.value = value
     }
 
 
@@ -125,7 +139,10 @@ object GetLocationOperator : AMapOperator() {
         if (poiResult.query.pageNum == 0) value = data
         else value?.addAll(data)
         model.currentModelList.value = value
-        if (data.size > 0) model.currentModelList.value!![0].isChecked = true
+        if (data.size > 0) { // 默认选择第一个
+            model.currentModelList.value!![0].isChecked = true
+            model.checkModel.value = model.currentModelList.value!![0]
+        }
     }
 
     private fun buildItem(poiResult: PoiResult): MutableList<CheckModel> {
@@ -135,7 +152,7 @@ object GetLocationOperator : AMapOperator() {
             for (poiItem in poiItems) {
                 val locationModel = LocationModel(poiItem.latLonPoint).apply {
                     placeTitle = poiItem.title
-                    details = buildDetailsLocation(poiItem.snippet)
+                    details = buildDetailsLocation(poiItem.snippet, poiItem.latLonPoint)
                 }
                 data.add(CheckModel(locationModel))
             }
@@ -143,8 +160,22 @@ object GetLocationOperator : AMapOperator() {
         return data
     }
 
-    private fun buildDetailsLocation(s: String): String {
-        return searchScope.toString() + "m | $s"
+    private fun buildDetailsLocation(s: String, point: LatLonPoint): String {
+        val start = LatLng(myLocation!!.latitude, myLocation!!.longitude)
+        val end = LatLng(point.latitude, point.longitude)
+        val distant = AMapUtils.calculateLineDistance(start, end)
+        val distantString = when {
+            distant < 100 -> {
+                "100m内"
+            }
+            distant > 1000 -> {
+                String.format("%.1f", (distant / 1000)) + "km"
+            }
+            else -> {
+                distant.toInt().toString() + "m"
+            }
+        }
+        return "$distantString | $s"
     }
 
 

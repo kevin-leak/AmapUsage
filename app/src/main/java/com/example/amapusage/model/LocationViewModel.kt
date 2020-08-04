@@ -13,6 +13,7 @@ open class LocationViewModel : ViewModel() {
     var currentModelList = MutableLiveData<MutableList<CheckModel>>()
     var searchModelList = MutableLiveData<MutableList<CheckModel>>() // search的时候的list
     var checkModel = MutableLiveData<CheckModel?>() // 最终要修改的数据.
+    var tmp: CheckModel? = null// 最终要修改的数据.
 
     init {
         currentModelList.value = mutableListOf()

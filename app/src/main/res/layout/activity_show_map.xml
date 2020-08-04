@@ -20,7 +20,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:elevation="3dp"
-            android:src="@drawable/purple_pin" />
+            android:src="@drawable/purple_pin"
+            tools:targetApi="lollipop" />
 
     </com.amap.api.maps.TextureMapView>
 

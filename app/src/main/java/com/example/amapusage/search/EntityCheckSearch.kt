@@ -35,10 +35,10 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
     // 在各自的点击事件里面取消文字.
     private val hintLayout = rootLayout.findViewById<RelativeLayout>(R.id.hint_layout)
     private val btnCancel = rootLayout.findViewById<TextView>(R.id.btn_cancel) // 需要失去焦点
-
     var isEnterMode = false // 失去了焦点但是还存在文字，也认为是enter
         private set
-
+    var isSearch = false
+        private set
     init {
         rlEdit.visibility = View.GONE
         hintLayout.visibility = View.VISIBLE
@@ -66,11 +66,13 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             searchContentEdit.setText("") // 可能存在没有本身在搜索完就没有焦点的状态
             if (!searchContentEdit.isFocused) exitEditMode()
             else searchContentEdit.clearFocus()
-            listener?.onSearchModeChange(false)
+            isSearch = false
+            listener?.onSearchModeChange(isSearch)
         }
         hintLayout.setOnClickListener {
             flashyEditClick()
-            listener?.onSearchModeChange(true)
+            isSearch = true
+            listener?.onSearchModeChange(isSearch)
         } //模拟searchContentEdit发生点击.
         searchDeleteIcon.setOnClickListener {
             searchContentEdit.setText("")

@@ -7,6 +7,7 @@ import android.view.animation.Interpolator
 import android.view.animation.TranslateAnimation
 import android.widget.ImageButton
 import android.widget.ImageView
+import androidx.core.view.isVisible
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
@@ -18,7 +19,6 @@ import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.MyLocationStyle
-import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.core.PoiItem
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
@@ -38,7 +38,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private lateinit var currentButton: ImageButton
     private lateinit var mLocationClient: AMapLocationClient
     internal lateinit var aMap: AMap
-    internal var currentLocation: AMapLocation? = null
+    internal var myLocation: AMapLocation? = null
     lateinit var listener: IMapOperator.LocationSourceLister
     private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
     lateinit var context: Context
@@ -63,7 +63,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         }
         mLocationClient.setLocationOption(clientOption)
         mLocationClient.setLocationListener { aMapLocation ->
-            currentLocation = aMapLocation
+            myLocation = aMapLocation
             moveToCurrent()
             mLocationClient.stopLocation()
         }
@@ -80,7 +80,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
             showMyLocation(true)// 蓝点是否显示，5.1.0版本后支持
         }
         aMap.apply {
-            moveCamera(CameraUpdateFactory.zoomTo(18f)) // 当前位置缩放
+            moveCamera(CameraUpdateFactory.zoomTo(16f)) // 当前位置缩放
             uiSettings.isMyLocationButtonEnabled = false // 是否显示定位锚点图标
             isMyLocationEnabled = true                  // 是否显示蓝点
             uiSettings.isZoomControlsEnabled = false    // 是否显示缩放按钮
@@ -111,9 +111,9 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun moveToCurrent() {
-        if (currentLocation == null) return
+        if (myLocation == null) return
         mLocationClient.startLocation()
-        val latLng = LatLng(currentLocation!!.latitude, currentLocation!!.longitude)
+        val latLng = LatLng(myLocation!!.latitude, myLocation!!.longitude)
         getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600,
             object : AMap.CancelableCallback {
                 override fun onFinish() {}
@@ -122,14 +122,14 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
-        if (abs(cameraPosition.target.latitude - currentLocation!!.latitude) < deta
-            && abs(cameraPosition.target.longitude - currentLocation!!.longitude) < deta
+        if (abs(cameraPosition.target.latitude - myLocation!!.latitude) < deta
+            && abs(cameraPosition.target.longitude - myLocation!!.longitude) < deta
         ) {
             currentButton.apply { setImageDrawable(resources.getDrawable(R.drawable.ic_gps_blue)) }
         } else {
             currentButton.apply { setImageDrawable(resources.getDrawable(R.drawable.ic_gps_gray)) }
         }
-        mapPin?.startAnimation(animationPin)
+        if (mapPin?.isVisible == true) mapPin?.startAnimation(animationPin)
         listener.moveCameraFinish()
     }
 
