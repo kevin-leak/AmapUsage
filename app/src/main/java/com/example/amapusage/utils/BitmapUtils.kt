@@ -39,10 +39,7 @@ object BitmapUtils {
      * @param ratio  比例
      * @return 新的bitmap
      */
-    private fun scaleBitmap(origin: Bitmap?, ratio: Float): Bitmap? {
-        if (origin == null) {
-            return null
-        }
+    fun scaleBitmap(origin: Bitmap, ratio: Float): Bitmap {
         val width = origin.width
         val height = origin.height
         val matrix = Matrix()
@@ -61,7 +58,7 @@ object BitmapUtils {
      * @param bitmap 原图
      * @return 裁剪后的图像
      */
-     fun cropBitmap(bitmap: Bitmap): Bitmap? {
+    fun cropBitmap(bitmap: Bitmap): Bitmap? {
         val w = bitmap.width // 得到图片的宽，高
         val h = bitmap.height
         var cropWidth = if (w >= h) h else w // 裁切后所取的正方形区域边长

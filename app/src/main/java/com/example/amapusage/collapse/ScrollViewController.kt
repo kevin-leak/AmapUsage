@@ -31,17 +31,17 @@ class ScrollViewController : ScrollView, IScrollSensor.Controller {
     }
 
     override fun onInterceptTouchEvent(e: MotionEvent?): Boolean {
-        if (MotionEvent.ACTION_DOWN == e?.action) downY = e.y // 防止被子view消费掉，先记录
+        if (MotionEvent.ACTION_DOWN == e?.action) downY = e.rawY // 防止被子view消费掉，先记录
         return super.onInterceptTouchEvent(e)
     }
 
     override fun onTouchEvent(ev: MotionEvent?): Boolean {
         if (ev?.action != MotionEvent.ACTION_MOVE) return super.onTouchEvent(ev)
         // 子view没有产生消费，判断父view是否要消费
-        if (!sensor.isCollapsed() && downY - ev.y > touchSlop) {// 非坍塌,手指向上滑动 -> 则坍塌
+        if (!sensor.isCollapsed() && downY - ev.rawY > touchSlop) {// 非坍塌,手指向上滑动 -> 则坍塌
             sensor.changeCollapseState(true)
             return false
-        } else if (sensor.isCollapsed() && ev.y - downY > touchSlop && scrollY == 0) {
+        } else if (sensor.isCollapsed() && ev.rawY - downY > touchSlop && scrollY == 0) {
             // 坍塌状态，手指向下滑动, 且处于顶端 -> 展开
             sensor.changeCollapseState(false)
             return false
@@ -50,6 +50,6 @@ class ScrollViewController : ScrollView, IScrollSensor.Controller {
     }
 
     override fun fling(velocityY: Int) {
-        super.fling((velocityY * 0.4).toInt())
+        super.fling((velocityY * 0.6).toInt())
     }
 }

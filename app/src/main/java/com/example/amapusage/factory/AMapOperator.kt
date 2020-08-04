@@ -2,8 +2,8 @@ package com.example.amapusage.factory
 
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import android.view.View
-import android.view.animation.Interpolator
 import android.view.animation.TranslateAnimation
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -15,14 +15,13 @@ import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapOptions
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.TextureMapView
-import com.amap.api.maps.model.BitmapDescriptorFactory
-import com.amap.api.maps.model.CameraPosition
-import com.amap.api.maps.model.LatLng
-import com.amap.api.maps.model.MyLocationStyle
+import com.amap.api.maps.model.*
+import com.amap.api.maps.model.animation.Animation
 import com.amap.api.services.core.PoiItem
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
 import com.example.amapusage.R
+import com.example.amapusage.utils.ScreenUtils
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -43,6 +42,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
     lateinit var context: Context
 
+    private lateinit var centerMarker: Marker
 
     override fun preWork(tMV: TextureMapView, lt: IMapOperator.LocationSourceLister): AMapOperator {
         context = tMV.context
@@ -52,7 +52,50 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         setUpClient()
         mLocationClient.startLocation() //启动定位我当前位置
         aMap.setOnCameraChangeListener(this)
+        addMarkerInScreenCenter()
         return this
+    }
+
+    private fun addMarkerInScreenCenter() {
+        val option = MarkerOptions()
+            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))
+        centerMarker = aMap.addMarker(option)
+        aMap.addMarker(option)
+        resetCenterMark()
+        startJumpAnimation()
+    }
+
+    fun resetCenterMark() {
+        centerMarker.isVisible = true
+        val latLng = aMap.cameraPosition.target
+        val screenPosition = aMap.projection.toScreenLocation(latLng)
+        //设置Marker在屏幕上,不跟随地图移动
+        centerMarker.setPositionByPixels(screenPosition.x, screenPosition.y)
+    }
+
+    open fun startJumpAnimation() {
+        //根据屏幕距离计算需要移动的目标点
+        val latLng: LatLng = centerMarker.position
+        val point = aMap.projection.toScreenLocation(latLng)
+        point.y -= ScreenUtils.dip2px(context, 30f)
+        val target = aMap.projection
+            .fromScreenLocation(point)
+        //使用TranslateAnimation,填写一个需要移动的目标点
+        val animation: Animation =
+            com.amap.api.maps.model.animation.TranslateAnimation(target)
+        animation.setInterpolator { input -> // 模拟重加速度的interpolator
+            if (input <= 0.5) {
+                (0.5f - 2 * (0.5 - input) * (0.5 - input)).toFloat()
+            } else {
+                (0.5f - sqrt((input - 0.5f) * (1.5f - input).toDouble())).toFloat()
+            }
+        }
+        //整个移动所需要的时间
+        animation.setDuration(600)
+        //设置动画
+        centerMarker.setAnimation(animation)
+        //开始动画
+        centerMarker.startAnimation()
     }
 
     private fun setUpClient() {
@@ -72,7 +115,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     override fun buildMapBaseConfig(): AMap {
         aMap.myLocationStyle = MyLocationStyle().apply {// 蓝点设置
             interval(2000) //连续定位模式下的刷新间隔,如果不设置圆圈就会一直放大
-            myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_gps_base))
+            myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_base))
             strokeColor(Color.parseColor("#2A117DD3"))
             radiusFillColor(Color.parseColor("#2A117DD3"))
             strokeWidth(2f)
@@ -92,23 +135,11 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun bindCurrentButton(btn: ImageButton): AMapOperator = apply { currentButton = btn }
-    override fun clearMapPin(): AMapOperator = apply { mapPin?.visibility = View.GONE }
-    override fun setUpMapPin(): AMapOperator = apply { mapPin?.visibility = View.VISIBLE }
+    override fun clearMapPin(): AMapOperator = apply { centerMarker.isVisible = false }
+    override fun setUpMapPin(): AMapOperator = apply { centerMarker.isVisible = true }
     override fun endOperate() = mLocationClient.stopLocation()
     override fun getMap(): AMap = aMap
 
-    override fun bindMapPin(pin: ImageView): AMapOperator {
-        mapPin = pin
-        animationPin = TranslateAnimation(0f, 0f, 0f, -100f)
-        animationPin.apply {
-            duration = 600
-            interpolator = Interpolator { input -> // 模拟重加速度的interpolator
-                if (input <= 0.5) (0.5f - 2 * (0.5 - input) * (0.5 - input)).toFloat()
-                else (0.5f - sqrt((input - 0.5f) * (1.5f - input).toDouble())).toFloat()
-            }
-        }
-        return this
-    }
 
     override fun moveToCurrent() {
         if (myLocation == null) return
@@ -131,9 +162,13 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         }
         if (mapPin?.isVisible == true) mapPin?.startAnimation(animationPin)
         listener.moveCameraFinish()
+        startJumpAnimation()
     }
 
-    override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
+    override fun onCameraChange(cameraPosition: CameraPosition?) {
+        listener.onMoveChange()
+        resetCenterMark()
+    }
 
     override fun queryByText(queryText: String) {}
 

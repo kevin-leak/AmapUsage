@@ -10,6 +10,8 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.AlphaAnimation
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -76,7 +78,6 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         })
         GetLocationOperator.preWork(textureMapView, this)
             .bindCurrentButton(findViewById(R.id.current_location_button))
-            .bindMapPin(findViewById(R.id.map_pin))
         GetLocationOperator.bindModel(viewModel)
         initAdapter()
         initListener()
@@ -212,10 +213,10 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     fun onSendLocation(view: View) {
         if (viewModel.checkModel.value != null) {
             GetLocationOperator.aMap.getMapScreenShot(object : AMap.OnMapScreenShotListener {
-                override fun onMapScreenShot(bitmap: Bitmap?) {
-                    val bit = BitmapUtils.cropBitmap(bitmap!!)
+                override fun onMapScreenShot(bitmap: Bitmap) {
+                    val bit = BitmapUtils.scaleBitmap(bitmap, 0.8f)
                     val baos = ByteArrayOutputStream()
-                    bit?.compress(Bitmap.CompressFormat.PNG, 100, baos)
+                    bit.compress(Bitmap.CompressFormat.PNG, 100, baos)
                     val bitmapByte: ByteArray = baos.toByteArray()
                     val intent = Intent()
                     intent.putExtra("bitmap", bitmapByte)
@@ -236,13 +237,25 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
     override fun beforeCollapseStateChange(isCollapsing: Boolean) {
         if (isCollapsing) KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
+        GetLocationOperator.clearMapPin()
     }
 
-    override fun onCollapseStateChange(isCollapsed: Boolean) {}
+    override fun onCollapseStateChange(isCollapsed: Boolean) {
+        GetLocationOperator.resetCenterMark()
+    }
 
     override fun collapseStateChanged(isCollapsed: Boolean) {
         GetLocationOperator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
-        collapseButtonLayout.visibility = if (isCollapsed) VISIBLE else GONE
+        collapseButtonLayout.apply {
+            visibility = if (isCollapsed) VISIBLE else GONE
+//            animation = AlphaAnimation(if (isCollapsed) 0f else 1f, if (isCollapsed) 1f else 0f)
+//            animation.duration = 10
+//            animation.fillAfter = true
+//            animation.interpolator = AccelerateInterpolator()
+//            animation.start()
+        }
+        GetLocationOperator.resetCenterMark()
+        GetLocationOperator.startJumpAnimation()
     }
 
     override fun onBackPressed() {

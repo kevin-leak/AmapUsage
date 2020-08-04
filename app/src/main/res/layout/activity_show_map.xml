@@ -12,18 +12,8 @@
         android:id="@+id/texture_map_view"
         android:layout_width="match_parent"
         android:layout_height="500dp"
-        android:minHeight="250dp">
+        android:minHeight="250dp"/>
 
-        <ImageView
-            android:id="@+id/map_pin"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:elevation="3dp"
-            android:src="@drawable/purple_pin"
-            tools:targetApi="lollipop" />
-
-    </com.amap.api.maps.TextureMapView>
 
     <RelativeLayout
         android:layout_width="match_parent"
