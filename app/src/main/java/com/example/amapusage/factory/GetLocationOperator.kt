@@ -1,6 +1,7 @@
 package com.example.amapusage.factory
 
 import android.util.Log
+import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.CameraPosition
@@ -20,7 +21,7 @@ object GetLocationOperator : AMapOperator() {
 
     private lateinit var model: LocationViewModel
     val TAG = "GetLocationOperator"
-    private var lock = false // 选择和重新搜索有个判断，camera没有完成移动的时候，快速点击另外一个item，导致数据被刷新.
+    private var lock = false // 防止不停的下拉，导致页码变化
     var isNeedQuery = true
     private lateinit var currentCenterQuery: PoiSearch.Query
     private lateinit var currentCenterPoint: LatLonPoint
@@ -33,12 +34,37 @@ object GetLocationOperator : AMapOperator() {
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
 
+    class Node(var last: Node?, var latLonPoint: LatLonPoint) {
+        fun action() {
+            isNeedQuery = false
+            val latLng = LatLng(latLonPoint.latitude, latLonPoint.longitude)
+            getMap().animateCamera(
+                CameraUpdateFactory.changeLatLng(latLng),
+                600,
+                object : AMap.CancelableCallback {
+                    override fun onFinish() {
+                        last?.action()
+                        tail = last
+                    }
+
+                    override fun onCancel() {
+                        last?.action()
+                        tail = last
+                    }
+
+                })
+        }
+    }
+
+    var tail: Node? = null // 如果checkList 发生暴击，在动画化没有完成前变成同步，导致数据错乱，但不能阻塞.
+
     fun moveToSelect(latLonPoint: LatLonPoint) {
-        if (lock) return
-        lock = true
-        isNeedQuery = false
-        val latLng = LatLng(latLonPoint.latitude, latLonPoint.longitude)
-        getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600, null)
+        if (tail == null) {
+            tail = Node(null, latLonPoint)
+            tail!!.action()
+        } else {
+            Node(tail, latLonPoint)
+        }
     }
 
     override fun onCameraChange(cameraPosition: CameraPosition?) {
@@ -57,13 +83,10 @@ object GetLocationOperator : AMapOperator() {
             queryByMove(LatLonPoint(target.latitude, target.longitude))
         } else if (!isNeedQuery) {
             isNeedQuery = !isNeedQuery
-            lock = false
         }
     }
 
     override fun queryByText(queryText: String) {
-        if (lock) return
-        lock = true
         searchByText = PoiSearch.Query(queryText, "", myLocation?.city)
         searchByText!!.pageSize = 20
         searchByText!!.pageNum = 0

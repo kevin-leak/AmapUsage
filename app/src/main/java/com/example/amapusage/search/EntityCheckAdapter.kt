@@ -114,6 +114,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
 
     private var lastPosition = -1
     override fun onClick(buttonView: View) {
+        if (currentList.value == null || lastPosition > currentList.value!!.size) return
         if (lastPosition != -1) {
             currentList.value!![lastPosition].isChecked = false
             notifyItemChanged(lastPosition)
