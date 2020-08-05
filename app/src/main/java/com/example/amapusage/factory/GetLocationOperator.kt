@@ -41,11 +41,17 @@ object GetLocationOperator : AMapOperator() {
                 600,
                 object : AMap.CancelableCallback {
                     override fun onFinish() {
+                        if (!isNeedQuery) {
+                            isNeedQuery = !isNeedQuery
+                        }
                         last?.action()
                         tail = last
                     }
 
                     override fun onCancel() {
+                        if (!isNeedQuery) {
+                            isNeedQuery = !isNeedQuery
+                        }
                         last?.action()
                         tail = last
                     }
@@ -79,8 +85,6 @@ object GetLocationOperator : AMapOperator() {
         if (isNeedQuery) { // 自动搜索的，移动到屏幕中心.
             val target = cameraPosition.target
             queryByMove(LatLonPoint(target.latitude, target.longitude))
-        } else if (!isNeedQuery) {
-            isNeedQuery = !isNeedQuery
         }
     }
 
@@ -173,8 +177,8 @@ object GetLocationOperator : AMapOperator() {
             for (poiItem in poiItems) {
                 val checkModel = CheckModel(poiItem.latLonPoint).apply {
                     sendModel.placeTitle = poiItem.title
-                    sendModel.placeDesc =  poiItem.snippet
-                    distanceDetails = buildDetailsLocation(poiItem.latLonPoint) + " | " + poiItem.snippet
+                    sendModel.placeDesc = poiItem.snippet
+                    distanceDetails = formatDistance(poiItem.latLonPoint) + " | " + poiItem.snippet
                 }
                 data.add(checkModel)
             }
@@ -182,14 +186,20 @@ object GetLocationOperator : AMapOperator() {
         return data
     }
 
-    private fun buildDetailsLocation(point: LatLonPoint): String {
+    private fun formatDistance(point: LatLonPoint): String {
         val start = LatLng(myLocation!!.latitude, myLocation!!.longitude)
         val end = LatLng(point.latitude, point.longitude)
         val distant = AMapUtils.calculateLineDistance(start, end)
         return when {
-            distant < 100 -> { "100m内" }
-            distant > 1000 -> { String.format("%.1f", (distant / 1000)) + "km" }
-            else -> { distant.toInt().toString() + "m" }
+            distant < 100 -> {
+                "100m内"
+            }
+            distant > 1000 -> {
+                String.format("%.1f", (distant / 1000)) + "km"
+            }
+            else -> {
+                distant.toInt().toString() + "m"
+            }
         }
     }
 
