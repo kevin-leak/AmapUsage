@@ -228,7 +228,6 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
 //            animation.start()
         }
         GetLocationOperator.resetCenterMark()
-        GetLocationOperator.startJumpAnimation()
     }
 
     override fun onBackPressed() {
