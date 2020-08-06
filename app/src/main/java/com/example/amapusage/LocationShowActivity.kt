@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -48,24 +49,24 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
         initAdapter()
         viewModel.checkModel.observe(this, Observer {
             if (it != null) {
-                GetLocationOperator.setUpMapPin()
+                if (locationSearchView.isSearch) GetLocationOperator.setUpMapPin()
                 if (locationSearchView.isSearch == it.isSearch) {
                     changeSendButtonActive(true)  // 处理在加载过程中切换，导致数据混乱.
                 }
             } else {
-                GetLocationOperator.clearMapPin() // search状态不移动
+                if (locationSearchView.isSearch) GetLocationOperator.clearMapPin() // search状态不移动
                 changeSendButtonActive(false)
             }
         })
         viewModel.searchModelList.observe(this, Observer<MutableList<CheckModel>> {
             entityCheckAdapter.notifyDataSetChanged()
             entityCheckAdapter.removeFootItem()
-            if (locationSearchView.isSearch){
+            if (locationSearchView.isSearch) {
                 if (queue.size <= 0) return@Observer
                 while (queue.size >= 2) queue.pollFirst()
                 val text = queue.pollFirst()
                 executeQuery(text)
-            }else{
+            } else {
                 queue.clear()
             }
         })
@@ -109,8 +110,8 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
             }
 
             override fun sourceChanging(data: String) {
-                if (locationSearchView.isSearch){
-                    if (queue.size <= 1) {
+                if (locationSearchView.isSearch) {
+                    if (queue.size <= 0) {
                         executeQuery(data)
                     }
                     queue.offer(data)
@@ -122,6 +123,7 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
                 textPlaceHolder.visibility = GONE
                 progressBar.visibility = GONE
                 if (isSearch) {
+                    GetLocationOperator.clearMapPin()
                     viewModel.searchModelList.value = mutableListOf()
                     viewModel.checkModel.value = null
                     tmpIndex =
