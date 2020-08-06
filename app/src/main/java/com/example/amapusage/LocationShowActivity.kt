@@ -94,17 +94,17 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
             }
 
             override fun onSearchModeChange(isSearch: Boolean) {
+                progressBar.visibility = GONE
                 if (isSearch) {
                     viewModel.searchModelList.value = mutableListOf()
                     viewModel.tmp = viewModel.checkModel.value
                     entityCheckAdapter.switchData(viewModel.searchModelList)
                 } else {
-                    progressBar.visibility = GONE
                     viewModel.checkModel.value = viewModel.tmp
                     viewModel.tmp = null
                     if (viewModel.checkModel.value != null)
                         GetLocationOperator.moveToSelect(viewModel.checkModel.value!!.lonPoint)
-                    viewModel.searchModelList.value?.clear()
+                    viewModel.searchModelList.value = mutableListOf()
                     entityCheckAdapter.switchData(viewModel.currentModelList)
                 }
             }
@@ -118,12 +118,12 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
         entityRecycleView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 if (!entityRecycleView.canScrollVertically(1)) {
-//                    entityCheckAdapter.addFootItem()
-//                    if (locationSearchView.isEnterMode) {
-//                        GetLocationOperator.loadMoreByText()
-//                    } else {
-//                        GetLocationOperator.loadMoreByMove()
-//                    }
+                    entityCheckAdapter.addFootItem()
+                    if (locationSearchView.isEnterMode) {
+                        GetLocationOperator.loadMoreByText()
+                    } else {
+                        GetLocationOperator.loadMoreByMove()
+                    }
                 }
             }
         })
@@ -154,15 +154,12 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
     }
 
 
-    override fun moveCameraFinish() {
-//        sensor.unLock()
-    }
+    override fun moveCameraFinish() {}
 
-    override fun onMoveChange() {
-//        sensor.setLock()
-    }
+    override fun onMoveChange() {}
 
     override fun startLoadNewData() {
+        if (GetLocationOperator.lock) sensor.setLock()
         progressBar.visibility = VISIBLE
         viewModel.checkModel.value = null
         viewModel.searchModelList.value = mutableListOf()
@@ -170,6 +167,7 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
     }
 
     override fun loadDataDone() {
+        if (!GetLocationOperator.lock) sensor.unLock()
         progressBar.visibility = GONE
         entityCheckAdapter.removeFootItem()
     }

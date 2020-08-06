@@ -1,6 +1,7 @@
 package com.example.amapusage.factory
 
 import android.util.Log
+import android.widget.Toast
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
@@ -19,7 +20,8 @@ object GetLocationOperator : AMapOperator() {
 
     private lateinit var model: LocationViewModel
     val TAG = "GetLocationOperator"
-    private var lock = false // 防止不停的下拉，导致页码变化
+    var lock = false // 防止不停的下拉，导致页码变化
+        private set
     var isNeedQuery = true
     private lateinit var currentCenterQuery: PoiSearch.Query
     private lateinit var currentCenterPoint: LatLonPoint
@@ -78,7 +80,7 @@ object GetLocationOperator : AMapOperator() {
         if (isNeedQuery) { // 自动搜索的，移动到屏幕中心.
             val target = cameraPosition.target
             queryByMove(LatLonPoint(target.latitude, target.longitude))
-        }else if (!isNeedQuery) {
+        } else if (!isNeedQuery) {
             isNeedQuery = !isNeedQuery
         }
     }
@@ -106,7 +108,7 @@ object GetLocationOperator : AMapOperator() {
     private fun queryByMove(latLonPoint: LatLonPoint) {
         currentCenterPoint = latLonPoint
         currentCenterQuery = PoiSearch.Query("", "", myLocation?.city)
-        currentCenterQuery.pageNum = 0
+        currentCenterQuery.pageNum = 1
         currentCenterQuery.pageSize = 20
         currentCenterQuery.isDistanceSort = true
         val poiSearch = PoiSearch(context, currentCenterQuery)
@@ -146,7 +148,7 @@ object GetLocationOperator : AMapOperator() {
     private fun dealQueryByText(poiResult: PoiResult) {
         val data: MutableList<CheckModel> = buildItem(poiResult)
         var value = model.searchModelList.value
-        if (poiResult.query.pageNum == 0) value = data
+        if (searchByText!!.pageNum == 1) value = data
         else value?.addAll(data)
         model.searchModelList.value = value
     }
@@ -155,13 +157,16 @@ object GetLocationOperator : AMapOperator() {
     private fun dealCenterQuery(poiResult: PoiResult) {
         val data: MutableList<CheckModel> = buildItem(poiResult)
         var value = model.currentModelList.value
-        if (poiResult.query.pageNum == 0) value = data
-        else value?.addAll(data)
-        model.currentModelList.value = value
-        if (data.size > 0) { // 默认选择第一个
-            model.currentModelList.value!![0].isChecked = true
-            model.checkModel.value = model.currentModelList.value!![0]
+        if (currentCenterQuery.pageNum == 1) {
+            value = data
+            if (value.size > 0) { // 默认选择第一个
+                value[0].isChecked = true
+                model.checkModel.value = value[0]
+            }
+        } else {
+            value?.addAll(data)
         }
+        model.currentModelList.value = value
     }
 
     private fun buildItem(poiResult: PoiResult): MutableList<CheckModel> {
@@ -196,6 +201,4 @@ object GetLocationOperator : AMapOperator() {
             }
         }
     }
-
-
 }
