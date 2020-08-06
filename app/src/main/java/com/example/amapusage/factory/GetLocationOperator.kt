@@ -142,7 +142,7 @@ object GetLocationOperator : AMapOperator() {
     }
 
     private fun dealQueryByText(poiResult: PoiResult) {
-        val data: MutableList<CheckModel> = buildItem(poiResult)
+        val data: MutableList<CheckModel> = buildItem(poiResult, true)
         var value = model.searchModelList.value
         if (searchByText!!.pageNum == 1) value = data
         else value?.addAll(data)
@@ -165,7 +165,7 @@ object GetLocationOperator : AMapOperator() {
         model.currentModelList.value = value
     }
 
-    private fun buildItem(poiResult: PoiResult): MutableList<CheckModel> {
+    private fun buildItem(poiResult: PoiResult, isSearch: Boolean = false): MutableList<CheckModel> {
         val poiItems: List<PoiItem> = poiResult.pois // 取得第一页的poiitem数据，页数从数字0开始
         val data: MutableList<CheckModel> = ArrayList()
         if (poiItems.isNotEmpty()) {
@@ -174,6 +174,7 @@ object GetLocationOperator : AMapOperator() {
                     sendModel.placeTitle = poiItem.title
                     sendModel.placeDesc = poiItem.snippet
                     distanceDetails = formatDistance(poiItem.latLonPoint) + " | " + poiItem.snippet
+                    this.isSearch = isSearch
                 }
                 data.add(checkModel)
             }

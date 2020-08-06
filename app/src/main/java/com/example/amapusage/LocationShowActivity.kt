@@ -9,6 +9,7 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -48,7 +49,9 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
         viewModel.checkModel.observe(this, Observer {
             if (it != null) {
                 GetLocationOperator.setUpMapPin()
-                changeSendButtonActive(true)
+                if (locationSearchView.isSearch == it.isSearch) {
+                    changeSendButtonActive(true)  // 处理在加载过程中切换，导致数据混乱.
+                }
             } else {
                 GetLocationOperator.clearMapPin() // search状态不移动
                 changeSendButtonActive(false)
@@ -57,15 +60,14 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
         viewModel.searchModelList.observe(this, Observer<MutableList<CheckModel>> {
             entityCheckAdapter.notifyDataSetChanged()
             entityCheckAdapter.removeFootItem()
-            if (it.size <= 0 && TextUtils.isEmpty(locationSearchView.getText()) && locationSearchView.isSearch) {
-                textPlaceHolder.visibility = VISIBLE
-            } else {
-                textPlaceHolder.visibility = GONE
+            if (locationSearchView.isSearch){
+                if (queue.size <= 0) return@Observer
+                while (queue.size >= 2) queue.pollFirst()
+                val text = queue.pollFirst()
+                executeQuery(text)
+            }else{
+                queue.clear()
             }
-            if (queue.size <= 0) return@Observer
-            while (queue.size >= 2) queue.pollFirst()
-            val text = queue.pollFirst()
-            executeQuery(text)
         })
         viewModel.currentModelList.observe(this, Observer<MutableList<CheckModel>> {
             entityCheckAdapter.notifyDataSetChanged()
@@ -107,10 +109,12 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
             }
 
             override fun sourceChanging(data: String) {
-                if (queue.size <= 1) {
-                    executeQuery(data)
+                if (locationSearchView.isSearch){
+                    if (queue.size <= 1) {
+                        executeQuery(data)
+                    }
+                    queue.offer(data)
                 }
-                queue.offer(data)
             }
 
             var tmpIndex = -1 // 如果数据再处于加载中，这样可以先保存index但是无法变化checkoMdel
@@ -125,11 +129,11 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
                     tmpIndex = if (tmpIndex == -1) 0 else tmpIndex
                     entityCheckAdapter.switchData(viewModel.searchModelList)
                 } else {
+                    entityCheckAdapter.switchData(viewModel.currentModelList)
                     viewModel.checkModel.value = viewModel.currentModelList.value!![tmpIndex]
                     if (viewModel.checkModel.value != null)
                         GetLocationOperator.moveToSelect(viewModel.checkModel.value!!.lonPoint)
                     viewModel.searchModelList.value = mutableListOf()
-                    entityCheckAdapter.switchData(viewModel.currentModelList)
                 }
             }
         })
@@ -192,6 +196,15 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
         if (!GetLocationOperator.lock) sensor.unLock()
         progressBar.visibility = GONE
         entityCheckAdapter.removeFootItem()
+        if (locationSearchView.isSearch) {
+            if (viewModel.searchModelList.value!!.size <= 0 &&
+                TextUtils.isEmpty(locationSearchView.getText()) && locationSearchView.isSearch
+            ) {
+                textPlaceHolder.visibility = VISIBLE
+            } else {
+                textPlaceHolder.visibility = GONE
+            }
+        }
     }
 
     override fun onResume() = super.onResume().also { textureMapView.onResume() }

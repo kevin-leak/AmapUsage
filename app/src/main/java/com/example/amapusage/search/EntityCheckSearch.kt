@@ -73,7 +73,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             listeners.forEach { it.onSearchModeChange(isSearch) }
         } //模拟searchContentEdit发生点击.
         searchDeleteIcon.setOnClickListener {
-            searchContentEdit.setText("")
+            searchContentEdit.text = null
             enterEditMode()
         }
         searchContentEdit.setOnTouchListener { _, _ ->
@@ -107,7 +107,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
 
     override fun exitSearchMode() {
         listeners.forEach { it.beforeSearchModeChange(isSearch) } // 防止遮盖，先调用
-        searchContentEdit.setText("") // 可能存在没有本身在搜索完就没有焦点的状态
+        searchContentEdit.text = null // 可能存在没有本身在搜索完就没有焦点的状态, 不回调监听.
         if (!searchContentEdit.isFocused) exitEditMode()
         else searchContentEdit.clearFocus()
         isSearch = false

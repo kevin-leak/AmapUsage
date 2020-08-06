@@ -6,6 +6,7 @@ import com.example.amapusage.model.LocationModel
 class CheckModel(var lonPoint: LatLonPoint, var isChecked: Boolean = false) {
 
     lateinit var distanceDetails: String
+    var isSearch = false
 
     var sendModel: LocationModel = LocationModel().apply {
         latitude = lonPoint.latitude
