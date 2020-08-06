@@ -1,7 +1,6 @@
 package com.example.amapusage.factory
 
 import android.util.Log
-import android.widget.Toast
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
@@ -18,6 +17,8 @@ import com.example.amapusage.search.CheckModel
 object GetLocationOperator : AMapOperator() {
 
 
+    private lateinit var centerSearcher: PoiSearch
+    private lateinit var byTextSearcher: PoiSearch
     private lateinit var model: LocationViewModel
     val TAG = "GetLocationOperator"
     var lock = false // 防止不停的下拉，导致页码变化
@@ -33,7 +34,6 @@ object GetLocationOperator : AMapOperator() {
             "|200000|210000|220000|010000|020000|160000"
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
-
     class Node(var last: Node?, var latLonPoint: LatLonPoint) {
         fun action() {
             isNeedQuery = false
@@ -89,20 +89,18 @@ object GetLocationOperator : AMapOperator() {
         searchByText = PoiSearch.Query(queryText, "", myLocation?.city)
         searchByText!!.pageSize = 20
         searchByText!!.pageNum = 0
-        val poiSearch = PoiSearch(context, searchByText)
-        poiSearch.setOnPoiSearchListener(this)
-        poiSearch.query.isDistanceSort = true
-        poiSearch.searchPOIAsyn()
+        byTextSearcher = PoiSearch(context, searchByText)
+        byTextSearcher.setOnPoiSearchListener(this)
+        byTextSearcher.query.isDistanceSort = true
+        byTextSearcher.searchPOIAsyn()
     }
 
     fun loadMoreByText() {
         if (lock) return
         if (searchByText == null) return
         lock = true
-        searchByText!!.pageNum += 1
-        val poiSearch = PoiSearch(context, searchByText)
-        poiSearch.setOnPoiSearchListener(this)
-        poiSearch.searchPOIAsyn()
+        byTextSearcher.query.pageNum +=1
+        byTextSearcher.searchPOIAsyn()
     }
 
     private fun queryByMove(latLonPoint: LatLonPoint) {
@@ -111,22 +109,18 @@ object GetLocationOperator : AMapOperator() {
         currentCenterQuery.pageNum = 1
         currentCenterQuery.pageSize = 20
         currentCenterQuery.isDistanceSort = true
-        val poiSearch = PoiSearch(context, currentCenterQuery)
-        poiSearch.setOnPoiSearchListener(this)
-        poiSearch.bound = PoiSearch.SearchBound(latLonPoint, 1000000000)
-        poiSearch.searchPOIAsyn()
+        centerSearcher = PoiSearch(context, currentCenterQuery)
+        centerSearcher.setOnPoiSearchListener(this)
+        centerSearcher.bound = PoiSearch.SearchBound(latLonPoint, 1000000000)
+        centerSearcher.searchPOIAsyn()
     }
 
     fun loadMoreByMove() {
         if (lock) return
         lock = true
-        currentCenterQuery.pageNum += 1
-        val poiSearch = PoiSearch(context, currentCenterQuery)
-        poiSearch.setOnPoiSearchListener(this)
-        poiSearch.bound = PoiSearch.SearchBound(currentCenterPoint, 100000000)
-        poiSearch.searchPOIAsyn()
+        centerSearcher.apply { query.pageNum += 1 }
+        centerSearcher.searchPOIAsyn()
     }
-
 
     override fun onPoiSearched(poiResult: PoiResult?, rCode: Int) {
         lock = false
@@ -152,7 +146,6 @@ object GetLocationOperator : AMapOperator() {
         else value?.addAll(data)
         model.searchModelList.value = value
     }
-
 
     private fun dealCenterQuery(poiResult: PoiResult) {
         val data: MutableList<CheckModel> = buildItem(poiResult)
@@ -201,4 +194,5 @@ object GetLocationOperator : AMapOperator() {
             }
         }
     }
+
 }
