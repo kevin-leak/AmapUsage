@@ -64,12 +64,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
     private fun initListener() {
         // 第一次取消是关闭键盘，第二次是清楚数据, 同时发生坍塌
         btnCancel.setOnClickListener {
-            listeners.forEach { it.beforeSearchModeChange(isSearch) } // 防止遮盖，先调用
-            searchContentEdit.setText("") // 可能存在没有本身在搜索完就没有焦点的状态
-            if (!searchContentEdit.isFocused) exitEditMode()
-            else searchContentEdit.clearFocus()
-            isSearch = false
-            listeners.forEach { it.onSearchModeChange(isSearch) }
+            exitSearchMode()
         }
         hintLayout.setOnClickListener {
             listeners.forEach { it.beforeSearchModeChange(isSearch) } // 防止遮盖，先调用
@@ -108,6 +103,15 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             }
             false
         }
+    }
+
+    override fun exitSearchMode() {
+        listeners.forEach { it.beforeSearchModeChange(isSearch) } // 防止遮盖，先调用
+        searchContentEdit.setText("") // 可能存在没有本身在搜索完就没有焦点的状态
+        if (!searchContentEdit.isFocused) exitEditMode()
+        else searchContentEdit.clearFocus()
+        isSearch = false
+        listeners.forEach { it.onSearchModeChange(isSearch) }
     }
 
     override fun exitEditMode() {
@@ -162,7 +166,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         )
     }
 
-    override fun addSearchListener(lt: IEntityCheckSearch.OnSearchListener){
+    override fun addSearchListener(lt: IEntityCheckSearch.OnSearchListener) {
         listeners.add(lt)
     }
 

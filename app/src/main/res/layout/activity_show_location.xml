@@ -12,7 +12,7 @@
         android:id="@+id/textureMapView"
         android:layout_width="match_parent"
         android:layout_height="500dp"
-        android:minHeight="250dp"/>
+        android:minHeight="250dp" />
 
 
     <RelativeLayout
@@ -107,7 +107,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scrollbars="vertical"
-                android:splitMotionEvents="false"/>
+                android:splitMotionEvents="false" />
+
+            <TextView
+                android:id="@+id/textPlaceHolder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="#A57E7E"
+                android:text="@string/no_search_results"
+                android:gravity="center"
+                android:visibility="gone"
+                android:layout_centerInParent="true"/>
 
             <ProgressBar
                 android:id="@+id/progressBar"

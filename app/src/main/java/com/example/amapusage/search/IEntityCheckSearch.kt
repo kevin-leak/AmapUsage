@@ -28,4 +28,5 @@ interface IEntityCheckSearch {
     fun addSearchListener(lt: OnSearchListener)
     fun setText(text: String)
     fun getText(): Editable?
+    fun exitSearchMode()
 }

@@ -86,7 +86,8 @@ object GetLocationOperator : AMapOperator() {
     }
 
     override fun queryByText(queryText: String) {
-        searchByText = PoiSearch.Query(queryText, "", myLocation?.city)
+        searchByText = PoiSearch.Query(queryText, "", "")
+        searchByText!!.cityLimit = true
         searchByText!!.pageSize = 20
         searchByText!!.pageNum = 0
         byTextSearcher = PoiSearch(context, searchByText)
@@ -99,7 +100,7 @@ object GetLocationOperator : AMapOperator() {
         if (lock) return
         if (searchByText == null) return
         lock = true
-        byTextSearcher.query.pageNum +=1
+        byTextSearcher.query.pageNum += 1
         byTextSearcher.searchPOIAsyn()
     }
 
@@ -113,6 +114,7 @@ object GetLocationOperator : AMapOperator() {
         centerSearcher.setOnPoiSearchListener(this)
         centerSearcher.bound = PoiSearch.SearchBound(latLonPoint, 1000000000)
         centerSearcher.searchPOIAsyn()
+
     }
 
     fun loadMoreByMove() {
@@ -153,6 +155,7 @@ object GetLocationOperator : AMapOperator() {
         if (currentCenterQuery.pageNum == 1) {
             value = data
             if (value.size > 0) { // 默认选择第一个
+                // fixme 如果在数据到来之前，切走了，导致数据后来到checkModel
                 value[0].isChecked = true
                 model.checkModel.value = value[0]
             }

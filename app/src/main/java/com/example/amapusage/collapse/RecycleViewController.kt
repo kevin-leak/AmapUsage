@@ -2,13 +2,17 @@ package com.example.amapusage.collapse
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.sax.EndTextElementListener
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
+import com.example.amapusage.factory.GetLocationOperator
+import kotlinx.android.synthetic.main.activity_show_location.*
 
 class RecycleViewController : RecyclerView, IScrollSensor.Controller {
+    private var loadListener: IScrollSensor.LoadListener? = null
     private lateinit var sensor: IScrollSensor.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
@@ -39,8 +43,13 @@ class RecycleViewController : RecyclerView, IScrollSensor.Controller {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(ev: MotionEvent?): Boolean {
-        if (ev?.action != MotionEvent.ACTION_MOVE) return super.onTouchEvent(ev)
+    override fun onTouchEvent(ev: MotionEvent): Boolean {
+        if (downY - ev.rawY > touchSlop && !canScrollVertically(1)) {
+            loadListener?.bottomLoad()
+        } else if (ev.rawY - downY > touchSlop && !canScrollVertically(-1)) {
+            loadListener?.topLoad()
+        }
+        if (ev.action != MotionEvent.ACTION_MOVE) return super.onTouchEvent(ev)
         if (!sensor.isCollapsed() && downY - ev.rawY > touchSlop) { // 非坍塌,手指向上滑动 -> 则坍塌
             sensor.changeCollapseState(true)
             return true
@@ -54,5 +63,9 @@ class RecycleViewController : RecyclerView, IScrollSensor.Controller {
 
     override fun fling(velocityX: Int, velocityY: Int): Boolean {
         return super.fling(velocityX, (velocityY * 0.6).toInt())
+    }
+
+    override fun setLoadListener(listener: IScrollSensor.LoadListener) {
+        this.loadListener = listener
     }
 }

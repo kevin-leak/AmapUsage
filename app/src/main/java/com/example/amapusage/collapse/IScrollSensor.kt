@@ -5,7 +5,15 @@ import android.view.View
 import android.view.animation.Animation
 
 interface IScrollSensor {
-    interface Controller
+    interface Controller {
+        fun setLoadListener(listener: LoadListener)
+    }
+
+    interface LoadListener {
+        fun bottomLoad()
+        fun topLoad()
+    }
+
     interface Sensor {
         fun isCollapsed(): Boolean
         fun bindCollapsingView(view: View) // 默认第一个

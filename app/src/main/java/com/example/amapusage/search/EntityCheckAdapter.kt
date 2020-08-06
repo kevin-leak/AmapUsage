@@ -1,11 +1,13 @@
 package com.example.amapusage.search
 
 import android.content.Context
+import android.opengl.Visibility
 import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.amapusage.R
@@ -19,6 +21,8 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     IEntityCheckSearch.IHintAdapter, View.OnClickListener {
     // search 变化, check 变化.
 
+    private var footHolder: RecyclerView.ViewHolder? = null
+    private var isShowFootItem: Boolean = false
     private lateinit var currentList: MutableLiveData<MutableList<CheckModel>>
     private lateinit var mContext: Context
     private lateinit var model: LocationViewModel
@@ -38,9 +42,15 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
             val view = LayoutInflater.from(mContext).inflate(R.layout.item_location, null)
             DataViewHolder(view)
         } else {
-            footView =
-                LayoutInflater.from(mContext).inflate(R.layout.item_location_foot, parent, false)
-            object : RecyclerView.ViewHolder(footView!!) {}
+            if (footHolder != null) {
+                footHolder!!
+            } else {
+                footView =
+                    LayoutInflater.from(mContext)
+                        .inflate(R.layout.item_location_foot, parent, false)
+                footHolder = object : RecyclerView.ViewHolder(footView!!) {}
+                footHolder!!
+            }
         }
     }
 
@@ -51,7 +61,9 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         } else super.getItemViewType(position)
     }
 
-    override fun getItemCount(): Int = currentList.value!!.size
+    override fun getItemCount(): Int {
+        return currentList.value!!.size
+    }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (position == itemCount - 1) return
@@ -61,7 +73,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         holder.itemView.tvLocationDesc.text = currentList.value!![position].distanceDetails
         holder.itemView.locationChecker.isChecked = currentList.value!![position].isChecked
         if (currentList.value!![position].isChecked) { // 复用的时候也会被调用.
-            lastPosition = position
+            checkPosition = position
         }
     }
 
@@ -69,7 +81,6 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         init {
             itemView.setOnClickListener { flashyEditClick(itemView.locationChecker) }
         }
-
         private fun flashyEditClick(view: View) { // 模拟一个searchContentEdit的点击事件
             view.dispatchTouchEvent(
                 MotionEvent.obtain(
@@ -94,30 +105,30 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         }
     }
 
-
     override fun switchData(data: MutableLiveData<MutableList<CheckModel>>) {
         currentList = data
-        lastPosition = -1
+        checkPosition = -1
         notifyDataSetChanged()
     }
 
     override fun removeFootItem() {
-        footView?.visibility = View.GONE
-        notifyDataSetChanged()
+        if (footView == null) return
+        isShowFootItem = false
+        notifyItemRemoved(itemCount)
     }
 
     override fun addFootItem() {
-        if (currentList.value == null || currentList.value?.size!! <= 0) return
-        footView?.visibility = View.VISIBLE
-        notifyDataSetChanged()
+        if (footView != null) return
+        isShowFootItem = true
+        notifyItemInserted(itemCount)
     }
 
-    private var lastPosition = -1
+    var checkPosition = -1
     override fun onClick(buttonView: View) {
-        if (currentList.value == null || lastPosition > currentList.value!!.size) return
-        if (lastPosition != -1) {
-            currentList.value!![lastPosition].isChecked = false
-            notifyItemChanged(lastPosition)
+        if (currentList.value == null || checkPosition > currentList.value!!.size) return
+        if (checkPosition != -1) {
+            currentList.value!![checkPosition].isChecked = false
+            notifyItemChanged(checkPosition)
         }
         currentList.value!![buttonView.tag as Int].isChecked = true
         model.checkModel.value = currentList.value!![buttonView.tag as Int]
@@ -125,6 +136,13 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         // 不能放在绑定的位置，复用的时候回调用，放在这里同时可以保证
         // 默认为第一个的时候，不发生移动
         listener?.hasBeChecked((buttonView.tag as Int))
+    }
+
+    fun notifyItemWithOutFoot() {
+        val endCount = if (footHolder != null) itemCount - 1 else itemCount
+        if (endCount >= 0) {
+            notifyItemRangeChanged(0, endCount)
+        }
     }
 
 }
