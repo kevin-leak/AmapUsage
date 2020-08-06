@@ -25,7 +25,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
 
-    var listener: IEntityCheckSearch.OnSearchListener? = null
+    var listeners: MutableList<IEntityCheckSearch.OnSearchListener> = mutableListOf()
     private val rootLayout: View = View.inflate(context, R.layout.location_search_view, this)
     private val rlEdit: RelativeLayout = rootLayout.findViewById(R.id.rl_edit)
     private val searchLeftIcon = rootLayout.findViewById<ImageView>(R.id.search_left_icon)
@@ -39,6 +39,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         private set
     var isSearch = false
         private set
+
     init {
         rlEdit.visibility = View.GONE
         hintLayout.visibility = View.VISIBLE
@@ -63,16 +64,18 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
     private fun initListener() {
         // 第一次取消是关闭键盘，第二次是清楚数据, 同时发生坍塌
         btnCancel.setOnClickListener {
+            listeners.forEach { it.beforeSearchModeChange(isSearch) } // 防止遮盖，先调用
             searchContentEdit.setText("") // 可能存在没有本身在搜索完就没有焦点的状态
             if (!searchContentEdit.isFocused) exitEditMode()
             else searchContentEdit.clearFocus()
             isSearch = false
-            listener?.onSearchModeChange(isSearch)
+            listeners.forEach { it.onSearchModeChange(isSearch) }
         }
         hintLayout.setOnClickListener {
+            listeners.forEach { it.beforeSearchModeChange(isSearch) } // 防止遮盖，先调用
             flashyEditClick()
             isSearch = true
-            listener?.onSearchModeChange(isSearch)
+            listeners.forEach { it.onSearchModeChange(isSearch) }
         } //模拟searchContentEdit发生点击.
         searchDeleteIcon.setOnClickListener {
             searchContentEdit.setText("")
@@ -89,19 +92,19 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         searchContentEdit.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                listener?.beforeSourceChange(s.toString())
+                listeners.forEach { it.beforeSourceChange(s.toString()) }
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if (TextUtils.isEmpty(s)) searchDeleteIcon.visibility = View.GONE
                 else searchDeleteIcon.visibility = View.VISIBLE
-                listener?.sourceChanging(s.toString())
+                listeners.forEach { it.sourceChanging(s.toString()) }
             }
         })
         searchContentEdit.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 if (TextUtils.isEmpty(searchContentEdit.text)) searchContentEdit.requestFocus()
-                listener?.sourceCome(searchContentEdit.text.toString())
+                listeners.forEach { it.sourceCome(searchContentEdit.text.toString()) }
             }
             false
         }
@@ -114,7 +117,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         }
         isEnterMode = false
         hideSoftKeyboard()
-        listener?.onEnterModeChange(isEnterMode) // 防止遮盖，先调用
+        listeners.forEach { it.onEnterModeChange(isEnterMode) } // 防止遮盖，先调用
         if (TextUtils.isEmpty(searchContentEdit.text)) { // 在提交后，有的失去了焦点但是还会存在文字.
             hintLayout.visibility = View.VISIBLE
             btnCancel.visibility = View.GONE
@@ -129,7 +132,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             return
         }
         isEnterMode = true
-        listener?.onEnterModeChange(isEnterMode) // 防止遮盖，先调用
+        listeners.forEach { it.onEnterModeChange(isEnterMode) }
         openKeyboard()
         rlEdit.visibility = View.VISIBLE
         btnCancel.visibility = View.VISIBLE
@@ -159,7 +162,10 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         )
     }
 
-    override fun setSearchListener(lt: IEntityCheckSearch.OnSearchListener) = let { listener = lt }
+    override fun addSearchListener(lt: IEntityCheckSearch.OnSearchListener){
+        listeners.add(lt)
+    }
+
     override fun getWindowToken(): IBinder = searchContentEdit.windowToken
     override fun getText(): Editable? = searchContentEdit.text
 
@@ -182,6 +188,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         override fun sourceChanging(data: String) {}
         override fun beforeSourceChange(toString: String) {}
         override fun onSearchModeChange(isSearch: Boolean) {}
+        override fun beforeSearchModeChange(isSearch: Boolean) {}
     }
 
     override fun setText(text: String) {

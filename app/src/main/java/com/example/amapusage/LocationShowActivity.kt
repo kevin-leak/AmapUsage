@@ -1,43 +1,33 @@
 package com.example.amapusage
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.AlphaAnimation
-import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.amap.api.maps.AMap
-import com.amap.api.maps.TextureMapView
 import com.example.amapusage.collapse.IScrollSensor
-import com.example.amapusage.collapse.ScrollSensorLayout
 import com.example.amapusage.factory.GetLocationOperator
 import com.example.amapusage.factory.IMapOperator
 import com.example.amapusage.model.LocationViewModel
-import com.example.amapusage.search.CheckModel
-import com.example.amapusage.search.EntityCheckAdapter
-import com.example.amapusage.search.EntityCheckSearch
-import com.example.amapusage.search.IEntityCheckSearch
+import com.example.amapusage.search.*
 import com.example.amapusage.utils.BitmapUtils
 import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
-import kotlinx.android.synthetic.main.activity_show_map.*
+import kotlinx.android.synthetic.main.activity_show_location.*
 import java.io.ByteArrayOutputStream
 
 
-open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
+open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
     IScrollSensor.CollapsingListener {
     val TAG = "MapShowActivity"
     private lateinit var entityCheckAdapter: EntityCheckAdapter
@@ -47,7 +37,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ScreenUtils.setStatus(this)
-        setContentView(R.layout.activity_show_map)
+        setContentView(R.layout.activity_show_location)
         textureMapView.onCreate(savedInstanceState) // 此方法必须重写
         sensor.bindCollapsingView(textureMapView)
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
@@ -86,7 +76,7 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
             sensor.changeCollapseState(false)
             true
         }
-        locationSearchView.setSearchListener(object :
+        locationSearchView.addSearchListener(object :
             EntityCheckSearch.OnSearchListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) { // 当重新获取焦点市要弹出
                 sensor.changeCollapseState(isEnter) // search聚焦与collapse连锁
@@ -142,11 +132,12 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         entityCheckAdapter = EntityCheckAdapter(this, viewModel)
         entityCheckAdapter.listener = object : IEntityCheckSearch.CheckListener {
             override fun hasBeChecked(position: Int) {
-                GetLocationOperator.moveToSelect(viewModel.checkModel.value!!.lonPoint)
+                entityRecycleView.post { GetLocationOperator.moveToSelect(viewModel.checkModel.value!!.lonPoint) }
             }
         }
         entityRecycleView.adapter = entityCheckAdapter
     }
+
 
     override fun onDestroy() {
         KeyBoardUtils.closeKeyboard(locationSearchView.windowToken, baseContext)
@@ -161,15 +152,19 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     }
 
 
-    override fun moveCameraFinish() {}
+    override fun moveCameraFinish() {
+//        sensor.unLock()
+    }
 
-    override fun onMoveChange() {}
+    override fun onMoveChange() {
+//        sensor.setLock()
+    }
 
     override fun startLoadNewData() {
         progressBar.visibility = VISIBLE
         viewModel.checkModel.value = null
-        viewModel.searchModelList.value?.clear()
-        viewModel.currentModelList.value?.clear()
+        viewModel.searchModelList.value = mutableListOf()
+        viewModel.currentModelList.value = mutableListOf()
     }
 
     override fun loadDataDone() {
@@ -243,5 +238,4 @@ open class MapShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         }
         super.onBackPressed()
     }
-
 }

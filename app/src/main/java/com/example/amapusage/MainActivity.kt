@@ -3,11 +3,11 @@ package com.example.amapusage
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.amapusage.model.LocationModel
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.item_message.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getLocation(view: View) {
-        startActivityForResult(Intent(this, MapShowActivity::class.java), 1);
+        startActivityForResult(Intent(this, LocationShowActivity::class.java), 1);
     }
 
 
@@ -33,4 +33,6 @@ class MainActivity : AppCompatActivity() {
             tvDetails.text = locationModel.placeDesc
         }
     }
+    fun parseLocation(view: View) = startActivity(Intent(this, LocationParseActivity::class.java));
+
 }

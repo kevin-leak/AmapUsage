@@ -90,7 +90,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
                 (0.5f - sqrt((input - 0.5f) * (1.5f - input).toDouble())).toFloat()
             }
         }
-        animation?.setDuration(600)
+        animation.setDuration(600)
         //设置动画
         centerMarker?.setAnimation(animation)
         //开始动画

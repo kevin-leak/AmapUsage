@@ -10,6 +10,7 @@ interface IEntityCheckSearch {
         fun sourceChanging(data: String)
         fun beforeSourceChange(toString: String)
         fun onSearchModeChange(isSearch: Boolean)
+        fun beforeSearchModeChange(isSearch: Boolean)
     }
 
     interface IHintAdapter {
@@ -24,7 +25,7 @@ interface IEntityCheckSearch {
 
     fun exitEditMode()
     fun enterEditMode()
-    fun setSearchListener(lt: OnSearchListener)
+    fun addSearchListener(lt: OnSearchListener)
     fun setText(text: String)
     fun getText(): Editable?
 }

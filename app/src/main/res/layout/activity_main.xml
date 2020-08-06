@@ -19,57 +19,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.8" />
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cdvMessageItem"
-        android:layout_width="250dp"
-        android:layout_height="160dp"
-        android:layout_marginTop="100dp"
-        android:layout_marginEnd="20dp"
-        android:elevation="5dp"
-        android:orientation="vertical"
-        android:visibility="visible"
-        app:cardBackgroundColor="#ffffff"
-        app:cardCornerRadius="5dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:targetApi="lollipop">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tvTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:paddingTop="4dp"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:textSize="15sp"
-                android:textColor="#504C4C" />
-
-            <TextView
-                android:id="@+id/tvDetails"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:padding="4dp"
-                android:textSize="12sp"
-                android:textColor="#AEA9A9" />
-
-            <ImageView
-                android:id="@+id/ivMap"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
-
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
+    <include layout="@layout/item_message" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

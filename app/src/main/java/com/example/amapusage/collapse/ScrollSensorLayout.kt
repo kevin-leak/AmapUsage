@@ -100,6 +100,14 @@ class ScrollSensorLayout(context: Context?, attrs: AttributeSet?) :
         collapseView = view
     }
 
+    fun unLock() {
+        lock = false
+    }
+
+    fun setLock() {
+        lock = true
+    }
+
     open class CollapsingListenerImpl() :
         IScrollSensor.CollapsingListener {
         override fun beforeCollapseStateChange(isCollapsing: Boolean) {}

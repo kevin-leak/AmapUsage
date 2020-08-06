@@ -41,21 +41,14 @@ object GetLocationOperator : AMapOperator() {
                 600,
                 object : AMap.CancelableCallback {
                     override fun onFinish() {
-                        if (!isNeedQuery) {
-                            isNeedQuery = !isNeedQuery
-                        }
                         last?.action()
                         tail = last
                     }
 
                     override fun onCancel() {
-                        if (!isNeedQuery) {
-                            isNeedQuery = !isNeedQuery
-                        }
                         last?.action()
                         tail = last
                     }
-
                 })
         }
     }
@@ -85,6 +78,8 @@ object GetLocationOperator : AMapOperator() {
         if (isNeedQuery) { // 自动搜索的，移动到屏幕中心.
             val target = cameraPosition.target
             queryByMove(LatLonPoint(target.latitude, target.longitude))
+        }else if (!isNeedQuery) {
+            isNeedQuery = !isNeedQuery
         }
     }
 
@@ -133,7 +128,6 @@ object GetLocationOperator : AMapOperator() {
 
     override fun onPoiSearched(poiResult: PoiResult?, rCode: Int) {
         lock = false
-        // fixIt
         if (rCode == AMapException.CODE_AMAP_SUCCESS) {
             if (poiResult?.query != null) {
                 when (poiResult.query) {
