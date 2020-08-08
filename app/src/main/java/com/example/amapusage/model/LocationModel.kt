@@ -2,12 +2,13 @@ package com.example.amapusage.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import android.text.SpannableString
 import androidx.lifecycle.LiveData
 import kotlin.properties.Delegates
 
-open class LocationModel() : LiveData<LocationModel>(), Parcelable {
+open class LocationModel() : LiveData<LocationModel>(), Parcelable{
 
-    lateinit var placeTitle: String
+    lateinit var placeTitle: CharSequence
     lateinit var placeDesc: String
     var latitude by Delegates.notNull<Double>()
     var longitude by Delegates.notNull<Double>()
@@ -18,7 +19,7 @@ open class LocationModel() : LiveData<LocationModel>(), Parcelable {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(placeTitle)
+        parcel.writeString(placeTitle.toString())
         parcel.writeString(placeDesc)
         parcel.writeDouble(latitude)
         parcel.writeDouble(longitude)

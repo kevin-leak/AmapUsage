@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.IBinder
 import android.os.SystemClock
 import android.text.Editable
+import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.AttributeSet
@@ -20,6 +21,14 @@ import com.example.amapusage.R
 @SuppressLint("NewApi")
 class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int) :
     FrameLayout(context, attr, defStyleAttr, defStyleAttr), IEntityCheckSearch {
+    var text: Editable = SpannableStringBuilder()
+        set(value) {
+            enterEditMode()
+            searchContentEdit.text = text
+            field = value
+        }
+        get() = searchContentEdit.text
+
     private val TAG = "HintSearchView"
 
     constructor(context: Context) : this(context, null)
@@ -63,15 +72,13 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
     @SuppressLint("ClickableViewAccessibility")
     private fun initListener() {
         // 第一次取消是关闭键盘，第二次是清楚数据, 同时发生坍塌
-        btnCancel.setOnClickListener {
-            exitSearchMode()
-        }
+        btnCancel.setOnClickListener { exitSearchMode() }
         hintLayout.setOnClickListener {
             listeners.forEach { it.beforeSearchModeChange(isSearch) } // 防止遮盖，先调用
-            flashyEditClick()
+            searchContentEdit.requestFocus()
             isSearch = true
             listeners.forEach { it.onSearchModeChange(isSearch) }
-        } //模拟searchContentEdit发生点击.
+        }
         searchDeleteIcon.setOnClickListener {
             searchContentEdit.text = null
             enterEditMode()
@@ -143,35 +150,9 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         hintLayout.visibility = View.GONE
     }
 
-    private fun flashyEditClick() { // 模拟一个searchContentEdit的点击事件
-        searchContentEdit.dispatchTouchEvent(
-            MotionEvent.obtain(
-                SystemClock.uptimeMillis(),
-                SystemClock.uptimeMillis(),
-                MotionEvent.ACTION_DOWN,
-                searchContentEdit.left + 5f,
-                searchContentEdit.top + 5f,
-                0
-            )
-        )
-        searchContentEdit.dispatchTouchEvent(
-            MotionEvent.obtain(
-                SystemClock.uptimeMillis(),
-                SystemClock.uptimeMillis(),
-                MotionEvent.ACTION_UP,
-                searchContentEdit.left + 5f,
-                searchContentEdit.top + 5f,
-                0
-            )
-        )
-    }
-
     override fun addSearchListener(lt: IEntityCheckSearch.OnSearchListener) {
         listeners.add(lt)
     }
-
-    override fun getWindowToken(): IBinder = searchContentEdit.windowToken
-    override fun getText(): Editable? = searchContentEdit.text
 
     private fun hideSoftKeyboard() {
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -186,6 +167,8 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         Log.d(TAG, "openKeyboard: " + "imm.isActive")
     }
 
+    override fun getWindowToken(): IBinder = searchContentEdit.windowToken
+
     open class OnSearchListenerIml : IEntityCheckSearch.OnSearchListener {
         override fun onEnterModeChange(isEnter: Boolean) {}
         override fun sourceCome(data: String) {}
@@ -193,10 +176,5 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         override fun beforeSourceChange(toString: String) {}
         override fun onSearchModeChange(isSearch: Boolean) {}
         override fun beforeSearchModeChange(isSearch: Boolean) {}
-    }
-
-    override fun setText(text: String) {
-        enterEditMode()
-        searchContentEdit.setText(text)
     }
 }

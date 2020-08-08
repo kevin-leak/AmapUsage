@@ -31,6 +31,8 @@ import kotlin.math.sqrt
 open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     PoiSearch.OnPoiSearchListener {
 
+    private var isFirst: Boolean = true
+    private var positionMark: Marker? = null
     private lateinit var animationPin: TranslateAnimation
     private lateinit var clientOption: AMapLocationClientOption
     private var mapPin: ImageView? = null
@@ -69,7 +71,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         centerMarker?.isVisible = true
         val latLng = aMap.cameraPosition.target
         val screenPosition = aMap.projection.toScreenLocation(latLng)
-        //设置Marker在屏幕上,不跟随地图移动
         centerMarker?.setPositionByPixels(screenPosition.x, screenPosition.y)
     }
 
@@ -106,7 +107,11 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         mLocationClient.setLocationOption(clientOption)
         mLocationClient.setLocationListener { aMapLocation ->
             myLocation = aMapLocation
-            moveToCurrent()
+            if (isFirst) {
+                moveToCurrent()
+                resetCenterMark()
+                isFirst = false
+            }
             mLocationClient.stopLocation()
         }
     }
@@ -133,22 +138,17 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         return aMap
     }
 
-    override fun bindCurrentButton(btn: ImageButton): AMapOperator = apply { currentButton = btn }
-    override fun clearMapPin(): AMapOperator = apply { centerMarker?.isVisible = false }
-    override fun setUpMapPin(): AMapOperator = apply { centerMarker?.isVisible = true }
-    override fun endOperate() = mLocationClient.stopLocation()
-    override fun getMap(): AMap = aMap
-
+    fun addPositionMarker(latLng: LatLng) {
+        val markerOptions = MarkerOptions();
+        markerOptions.position(latLng); markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin));//大头针图标
+        positionMark = aMap.addMarker(markerOptions);
+    }
 
     override fun moveToCurrent() {
         if (myLocation == null) return
         mLocationClient.startLocation()
         val latLng = LatLng(myLocation!!.latitude, myLocation!!.longitude)
-        getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600,
-            object : AMap.CancelableCallback {
-                override fun onFinish() {}
-                override fun onCancel() {}
-            })
+        getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600, null)
     }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
@@ -164,16 +164,15 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         startJumpAnimation()
     }
 
-    override fun onCameraChange(cameraPosition: CameraPosition?) {
-        listener.onMoveChange()
-        resetCenterMark()
-    }
-
+    override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
     override fun queryByText(queryText: String) {}
-
-
     override fun onPoiItemSearched(p0: PoiItem?, p1: Int) {}
-
     override fun onPoiSearched(poiResult: PoiResult?, resultCode: Int) {}
+    fun clearPositionMark() = apply { positionMark?.remove() }
+    override fun bindCurrentButton(btn: ImageButton): AMapOperator = apply { currentButton = btn }
+    override fun clearCenterMark(): AMapOperator = apply { centerMarker?.isVisible = false }
+    override fun setUpCenterMark(): AMapOperator = apply { centerMarker?.isVisible = true }
+    override fun endOperate() = mLocationClient.stopLocation()
+    override fun getMap(): AMap = aMap
 
 }

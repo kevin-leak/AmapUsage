@@ -11,8 +11,8 @@ interface IMapOperator {
         fun preWork(tMV: TextureMapView, lt: LocationSourceLister): Operator  // 不持有tMV
         fun buildMapBaseConfig(): AMap      // 配置
         fun bindCurrentButton(btn: ImageButton): Operator
-        fun clearMapPin(): Operator
-        fun setUpMapPin(): Operator
+        fun clearCenterMark(): Operator
+        fun setUpCenterMark(): Operator
         fun getMap(): AMap
         fun moveToCurrent()                 // 定位
         fun endOperate()

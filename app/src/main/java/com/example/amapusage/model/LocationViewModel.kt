@@ -1,6 +1,5 @@
 package com.example.amapusage.model
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.amapusage.search.CheckModel
@@ -10,13 +9,14 @@ open class LocationViewModel : ViewModel() {
     // 1. 移动地图直接产生的locationModelList
     // 2. 搜索产生的字符串
     // 3. checked 的item
-    var currentModelList = MutableLiveData<MutableList<CheckModel>>()
-    var searchModelList = MutableLiveData<MutableList<CheckModel>>() // search的时候的list
+    var normalList = MutableLiveData<MutableList<CheckModel>>()
+    var searchList = MutableLiveData<MutableList<CheckModel>>() // search的时候的list
     var checkModel = MutableLiveData<CheckModel?>() // 最终要修改的数据.
+    var tempInt = -1 // 如果数据再处于加载中，这样可以先保存index但是无法变化checkModel
 
     init {
-        currentModelList.value = mutableListOf()
-        searchModelList.value = mutableListOf()
+        normalList.value = mutableListOf()
+        searchList.value = mutableListOf()
     }
 
 }
