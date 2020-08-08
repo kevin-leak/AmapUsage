@@ -19,6 +19,7 @@ import com.amap.api.maps.model.LatLng
 import com.example.amapusage.collapse.IScrollSensor
 import com.example.amapusage.factory.GetLocationOperator
 import com.example.amapusage.factory.IMapOperator
+import com.example.amapusage.model.CheckModel
 import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.search.*
 import com.example.amapusage.utils.BitmapUtils

@@ -1,7 +1,6 @@
-package com.example.amapusage.search
+package com.example.amapusage.model
 
 import com.amap.api.services.core.LatLonPoint
-import com.example.amapusage.model.LocationModel
 
 class CheckModel(var lonPoint: LatLonPoint, var isChecked: Boolean = false) {
 

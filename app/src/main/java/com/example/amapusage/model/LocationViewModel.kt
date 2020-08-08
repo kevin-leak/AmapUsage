@@ -2,7 +2,6 @@ package com.example.amapusage.model
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.amapusage.search.CheckModel
 
 open class LocationViewModel : ViewModel() {
     // 构建三种需要通知的数据，分别是：

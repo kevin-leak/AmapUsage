@@ -1,10 +1,8 @@
 package com.example.amapusage.factory
 
 import android.widget.ImageButton
-import android.widget.ImageView
 import com.amap.api.maps.AMap
 import com.amap.api.maps.TextureMapView
-import com.example.amapusage.search.CheckModel
 
 interface IMapOperator {
     interface Operator {

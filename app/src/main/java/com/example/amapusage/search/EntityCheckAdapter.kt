@@ -1,14 +1,13 @@
 package com.example.amapusage.search
 
 import android.content.Context
-import android.text.SpannableString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.text.toSpannable
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.amapusage.R
+import com.example.amapusage.model.CheckModel
 import com.example.amapusage.model.LocationViewModel
 import kotlinx.android.synthetic.main.item_location.view.*
 

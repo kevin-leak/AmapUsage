@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(Intent(this, LocationShowActivity::class.java), 1);
     }
 
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (data != null) {
@@ -33,6 +32,7 @@ class MainActivity : AppCompatActivity() {
             tvDetails.text = locationModel.placeDesc
         }
     }
+
     fun parseLocation(view: View) = startActivity(Intent(this, LocationParseActivity::class.java));
 
 }

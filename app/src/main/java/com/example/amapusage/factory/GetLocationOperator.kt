@@ -1,12 +1,5 @@
 package com.example.amapusage.factory
 
-import android.graphics.Color
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.CharacterStyle
-import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.amap.api.maps.AMap
@@ -21,10 +14,8 @@ import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
 import com.example.amapusage.R
 import com.example.amapusage.model.LocationViewModel
-import com.example.amapusage.search.CheckModel
+import com.example.amapusage.model.CheckModel
 import com.example.amapusage.utils.KeyWordUtil
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 
 class GetLocationOperator : AMapOperator() {
@@ -185,7 +176,8 @@ class GetLocationOperator : AMapOperator() {
         val keyword = poiResult.query.queryString
         if (poiItems.isNotEmpty()) {
             for (poiItem in poiItems) {
-                val checkModel = CheckModel(poiItem.latLonPoint).apply {
+                val checkModel = CheckModel(poiItem.latLonPoint)
+                    .apply {
                     sendModel.placeTitle = if (poiResult.query == currentCenterQuery) poiItem.title
                     else KeyWordUtil.matcherSearchTitle(
                         ContextCompat.getColor(context, R.color.searchKey),

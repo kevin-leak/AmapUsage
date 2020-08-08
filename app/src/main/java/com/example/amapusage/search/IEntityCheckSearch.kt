@@ -1,7 +1,7 @@
 package com.example.amapusage.search
 
-import android.text.Editable
 import androidx.lifecycle.MutableLiveData
+import com.example.amapusage.model.CheckModel
 
 interface IEntityCheckSearch {
     interface OnSearchListener {
