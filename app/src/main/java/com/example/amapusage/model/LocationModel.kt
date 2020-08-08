@@ -3,6 +3,7 @@ package com.example.amapusage.model
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.SpannableString
+import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import kotlin.properties.Delegates
 
@@ -14,12 +15,12 @@ open class LocationModel() : LiveData<LocationModel>(), Parcelable{
     var longitude by Delegates.notNull<Double>()
 
     constructor(parcel: Parcel) : this() {
-        placeTitle = parcel.readString()!!
+        placeTitle = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(parcel)
         placeDesc = parcel.readString()!!
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(placeTitle.toString())
+        TextUtils.writeToParcel(placeTitle.toString(), parcel, flags)
         parcel.writeString(placeDesc)
         parcel.writeDouble(latitude)
         parcel.writeDouble(longitude)

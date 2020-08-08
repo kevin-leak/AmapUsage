@@ -37,8 +37,8 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
     companion object {
         const val TAG = "kyle-map-MapShow"
         const val RESULT_CODE_SEND_MODEL = 200
-        const val RESULT_MAP_BITMAP = "RESULT_MAP_BITMAP"
-        const val RESULT_SEND_MODEL = "RESULT_Send_MODEL"
+        const val RESULT_BITMAP = "bitmap"
+        const val RESULT_SEND_MODEL = "RESULT_SEND_MODEL"
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -68,12 +68,12 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
         viewModel.checkModel.observe(this, Observer {
             changeSendButtonActive(it != null)
         })
-        viewModel.searchList.observe(
-            this,
-            Observer<MutableList<CheckModel>> { entityCheckAdapter.notifyDataSetChanged() })
-        viewModel.normalList.observe(
-            this,
-            Observer<MutableList<CheckModel>> { entityCheckAdapter.notifyDataSetChanged() })
+        viewModel.searchList.observe(this, Observer<MutableList<CheckModel>> {
+            entityCheckAdapter.notifyDataSetChanged()
+        })
+        viewModel.normalList.observe(this, Observer<MutableList<CheckModel>> {
+            entityCheckAdapter.notifyDataSetChanged()
+        })
     }
 
     private fun executeQuery(data: String) {
@@ -193,8 +193,7 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
         progressBar.visibility = GONE
         entityCheckAdapter.removeFootItem()
         if (viewModel.searchList.value != null && viewModel.searchList.value!!.size <= 0 &&
-            !TextUtils.isEmpty(locationSearchView.text) && locationSearchView.isSearch
-        ) {
+            !TextUtils.isEmpty(locationSearchView.text) && locationSearchView.isSearch) {
             textPlaceHolder.visibility = VISIBLE
         } else {
             textPlaceHolder.visibility = GONE
@@ -212,12 +211,12 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
     }
 
     fun onSendLocation(view: View) {
-        if (viewModel.checkModel.value != null && sendLocationButton.isActivated) {
+        if (viewModel.checkModel.value != null && view.isClickable) {
             operator.aMap.getMapScreenShot(object : AMap.OnMapScreenShotListener {
                 override fun onMapScreenShot(bitmap: Bitmap) {
                     Intent().run {
-                        putExtra(RESULT_MAP_BITMAP, buildSuitableBitmap(bitmap))
                         putExtra(RESULT_SEND_MODEL, viewModel.checkModel.value!!.sendModel)
+                        putExtra(RESULT_BITMAP, buildSuitableBitmap(bitmap))
                         setResult(RESULT_CODE_SEND_MODEL, this)
                     }
                     locationSearchView.exitEditMode()
@@ -229,7 +228,6 @@ open class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSour
                 override fun onMapScreenShot(p0: Bitmap?, p1: Int) {}
             })
         }
-
     }
 
     private fun buildSuitableBitmap(bitmap: Bitmap): ByteArray {

@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (data != null) {
-            val bis = data.getByteArrayExtra(LocationShowActivity.RESULT_MAP_BITMAP)
+            val bis = data.getByteArrayExtra(LocationShowActivity.RESULT_BITMAP)
             val bitmap = BitmapFactory.decodeByteArray(bis, 0, bis.size)
             val locationModel = data.getParcelableExtra(LocationShowActivity.RESULT_SEND_MODEL) as LocationModel
             cdvMessageItem.visibility = View.VISIBLE

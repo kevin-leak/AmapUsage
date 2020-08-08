@@ -148,9 +148,7 @@ class GetLocationOperator : AMapOperator() {
                 Log.e(TAG, "onPoiSearched: ")
             }
         } else {
-            if (poiResult?.query != null) {
-                Log.e(TAG, "onPoiSearched: " + "load fail")
-            }
+            if (poiResult?.query != null) Log.e(TAG, "onPoiSearched: " + "load fail")
         }
         listener.loadDataDone()
     }
