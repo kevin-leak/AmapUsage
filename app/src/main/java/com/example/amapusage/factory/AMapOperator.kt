@@ -3,7 +3,6 @@ package com.example.amapusage.factory
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
-import android.view.View
 import android.view.animation.TranslateAnimation
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -31,6 +30,11 @@ import kotlin.math.sqrt
 open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     PoiSearch.OnPoiSearchListener {
 
+    var isNeedCenterPin: Boolean = true
+        set(value) {
+            if (!value) this.clearCenterMark()
+            field = value
+        }
     private var isFirst: Boolean = true
     private var positionMark: Marker? = null
     private lateinit var animationPin: TranslateAnimation
@@ -54,7 +58,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         setUpClient()
         mLocationClient.startLocation() //启动定位我当前位置
         aMap.setOnCameraChangeListener(this)
-        addMarkerInScreenCenter()
         return this
     }
 
@@ -108,12 +111,16 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         mLocationClient.setLocationListener { aMapLocation ->
             myLocation = aMapLocation
             if (isFirst) {
-                moveToCurrent()
-                resetCenterMark()
                 isFirst = false
+                initAction()
             }
             mLocationClient.stopLocation()
         }
+    }
+
+    override fun initAction() {
+        moveToCurrent()
+        if (isNeedCenterPin) addMarkerInScreenCenter()
     }
 
     override fun buildMapBaseConfig(): AMap {

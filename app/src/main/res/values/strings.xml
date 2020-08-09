@@ -6,6 +6,7 @@
     <string name="send">Send</string>
     <string name="no_search_results">No search results</string>
     <string name="loading">loading...</string>
+    <string name="location_info">Location Info</string>
     <drawable name="item_normal">#FFFFFF</drawable>
     <drawable name="item_pressed">#52392D2D</drawable>
 

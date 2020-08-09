@@ -17,6 +17,8 @@ open class LocationModel() : LiveData<LocationModel>(), Parcelable{
     constructor(parcel: Parcel) : this() {
         placeTitle = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(parcel)
         placeDesc = parcel.readString()!!
+        latitude = parcel.readDouble()
+        longitude = parcel.readDouble()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -19,6 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.amap.api.maps.AMap
 import com.amap.api.maps.model.LatLng
+import com.example.amapusage.MainActivity.Companion.RESULT_BITMAP
+import com.example.amapusage.MainActivity.Companion.RESULT_CODE_SEND_MODEL
+import com.example.amapusage.MainActivity.Companion.RESULT_SEND_MODEL
 import com.example.amapusage.collapse.IScrollSensor
 import com.example.amapusage.factory.GetLocationOperator
 import com.example.amapusage.factory.IMapOperator
@@ -44,9 +48,6 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
     companion object {
         const val TAG = "kyle-map-MapShow"
-        const val RESULT_CODE_SEND_MODEL = 200
-        const val RESULT_BITMAP = "bitmap"
-        const val RESULT_SEND_MODEL = "RESULT_SEND_MODEL"
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -264,6 +265,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                         putExtra(RESULT_BITMAP, buildSuitableBitmap(bitmap))
                         setResult(RESULT_CODE_SEND_MODEL, this)
                     }
+                    Log.e(TAG, "onMapScreenShot: " + viewModel.checkModel.value!!.sendModel.latitude + " " + viewModel.checkModel.value!!.sendModel.longitude)
                     locationSearchView.exitEditMode()
                     textureMapView.onDestroy()
                     operator.endOperate()

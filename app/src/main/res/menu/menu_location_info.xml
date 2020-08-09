@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <item
+        android:id="@+id/itemSearch_menu_main"
+        android:title="搜索"
+        app:showAsAction="never"
+        tools:ignore="AppCompatResource" />
+    <item
+        android:id="@+id/itemMore_menu_main"
+        app:showAsAction="never"
+        android:title="更多"
+        tools:ignore="AppCompatResource" />
+</menu>

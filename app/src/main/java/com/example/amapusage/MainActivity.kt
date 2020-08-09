@@ -11,6 +11,15 @@ import kotlinx.android.synthetic.main.item_message.*
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var locationModel: LocationModel
+
+    companion object {
+        const val TAG = "kyle-map-MapShow"
+        const val RESULT_CODE_SEND_MODEL = 200
+        const val RESULT_BITMAP = "bitmap"
+        const val RESULT_SEND_MODEL = "RESULT_SEND_MODEL"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -23,9 +32,10 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (data != null) {
-            val bis = data.getByteArrayExtra(LocationShowActivity.RESULT_BITMAP)
-            val bitmap = BitmapFactory.decodeByteArray(bis, 0, bis.size)
-            val locationModel = data.getParcelableExtra(LocationShowActivity.RESULT_SEND_MODEL) as LocationModel
+            val bis = data.getByteArrayExtra(RESULT_BITMAP)
+            val bitmap = BitmapFactory.decodeByteArray(bis, 0, bis!!.size)
+            locationModel =
+                data.getParcelableExtra(RESULT_SEND_MODEL) as LocationModel
             cdvMessageItem.visibility = View.VISIBLE
             ivMap.setImageBitmap(bitmap)
             tvTitle.text = locationModel.placeTitle
@@ -33,6 +43,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun parseLocation(view: View) = startActivity(Intent(this, LocationParseActivity::class.java));
+    fun parseLocation(view: View) = Intent().run {
+        putExtra(RESULT_SEND_MODEL, locationModel)
+        setClass(this@MainActivity, LocationParseActivity::class.java)
+        startActivity(this)
+    }
 
 }

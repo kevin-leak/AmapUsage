@@ -14,6 +14,7 @@ interface IMapOperator {
         fun getMap(): AMap
         fun moveToCurrent()                 // 定位
         fun endOperate()
+        fun initAction()
         fun queryByText(queryText: String)
     }
 
