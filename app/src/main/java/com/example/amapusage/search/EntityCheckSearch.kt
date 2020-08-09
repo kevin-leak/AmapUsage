@@ -1,22 +1,24 @@
 package com.example.amapusage.search
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.os.Handler
 import android.os.IBinder
-import android.os.SystemClock
+import android.os.Message
 import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import com.example.amapusage.R
+import java.lang.ref.WeakReference
 
 @SuppressLint("NewApi")
 class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int) :
@@ -29,7 +31,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         }
         get() = searchContentEdit.text
 
-    private val TAG = "HintSearchView"
+    private val TAG = "kyle-map-HintSearchView"
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attr: AttributeSet?) : this(context, attr, 0)
@@ -67,6 +69,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             val queryText = a.getString(R.styleable.EntityCheckSearch_text)
             searchContentEdit.setText(queryText)
         }
+        a.recycle()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -101,6 +104,14 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
                 if (TextUtils.isEmpty(s)) searchDeleteIcon.visibility = View.GONE
                 else searchDeleteIcon.visibility = View.VISIBLE
                 listeners.forEach { it.sourceChanging(s.toString()) }
+//                textRunnable = if (textRunnable == null) {
+//                    TextDelayRunnable(myHandler, s.toString())
+//                } else {
+//                    Log.e(TAG, "onTextChanged: ")
+//                    handler.removeCallbacks(null)
+//                    TextDelayRunnable(myHandler, s.toString())
+//                }
+//                myHandler.postDelayed(textRunnable!!, 1000)
             }
         })
         searchContentEdit.setOnEditorActionListener { _, actionId, _ ->
@@ -177,4 +188,26 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         override fun onSearchModeChange(isSearch: Boolean) {}
         override fun beforeSearchModeChange(isSearch: Boolean) {}
     }
+
+//    companion object {
+//        var textRunnable: TextDelayRunnable? = null
+//    }
+//
+//    val myHandler = TextHandler(listeners)
+//
+//    class TextHandler(private val listeners: MutableList<IEntityCheckSearch.OnSearchListener>) :
+//        Handler() {
+//        override fun handleMessage(msg: Message) {
+//            listeners.forEach { it.sourceChanging(msg.obj.toString()) }
+//        }
+//    }
+//
+//    class TextDelayRunnable(private val handler: TextHandler, val text: String) : Runnable {
+//        override fun run() {
+//            val msg = Message.obtain()
+//            msg.obj = text
+//            handler.sendMessage(msg)
+//        }
+//    }
+
 }
