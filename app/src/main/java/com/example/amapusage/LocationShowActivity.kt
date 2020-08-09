@@ -101,13 +101,15 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
             override fun sourceChanging(data: String) {
                 resetSearchAdapter()
-                textRunnable = if (textRunnable == null) {
-                    TextDelayRunnable(myHandler, data)
-                } else {
-                    myHandler.removeCallbacksAndMessages(null)
-                    TextDelayRunnable(myHandler, data)
+                if (locationSearchView.isSearch){
+                    textRunnable = if (textRunnable == null) {
+                        TextDelayRunnable(myHandler, data)
+                    } else {
+                        myHandler.removeCallbacksAndMessages(null)
+                        TextDelayRunnable(myHandler, data)
+                    }
+                    myHandler.postDelayed(textRunnable!!, 500)
                 }
-                myHandler.postDelayed(textRunnable!!, 500)
             }
 
             override fun onSearchModeChange(isSearch: Boolean) {
@@ -117,6 +119,8 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                     resetSearchAdapter()
                     entityCheckAdapter.switchData(viewModel.searchList)
                 } else {
+                    textRunnable = null
+                    myHandler.removeCallbacksAndMessages(null)
                     resetCurrentAdapter()
                     entityCheckAdapter.switchData(viewModel.normalList)
                 }
