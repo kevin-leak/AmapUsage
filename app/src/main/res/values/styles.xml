@@ -17,4 +17,9 @@
         <item name="android:windowFrame">@null</item>
     </style>
 
+
+    <style name="myToolBar" parent="@style/ThemeOverlay.AppCompat.ActionBar">
+        <item name="colorControlNormal">@color/gray</item>
+    </style>
+
 </resources>

@@ -23,6 +23,7 @@
             app:contentInsetEnd="0dp"
             app:contentInsetLeft="0dp"
             app:contentInsetStart="0dp"
+            app:theme="@style/myToolBar"
             app:contentInsetStartWithNavigation="0dp"
             app:navigationIcon="@drawable/ic_back"
             app:title="@string/location_info"

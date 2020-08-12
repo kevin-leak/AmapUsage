@@ -92,7 +92,7 @@
         tools:targetApi="lollipop">
 
         <com.example.amapusage.search.EntityCheckSearch
-            android:id="@+id/locationSearchView"
+            android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="15dp" />

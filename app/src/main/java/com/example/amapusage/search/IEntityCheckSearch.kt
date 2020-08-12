@@ -23,6 +23,10 @@ interface IEntityCheckSearch {
         fun hasBeChecked(position: Int)
     }
 
+    interface textTimeEndListener{
+        fun textCome(text:String)
+    }
+
     fun exitEditMode()
     fun enterEditMode()
     fun addSearchListener(lt: OnSearchListener)

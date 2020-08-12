@@ -75,4 +75,9 @@ class LocationParseActivity : AppCompatActivity(), IMapOperator.LocationSourceLi
 
     fun loadCurrentLocation(view: View) = operator.moveToCurrent()
     fun onMapForward(view: View) {}
+
+    override fun onDestroy() {
+        operator.endOperate()
+        super.onDestroy()
+    }
 }

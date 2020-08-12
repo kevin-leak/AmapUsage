@@ -19,7 +19,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
 
     private var footHolder: RecyclerView.ViewHolder? = null
     private var isShowFootItem: Boolean = false
-    private lateinit var currentList: MutableLiveData<MutableList<CheckModel>>
+    private lateinit var data: MutableLiveData<MutableList<CheckModel>>
     private lateinit var mContext: Context
     private lateinit var model: LocationViewModel
     var listener: IEntityCheckSearch.CheckListener? = null
@@ -32,7 +32,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     constructor(mContext: Context, model: LocationViewModel) : this() {
         this.mContext = mContext
         this.model = model
-        currentList = model.normalList
+        data = model.normalList
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -52,24 +52,23 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position + 1 == currentList.value!!.size) VIEW_TYPE_FOOT
+        return if (position + 1 == data.value!!.size) VIEW_TYPE_FOOT
         else super.getItemViewType(position)
     }
 
-    override fun getItemCount(): Int = currentList.value!!.size
+    override fun getItemCount(): Int = data.value!!.size
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (position == itemCount - 1) return
         holder.itemView.locationChecker.tag = position // 标记
         holder.itemView.locationChecker.setOnClickListener(this)
-        holder.itemView.tvLocationName.text = currentList.value!![position].sendModel.placeTitle
-        holder.itemView.tvLocationDesc.text = currentList.value!![position].distanceDetails
-        holder.itemView.locationChecker.isChecked = currentList.value!![position].isChecked
+        holder.itemView.tvLocationName.text = data.value!![position].sendModel.placeTitle
+        holder.itemView.tvLocationDesc.text = data.value!![position].distanceDetails
+        holder.itemView.locationChecker.isChecked = data.value!![position].isChecked
     }
 
     override fun switchData(data: MutableLiveData<MutableList<CheckModel>>) {
-        currentList = data
-        checkPosition = -1
+        this.data = data
         notifyDataSetChanged()
     }
 
@@ -86,25 +85,23 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     override fun onClick(buttonView: View) {
-        if (currentList.value == null || checkPosition > currentList.value!!.size) return
         unCheck()
         checkModel(buttonView.tag as Int)
         listener?.hasBeChecked((buttonView.tag as Int))
     }
 
-    var checkPosition = -1
     private fun unCheck() {
-        if (checkPosition == -1 && !currentList.value!![0].isSearch) checkPosition = 0
-        if (checkPosition != -1) {
-            currentList.value!![checkPosition].isChecked = false
-            notifyItemChanged(checkPosition)
+        val checkModel = model.checkModel.value
+        if (checkModel != null && data.value?.indexOf(checkModel) != -1) {
+            val index = data.value?.indexOf(checkModel) ?: 0
+            data.value!![index].isChecked = false
+            notifyItemChanged(index)
         }
     }
 
     private fun checkModel(position: Int) {
-        currentList.value!![position].isChecked = true
-        model.checkModel.value = currentList.value!![position]
-        checkPosition = position
+        data.value!![position].isChecked = true
+        model.checkModel.value = data.value!![position]
         notifyItemChanged(position)
     }
 

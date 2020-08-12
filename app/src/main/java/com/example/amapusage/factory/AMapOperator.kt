@@ -181,5 +181,8 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     override fun setUpCenterMark(): AMapOperator = apply { centerMarker?.isVisible = true }
     override fun endOperate() = mLocationClient.stopLocation()
     override fun getMap(): AMap = aMap
+    fun markAllDataBase() {
+        // todo mark 所有的位置，在同一张地图可视化的
+    }
 
 }

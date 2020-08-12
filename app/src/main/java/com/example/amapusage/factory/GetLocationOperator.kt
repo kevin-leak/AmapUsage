@@ -37,6 +37,7 @@ class GetLocationOperator : AMapOperator() {
             "|200000|210000|220000|010000|020000|160000"
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
+
     class Node(var latLonPoint: LatLonPoint) {
         var last: Node? = null
         fun action(operator: GetLocationOperator) {
@@ -60,13 +61,18 @@ class GetLocationOperator : AMapOperator() {
     var tail: Node? = null // 如果checkList 发生暴击，在动画化没有完成前变成同步，导致数据错乱，但不能阻塞.
 
     // 一个逆向的链表，先进先出，在上一个节点没有执行完，就会出现断层，如果没有执行完，就wait顺序执行.
-    fun moveToSelect(latLonPoint: LatLonPoint) {
+    fun moveToPosition(latLonPoint: LatLonPoint) {
         if (tail == null) {
             tail = Node(latLonPoint)
             tail!!.action(this)
         } else {
             Node(latLonPoint).apply { last = tail }
         }
+    }
+
+    fun moveToCheck() {
+        if (!model.isChecked()) return
+        moveToPosition(model.checkModel.value!!.lonPoint)
     }
 
     override fun onCameraChange(cameraPosition: CameraPosition?) {
@@ -155,16 +161,10 @@ class GetLocationOperator : AMapOperator() {
     private fun dealCenterQuery(poiResult: PoiResult) {
         val data: MutableList<CheckModel> = buildItem(poiResult)
         var value = model.normalList.value
-        if (currentCenterQuery.pageNum == 1) {
-            value = data
-            if (value.size > 0) { // 默认选择第一个
-                value[0].isChecked = true
-                model.checkModel.value = value[0]
-            }
-        } else {
-            value?.addAll(data)
-        }
-        model.normalList.value = value
+        if (currentCenterQuery.pageNum == 1) value = data
+        else value?.addAll(data)
+        model.normalList.value  = value
+        if (currentCenterQuery.pageNum == 1) model.setDefaultCheck()
     }
 
     private fun buildItem(

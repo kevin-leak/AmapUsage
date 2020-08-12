@@ -1,7 +1,6 @@
 package com.example.amapusage.search
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.IBinder
@@ -18,11 +17,11 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import com.example.amapusage.R
-import java.lang.ref.WeakReference
 
 @SuppressLint("NewApi")
 class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int) :
-    FrameLayout(context, attr, defStyleAttr, defStyleAttr), IEntityCheckSearch {
+    FrameLayout(context, attr, defStyleAttr, defStyleAttr), IEntityCheckSearch,
+    IEntityCheckSearch.textTimeEndListener {
     var text: Editable = SpannableStringBuilder()
         set(value) {
             enterEditMode()
@@ -103,15 +102,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if (TextUtils.isEmpty(s)) searchDeleteIcon.visibility = View.GONE
                 else searchDeleteIcon.visibility = View.VISIBLE
-                listeners.forEach { it.sourceChanging(s.toString()) }
-//                textRunnable = if (textRunnable == null) {
-//                    TextDelayRunnable(myHandler, s.toString())
-//                } else {
-//                    Log.e(TAG, "onTextChanged: ")
-//                    handler.removeCallbacks(null)
-//                    TextDelayRunnable(myHandler, s.toString())
-//                }
-//                myHandler.postDelayed(textRunnable!!, 1000)
+                textHandler.delayQuery(s.toString())
             }
         })
         searchContentEdit.setOnEditorActionListener { _, actionId, _ ->
@@ -130,6 +121,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         else searchContentEdit.clearFocus()
         isSearch = false
         listeners.forEach { it.onSearchModeChange(isSearch) }
+        textHandler.emptyQuery()
     }
 
     override fun exitEditMode() {
@@ -189,25 +181,48 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         override fun beforeSearchModeChange(isSearch: Boolean) {}
     }
 
-//    companion object {
-//        var textRunnable: TextDelayRunnable? = null
-//    }
-//
-//    val myHandler = TextHandler(listeners)
-//
-//    class TextHandler(private val listeners: MutableList<IEntityCheckSearch.OnSearchListener>) :
-//        Handler() {
-//        override fun handleMessage(msg: Message) {
-//            listeners.forEach { it.sourceChanging(msg.obj.toString()) }
-//        }
-//    }
-//
-//    class TextDelayRunnable(private val handler: TextHandler, val text: String) : Runnable {
-//        override fun run() {
-//            val msg = Message.obtain()
-//            msg.obj = text
-//            handler.sendMessage(msg)
-//        }
-//    }
+    val textHandler = TextHandler(this)
 
+    var setTextDelayTime = 500
+        set(value) {
+            textHandler.delayTime = value
+            field = value
+        }
+        get() = textHandler.delayTime
+
+    class TextHandler(
+        private val listener: IEntityCheckSearch.textTimeEndListener,
+        private var runnable: TextDelayRunnable? = null
+    ) : Handler() {
+        var delayTime = 500
+
+        fun delayQuery(data: String) {
+            runnable = if (runnable == null) {
+                TextDelayRunnable(data)
+            } else {
+                emptyQuery()
+                TextDelayRunnable(data)
+            }
+            postDelayed(runnable!!, 500)
+        }
+
+        override fun handleMessage(msg: Message) {
+            listener.textCome(msg.obj.toString())
+        }
+
+        fun emptyQuery() {
+            runnable = null
+            removeCallbacksAndMessages(null)
+        }
+
+        inner class TextDelayRunnable(val text: String) : Runnable {
+            override fun run() {
+                sendMessage(Message.obtain().apply { obj = text })
+            }
+        }
+    }
+
+    override fun textCome(text: String) {
+        listeners.forEach { it.sourceChanging(text) }
+    }
 }
