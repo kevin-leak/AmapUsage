@@ -66,12 +66,8 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
         viewModel.checkModel.observe(this, Observer { changeSendButtonActive(it != null) })
-        viewModel.searchList.observe(
-            this,
-            Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
-        viewModel.normalList.observe(
-            this,
-            Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
+        viewModel.searchList.observe(this, Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
+        viewModel.normalList.observe(this, Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -87,7 +83,9 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         }
         searchView.addSearchListener(object : EntityCheckSearch.OnSearchListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) = sensor.changeCollapseState(isEnter)
-            override fun sourceChanging(data: String) = executeQuery(data)
+            override fun sourceChanging(data: String) {
+                executeQuery(data)
+            }
             override fun sourceCome(data: String) = operator.markAllDataBase()
             override fun onSearchModeChange(isSearch: Boolean) = changeState(isSearch)
         })
@@ -118,7 +116,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         operator.setUpCenterMark()
         viewModel.restoreSnapshot()
         operator.moveToCheck()
-//        entityRecycleView.scrollToPosition() todo 滑动到选择项
+        entityRecycleView.scrollToPosition(viewModel.snapshot)
         checkAdapter.switchData(viewModel.normalList)
     }
 
@@ -155,8 +153,9 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     }
 
     fun loadCurrentLocation(view: View) {
-        operator.moveToCurrent()
+        if (!checkAdapter.checkCurrent()) operator.moveToCurrent()
         if (searchView.isEnterMode) sensor.changeCollapseState(false)
+        if (searchView.isSearch) operator.setUpCenterMark() // 因为不对数据进行查询，所以不存在center.
     }
 
     override fun startLoadNewData() {

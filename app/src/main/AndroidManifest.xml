@@ -12,7 +12,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <!--todo add application key-->
         <meta-data
             android:name="com.amap.api.v2.apikey"
             android:value="6b237a95cdd1e3ca2a6fab313c86b448" />
@@ -25,11 +24,9 @@
         </activity>
         <activity android:name=".LocationShowActivity" />
         <activity android:name=".LocationParseActivity"/>
-        <!--        todo add service-->
         <service android:name="com.amap.api.location.APSService" />
     </application>
 
-    <!--todo add permission-->
     <!--用于进行网络定位-->
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"

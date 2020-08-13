@@ -27,7 +27,7 @@ class GetLocationOperator : AMapOperator() {
     var lock = false // 防止不停的下拉，导致页码变化
         private set
     var isNeedQuery = true
-    private lateinit var currentCenterQuery: PoiSearch.Query
+    private lateinit var centerQuery: PoiSearch.Query
     private lateinit var currentCenterPoint: LatLonPoint
     private var searchByText: PoiSearch.Query? = null
     private val searchType = "190403|190100|190400|190600|190000|170204|" +
@@ -38,36 +38,30 @@ class GetLocationOperator : AMapOperator() {
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
 
-    class Node(var latLonPoint: LatLonPoint) {
+    inner class Node(var latLonPoint: LatLonPoint) {
+        // 一个逆向的链表，先进先出，在上一个节点没有执行完，就会出现断层，如果没有执行完，就wait顺序执行.
         var last: Node? = null
-        fun action(operator: GetLocationOperator) {
-            operator.isNeedQuery = false
+        fun action() {
+            isNeedQuery = false
             val latLng = LatLng(latLonPoint.latitude, latLonPoint.longitude)
-            operator.getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600,
+            getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600,
                 object : AMap.CancelableCallback {
-                    override fun onFinish() {
-                        last?.action(operator)
-                        operator.tail = last
-                    }
-
-                    override fun onCancel() {
-                        last?.action(operator)
-                        operator.tail = last
-                    }
+                    override fun onFinish() = turn()
+                    override fun onCancel() = turn()
                 })
+        }
+
+        private fun turn() {
+            last?.action()
+            this@GetLocationOperator.tail = last
         }
     }
 
     var tail: Node? = null // 如果checkList 发生暴击，在动画化没有完成前变成同步，导致数据错乱，但不能阻塞.
 
-    // 一个逆向的链表，先进先出，在上一个节点没有执行完，就会出现断层，如果没有执行完，就wait顺序执行.
     fun moveToPosition(latLonPoint: LatLonPoint) {
-        if (tail == null) {
-            tail = Node(latLonPoint)
-            tail!!.action(this)
-        } else {
-            Node(latLonPoint).apply { last = tail }
-        }
+        if (tail == null) tail = Node(latLonPoint).also { it.action() }
+        else Node(latLonPoint).apply { this.last = tail }
     }
 
     fun moveToCheck() {
@@ -77,20 +71,19 @@ class GetLocationOperator : AMapOperator() {
 
     override fun onCameraChange(cameraPosition: CameraPosition?) {
         super.onCameraChange(cameraPosition)
-        if (lock) return
-        if (isNeedQuery) {
-            lock = true
-            listener.startLoadNewData()
-        }
+        if (lock || !isNeedQuery) return
+        lock = true
+        listener.startLoadNewData()
     }
+
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
         super.onCameraChangeFinish(cameraPosition)
-        if (isNeedQuery) { // 自动搜索的，移动到屏幕中心. 第二个运行到这里
+        if (isNeedQuery) {
             val target = cameraPosition.target
             queryByMove(LatLonPoint(target.latitude, target.longitude)) // 查询数据
         } else if (!isNeedQuery) {
-            isNeedQuery = !isNeedQuery // 选中，第一个运行到这
+            isNeedQuery = !isNeedQuery
         }
     }
 
@@ -115,11 +108,11 @@ class GetLocationOperator : AMapOperator() {
 
     private fun queryByMove(latLonPoint: LatLonPoint) {
         currentCenterPoint = latLonPoint
-        currentCenterQuery = PoiSearch.Query("", "", myLocation?.city)
-        currentCenterQuery.pageNum = 1
-        currentCenterQuery.pageSize = 20
-        currentCenterQuery.isDistanceSort = true
-        centerSearcher = PoiSearch(context, currentCenterQuery)
+        centerQuery = PoiSearch.Query("", "", myLocation?.city)
+        centerQuery.pageNum = 1
+        centerQuery.pageSize = 20
+        centerQuery.isDistanceSort = true
+        centerSearcher = PoiSearch(context, centerQuery)
         centerSearcher.setOnPoiSearchListener(this)
         centerSearcher.bound = PoiSearch.SearchBound(latLonPoint, 1000000000)
         centerSearcher.searchPOIAsyn()
@@ -135,17 +128,13 @@ class GetLocationOperator : AMapOperator() {
 
     override fun onPoiSearched(poiResult: PoiResult?, rCode: Int) {
         lock = false
-        if (rCode == AMapException.CODE_AMAP_SUCCESS) {
-            if (poiResult?.query != null) {
-                when (poiResult.query) {
-                    currentCenterQuery -> dealCenterQuery(poiResult) // 一个新的搜索
-                    searchByText -> dealQueryByText(poiResult)
-                }
-            } else {
-                Log.e(TAG, "onPoiSearched: ")
-            }
-        } else {
-            if (poiResult?.query != null) Log.e(TAG, "onPoiSearched: " + "load fail")
+        if (rCode != AMapException.CODE_AMAP_SUCCESS || poiResult?.query == null) {
+            Log.e(TAG, "onPoiSearched is fail")
+            return
+        }
+        when (poiResult.query) {
+            centerQuery -> dealCenterQuery(poiResult)
+            searchByText -> dealQueryByText(poiResult)
         }
         listener.loadDataDone()
     }
@@ -161,35 +150,29 @@ class GetLocationOperator : AMapOperator() {
     private fun dealCenterQuery(poiResult: PoiResult) {
         val data: MutableList<CheckModel> = buildItem(poiResult)
         var value = model.normalList.value
-        if (currentCenterQuery.pageNum == 1) value = data
+        if (centerQuery.pageNum == 1) value = data
         else value?.addAll(data)
-        model.normalList.value  = value
-        if (currentCenterQuery.pageNum == 1) model.setDefaultCheck()
+        model.normalList.value = value
+        if (centerQuery.pageNum == 1) model.setDefaultCheck()
     }
 
-    private fun buildItem(
-        poiResult: PoiResult,
-        isSearch: Boolean = false
-    ): MutableList<CheckModel> {
-        val poiItems: List<PoiItem> = poiResult.pois // 取得第一页的poiitem数据，页数从数字0开始
+    private fun buildItem(result: PoiResult, isSearch: Boolean = false): MutableList<CheckModel> {
+        val items: List<PoiItem> = result.pois // 取得第一页的poiitem数据，页数从数字0开始
         val data: MutableList<CheckModel> = ArrayList()
-        val keyword = poiResult.query.queryString
-        if (poiItems.isNotEmpty()) {
-            for (poiItem in poiItems) {
-                val checkModel = CheckModel(poiItem.latLonPoint)
-                    .apply {
-                    sendModel.placeTitle = if (poiResult.query == currentCenterQuery) poiItem.title
-                    else KeyWordUtil.matcherSearchTitle(
-                        ContextCompat.getColor(context, R.color.searchKey),
-                        poiItem.title,
-                        keyword
-                    )
-                    sendModel.placeDesc = poiItem.snippet
-                    distanceDetails = formatDistance(poiItem.latLonPoint) + " | " + poiItem.snippet
-                    this.isSearch = isSearch
-                }
-                data.add(checkModel)
+        val keyword = result.query.queryString
+        if (items.isEmpty()) return data
+        items.forEach {
+            val checkModel = CheckModel(it.latLonPoint).apply {
+                distanceDetails = formatDistance(it.latLonPoint) + " | " + it.snippet
+                this.isSearch = isSearch
             }
+            checkModel.sendModel.apply {
+                placeTitle = it.title
+                placeDesc = it.snippet
+                placeTitle = if (result.query == centerQuery) it.title
+                else KeyWordUtil.buildSearchKey(it.title, keyword, context)
+            }
+            data.add(checkModel)
         }
         return data
     }

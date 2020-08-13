@@ -84,10 +84,12 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         footView?.visibility = View.VISIBLE
     }
 
-    override fun onClick(buttonView: View) {
+    override fun onClick(buttonView: View) = exchangeCheckStatus(buttonView.tag as Int)
+
+    private fun exchangeCheckStatus(position: Int) {
         unCheck()
-        checkModel(buttonView.tag as Int)
-        listener?.hasBeChecked((buttonView.tag as Int))
+        checkModel(position)
+        listener?.hasBeChecked(position)
     }
 
     private fun unCheck() {
@@ -110,6 +112,18 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         if (endCount >= 0) {
             notifyItemRangeChanged(0, endCount)
         }
+    }
+
+    fun checkCurrent(): Boolean {
+        val index = data.value?.indexOf(model.currentModel.value) ?: -1
+        if (index == -1) return false
+        else exchangeCheckStatus(index)
+        return true
+    }
+
+    fun getPosition(): Int {
+        if (data.value == null || data.value!!.size < itemCount || model.checkModel.value == null) return -1
+        return data.value!!.indexOf(model.checkModel.value!!)
     }
 
     class DataViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

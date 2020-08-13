@@ -1,24 +1,20 @@
 package com.example.amapusage.utils
 
+import android.content.Context
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import androidx.core.content.ContextCompat
+import com.example.amapusage.R
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 
 object KeyWordUtil {
-    /**
-     * 关键字高亮变色
-     *
-     * @param color 变化的色值
-     * @param text 文字
-     * @param keyword 文字中的关键字
-     * @return 结果SpannableString
-     */
-    fun matcherSearchTitle(color: Int, text: String, word: String): SpannableString {
+
+    fun buildKey(text: String, word: String, color: Int): SpannableString {
         val spannableString = SpannableString(text)
         val keyword = escapeExprSpecialWord(word)
         val reText = escapeExprSpecialWord(text)
@@ -38,12 +34,10 @@ object KeyWordUtil {
         return spannableString
     }
 
-    /**
-     * 转义正则特殊字符 （$()*+.[]?\^{},|）
-     *
-     * @param keyword
-     * @return keyword
-     */
+    fun buildSearchKey(text: String, word: String, context: Context): SpannableString{
+       return buildKey(text, word,  ContextCompat.getColor(context, R.color.searchKey))
+    }
+
     private fun escapeExprSpecialWord(word: String): String {
         var keyword = word
         if (!TextUtils.isEmpty(keyword)) {
