@@ -30,7 +30,6 @@ object KeyWordUtil {
                 )
             }
         }
-        Log.e("KeyWordUtil", "matcherSearchTitle: $spannableString")
         return spannableString
     }
 

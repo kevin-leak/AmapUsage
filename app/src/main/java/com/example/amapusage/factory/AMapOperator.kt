@@ -110,7 +110,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
 
     override fun initAction() {
         moveToCurrent()
-        if (isNeedCenterPin) addMarkerInScreenCenter()
+        addMarkerInScreenCenter()
     }
 
     override fun buildMapBaseConfig(): AMap {

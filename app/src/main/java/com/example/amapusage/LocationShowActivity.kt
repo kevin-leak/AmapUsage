@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -32,6 +33,7 @@ import com.example.amapusage.utils.KeyBoardUtils
 import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_show_location.*
 import java.io.ByteArrayOutputStream
+import java.util.*
 
 
 class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
@@ -39,6 +41,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private lateinit var operator: GetLocationOperator
     private lateinit var checkAdapter: EntityCheckAdapter
     private lateinit var viewModel: LocationViewModel
+    private val queue = LinkedList<String>()
 
     companion object {
         const val TAG = "kyle-map-MapShow"
@@ -66,8 +69,12 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
         viewModel.checkModel.observe(this, Observer { changeSendButtonActive(it != null) })
-        viewModel.searchList.observe(this, Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
-        viewModel.normalList.observe(this, Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
+        viewModel.searchList.observe(
+            this,
+            Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
+        viewModel.normalList.observe(
+            this,
+            Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -84,8 +91,22 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         searchView.addSearchListener(object : EntityCheckSearch.OnSearchListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) = sensor.changeCollapseState(isEnter)
             override fun sourceChanging(data: String) {
-                executeQuery(data)
+                when (queue.size) {
+                    0 -> {
+                        queue.offer(data)
+                        executeQuery(data)
+                    }
+                    1 -> {
+                        queue.offer(data)
+                    }
+                    else -> {
+                        queue.pollLast()
+                        queue.offer(data)
+                        Log.e(TAG, "sourceChanging: " + "dasfafdsdf")
+                    }
+                }
             }
+
             override fun sourceCome(data: String) = operator.markAllDataBase()
             override fun onSearchModeChange(isSearch: Boolean) = changeState(isSearch)
         })
@@ -129,10 +150,10 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     }
 
     private fun executeQuery(data: String) {
-        // TODO when the data is empty, notifydata > load data in internet + notifydata
         resetSearchState()
         progressBar.visibility = if (!TextUtils.isEmpty(data)) VISIBLE else GONE
         if (!TextUtils.isEmpty(data)) operator.queryByText(data)
+        else queue.pollLast() // 自动删除，因为不会loadDone
     }
 
     private fun initAdapter() {
@@ -167,6 +188,10 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         placeHolderReversalState()
         progressBar.visibility = GONE
         checkAdapter.removeFootItem()
+        if (searchView.isSearch) {
+            queue.pollFirst()
+            if (queue.size == 1) executeQuery(queue.pollLast()!!)
+        }
     }
 
     private fun placeHolderReversalState() {

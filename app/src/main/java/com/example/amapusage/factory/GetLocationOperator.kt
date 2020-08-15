@@ -30,11 +30,6 @@ class GetLocationOperator : AMapOperator() {
     private lateinit var centerQuery: PoiSearch.Query
     private lateinit var currentCenterPoint: LatLonPoint
     private var searchByText: PoiSearch.Query? = null
-    private val searchType = "190403|190100|190400|190600|190000|170204|" +
-            "050000|060000|070000|120000|180000" +
-            "|080000|090000|100000|110000|130000" +
-            "|140000|150000|170000|190000" +
-            "|200000|210000|220000|010000|020000|160000"
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
 
@@ -75,7 +70,6 @@ class GetLocationOperator : AMapOperator() {
         lock = true
         listener.startLoadNewData()
     }
-
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
         super.onCameraChangeFinish(cameraPosition)
