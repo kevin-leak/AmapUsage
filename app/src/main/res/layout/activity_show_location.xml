@@ -57,7 +57,6 @@
         android:layout_marginBottom="25dp"
         android:background="@drawable/shape_location_button"
         android:elevation="10dp"
-        android:onClick="loadCurrentLocation"
         android:padding="10dp"
         android:src="@drawable/ic_gps_blue"
         tools:targetApi="lollipop" />

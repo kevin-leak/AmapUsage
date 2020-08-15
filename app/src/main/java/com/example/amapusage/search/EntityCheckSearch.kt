@@ -183,7 +183,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
 
     val textHandler = TextHandler(this)
 
-    var setTextDelayTime = 500
+    var setTextDelayTime = 300L
         set(value) {
             textHandler.delayTime = value
             field = value
@@ -194,7 +194,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
         private val listener: IEntityCheckSearch.textTimeEndListener,
         private var runnable: TextDelayRunnable? = null
     ) : Handler() {
-        var delayTime = 500
+        var delayTime = 300L
 
         fun delayQuery(data: String) {
             runnable = if (runnable == null) {
@@ -203,7 +203,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
                 emptyQuery()
                 TextDelayRunnable(data)
             }
-            postDelayed(runnable!!, 500)
+            postDelayed(runnable!!, delayTime)
         }
 
         override fun handleMessage(msg: Message) {

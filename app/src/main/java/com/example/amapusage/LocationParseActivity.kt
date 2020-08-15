@@ -3,7 +3,6 @@ package com.example.amapusage
 //import com.example.amapusage.operator.ParseLocationOperator
 import android.os.Bundle
 import android.view.ContextMenu
-import android.view.Menu
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.amap.api.maps.model.LatLng
@@ -12,10 +11,10 @@ import com.example.amapusage.factory.ParseLocationOperator
 import com.example.amapusage.model.LocationModel
 import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_parse_location.*
-import java.lang.reflect.Method
 
 
-class LocationParseActivity : AppCompatActivity(), IMapOperator.LocationSourceLister {
+class LocationParseActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
+    IMapOperator.LocateCurrentState {
     private lateinit var operator: ParseLocationOperator
     private lateinit var locationModel: LocationModel
 
@@ -34,7 +33,7 @@ class LocationParseActivity : AppCompatActivity(), IMapOperator.LocationSourceLi
 
         operator = ParseLocationOperator()
         operator.preWork(textureMapView, this)
-            .bindCurrentButton(currentLocationButton)
+            .bindCurrentButton(currentLocationButton, this)
             .isNeedCenterPin = false
         locationModel = intent.getParcelableExtra(MainActivity.RESULT_SEND_MODEL) as LocationModel
         tvTitle.text = locationModel.placeTitle
@@ -73,11 +72,14 @@ class LocationParseActivity : AppCompatActivity(), IMapOperator.LocationSourceLi
 
     }
 
-    fun loadCurrentLocation(view: View) = operator.moveToCurrent()
     fun onMapForward(view: View) {}
 
     override fun onDestroy() {
         operator.endOperate()
         super.onDestroy()
+    }
+
+    override fun performLocate(b: Boolean) {
+        operator.moveToCurrent()
     }
 }

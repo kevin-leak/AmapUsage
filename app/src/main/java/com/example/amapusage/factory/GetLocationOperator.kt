@@ -30,6 +30,11 @@ class GetLocationOperator : AMapOperator() {
     private lateinit var centerQuery: PoiSearch.Query
     private lateinit var currentCenterPoint: LatLonPoint
     private var searchByText: PoiSearch.Query? = null
+    private val searchType = "190403|190100|190400|190600|190000|170204|" +
+            "050000|060000|070000|120000|180000" +
+            "|080000|090000|100000|110000|130000" +
+            "|140000|150000|170000|190000" +
+            "|200000|210000|220000|010000|020000|160000"
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
 
@@ -102,7 +107,7 @@ class GetLocationOperator : AMapOperator() {
 
     private fun queryByMove(latLonPoint: LatLonPoint) {
         currentCenterPoint = latLonPoint
-        centerQuery = PoiSearch.Query("", "", myLocation?.city)
+        centerQuery = PoiSearch.Query("", searchType)
         centerQuery.pageNum = 1
         centerQuery.pageSize = 20
         centerQuery.isDistanceSort = true
@@ -141,13 +146,18 @@ class GetLocationOperator : AMapOperator() {
         model.searchList.value = value
     }
 
+    override fun initAction() {
+        super.initAction()
+        model.myLocation = myLocation
+    }
+
     private fun dealCenterQuery(poiResult: PoiResult) {
         val data: MutableList<CheckModel> = buildItem(poiResult)
         var value = model.normalList.value
         if (centerQuery.pageNum == 1) value = data
         else value?.addAll(data)
         model.normalList.value = value
-        if (centerQuery.pageNum == 1) model.setDefaultCheck()
+        if (centerQuery.pageNum == 1) model.setDefaultCheck(currentCenterPoint)
     }
 
     private fun buildItem(result: PoiResult, isSearch: Boolean = false): MutableList<CheckModel> {
@@ -161,7 +171,6 @@ class GetLocationOperator : AMapOperator() {
                 this.isSearch = isSearch
             }
             checkModel.sendModel.apply {
-                placeTitle = it.title
                 placeDesc = it.snippet
                 placeTitle = if (result.query == centerQuery) it.title
                 else KeyWordUtil.buildSearchKey(it.title, keyword, context)

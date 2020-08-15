@@ -1,6 +1,7 @@
 package com.example.amapusage.search
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,8 @@ import com.example.amapusage.R
 import com.example.amapusage.model.CheckModel
 import com.example.amapusage.model.LocationViewModel
 import kotlinx.android.synthetic.main.item_location.view.*
+import javax.security.auth.login.LoginException
+import kotlin.math.log
 
 /**
  * 默认展示和搜索展示的切换.向外通知数据的变化.
@@ -52,13 +55,14 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position + 1 == data.value!!.size) VIEW_TYPE_FOOT
+        return if (position== itemCount - 1) VIEW_TYPE_FOOT
         else super.getItemViewType(position)
     }
 
-    override fun getItemCount(): Int = data.value!!.size
+    override fun getItemCount(): Int = data.value!!.size + 1
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        Log.e("kyle-map", "onBindViewHolder: " + data.value!!.size)
         if (position == itemCount - 1) return
         holder.itemView.locationChecker.tag = position // 标记
         holder.itemView.locationChecker.setOnClickListener(this)
@@ -115,10 +119,12 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     fun checkCurrent(): Boolean {
-        val index = data.value?.indexOf(model.currentModel.value) ?: -1
-        if (index == -1) return false
-        else exchangeCheckStatus(index)
-        return true
+        if (data.value.isNullOrEmpty()) return false
+        if (data.value!![0].isPointEqual(model.myLocation)) {
+            exchangeCheckStatus(0)
+            return true
+        }
+        return false
     }
 
     fun getPosition(): Int {

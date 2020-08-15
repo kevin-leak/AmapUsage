@@ -2,8 +2,10 @@ package com.example.amapusage.model
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.amap.api.location.AMapLocation
+import com.amap.api.services.core.LatLonPoint
 
-open class LocationViewModel : ViewModel() {
+open class LocationViewModel() : ViewModel() {
     // 构建三种需要通知的数据，分别是：
     // 1. 移动地图直接产生的locationModelList
     // 2. 搜索产生的字符串
@@ -11,9 +13,15 @@ open class LocationViewModel : ViewModel() {
     var normalList = MutableLiveData<MutableList<CheckModel>>()
     var searchList = MutableLiveData<MutableList<CheckModel>>() // search的时候的list
     var checkModel = MutableLiveData<CheckModel?>() // 最终要修改的数据.
-    var currentModel = MutableLiveData<CheckModel>() // 因为可能频繁触发，保存当前定位model
+    var myLocation: AMapLocation? = null
     var snapshot = -1 // 如果数据再处于加载中，这样可以先保存index但是无法变化checkModel
 
+
+    init {
+        normalList.value = mutableListOf()
+        searchList.value = mutableListOf()
+        checkModel.value = null
+    }
 
     fun resetSearch() {
         searchList.value = mutableListOf()
@@ -30,15 +38,16 @@ open class LocationViewModel : ViewModel() {
         normalList.value = mutableListOf()
     }
 
-    fun setDefaultCheck() {
-        if (normalList.value!!.size > 0) { // 默认选择第一个
-            normalList.value!![0].isChecked = true
-            checkModel.value = normalList.value!![0]
+    fun setDefaultCheck(point: LatLonPoint) {
+        if (normalList.value.isNullOrEmpty()) return
+        if (!normalList.value!![0].isPointEqual(point)) {
+            val checkModel = CheckModel(point)
+            checkModel.sendModel.placeTitle = "Location"
+            checkModel.distanceDetails = "100m内"
+            normalList.value!!.add(0, checkModel)
         }
-    }
-
-    init {
-        reSetAllData()
+        normalList.value!![0].isChecked = true
+        checkModel.value = normalList.value!![0]
     }
 
     fun restoreSnapshot() {

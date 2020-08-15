@@ -7,10 +7,10 @@ import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import kotlin.properties.Delegates
 
-open class LocationModel() : LiveData<LocationModel>(), Parcelable{
+open class LocationModel() : LiveData<LocationModel>(), Parcelable {
 
-    lateinit var placeTitle: CharSequence
-    lateinit var placeDesc: String
+    var placeTitle: CharSequence = ""
+    var placeDesc: String = ""
     var latitude by Delegates.notNull<Double>()
     var longitude by Delegates.notNull<Double>()
 
@@ -30,6 +30,10 @@ open class LocationModel() : LiveData<LocationModel>(), Parcelable{
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    override fun toString(): String {
+        return "LocationModel(placeTitle=$placeTitle, placeDesc='$placeDesc')"
     }
 
     companion object CREATOR : Parcelable.Creator<LocationModel> {

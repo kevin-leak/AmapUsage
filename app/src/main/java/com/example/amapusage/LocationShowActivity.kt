@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -37,14 +36,37 @@ import java.util.*
 
 
 class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLister,
-    IScrollSensor.CollapsingListener {
+    IScrollSensor.CollapsingListener, IMapOperator.LocateCurrentState {
     private lateinit var operator: GetLocationOperator
     private lateinit var checkAdapter: EntityCheckAdapter
     private lateinit var viewModel: LocationViewModel
-    private val queue = LinkedList<String>()
+    private val searchQueue = LinkedList<String>()
 
     companion object {
         const val TAG = "kyle-map-MapShow"
+    }
+
+    fun LinkedList<String>.offerAndSearch(text: String) {
+        when (this.size) { // 必须是大小为2不然无法判断是否正在执行.
+            0 -> {
+                offer(text)
+                executeQuery(text)
+            }
+            1 -> {
+                offer(text)
+            }
+            else -> {
+                pollLast()
+                offer(text)
+            }
+        }
+    }
+
+    private fun LinkedList<String>.pollAndSearch(){
+        if (searchView.isSearch) {
+            pollFirst()
+            if (size == 1) executeQuery(pollLast()!!)
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -63,7 +85,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private fun initOperator() {
         operator = GetLocationOperator()
         operator.preWork(textureMapView, this)
-        operator.bindModel(viewModel).bindCurrentButton(currentLocationButton)
+        operator.bindModel(viewModel).bindCurrentButton(currentLocationButton, this)
     }
 
     private fun initViewModel() {
@@ -90,23 +112,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         }
         searchView.addSearchListener(object : EntityCheckSearch.OnSearchListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) = sensor.changeCollapseState(isEnter)
-            override fun sourceChanging(data: String) {
-                when (queue.size) {
-                    0 -> {
-                        queue.offer(data)
-                        executeQuery(data)
-                    }
-                    1 -> {
-                        queue.offer(data)
-                    }
-                    else -> {
-                        queue.pollLast()
-                        queue.offer(data)
-                        Log.e(TAG, "sourceChanging: " + "dasfafdsdf")
-                    }
-                }
-            }
-
+            override fun sourceChanging(data: String) = searchQueue.offerAndSearch(data)
             override fun sourceCome(data: String) = operator.markAllDataBase()
             override fun onSearchModeChange(isSearch: Boolean) = changeState(isSearch)
         })
@@ -121,14 +127,13 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
     private fun loadMore() {
         if (entityRecycleView.canScrollVertically(1)) return
-        checkAdapter.addFootItem()
         if (searchView.isEnterMode) operator.loadMoreByText()
         else operator.loadMoreByMove()
+        checkAdapter.addFootItem()
     }
 
     private fun changeState(isSearch: Boolean) {
-        textPlaceHolder.visibility = GONE
-        progressBar.visibility = GONE
+        clearSearchStatus()
         if (isSearch) resetSearchState()
         else resetNormalState()
     }
@@ -150,10 +155,19 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     }
 
     private fun executeQuery(data: String) {
-        resetSearchState()
         progressBar.visibility = if (!TextUtils.isEmpty(data)) VISIBLE else GONE
-        if (!TextUtils.isEmpty(data)) operator.queryByText(data)
-        else queue.pollLast() // 自动删除，因为不会loadDone
+        if (!TextUtils.isEmpty(data)) {
+            operator.queryByText(data)
+        } else {
+            clearSearchStatus()
+            viewModel.resetSearch()
+            searchQueue.pollLast() // 自动删除，因为不会loadDone
+        }
+    }
+
+    private fun clearSearchStatus() {
+        textPlaceHolder.visibility = GONE
+        progressBar.visibility = GONE
     }
 
     private fun initAdapter() {
@@ -173,10 +187,13 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         operator.addPositionMarker(lang)
     }
 
-    fun loadCurrentLocation(view: View) {
-        if (!checkAdapter.checkCurrent()) operator.moveToCurrent()
+    override fun performLocate(isOnAnimation: Boolean) {
+        if (isOnAnimation){
+            if (!checkAdapter.checkCurrent()) operator.moveToCurrent()
+            else entityRecycleView.smoothScrollToPosition(0)
+            if (searchView.isSearch) operator.setUpCenterMark() // 因为不对数据进行查询，所以不存在center.
+        }
         if (searchView.isEnterMode) sensor.changeCollapseState(false)
-        if (searchView.isSearch) operator.setUpCenterMark() // 因为不对数据进行查询，所以不存在center.
     }
 
     override fun startLoadNewData() {
@@ -188,10 +205,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         placeHolderReversalState()
         progressBar.visibility = GONE
         checkAdapter.removeFootItem()
-        if (searchView.isSearch) {
-            queue.pollFirst()
-            if (queue.size == 1) executeQuery(queue.pollLast()!!)
-        }
+        searchQueue.pollAndSearch()
     }
 
     private fun placeHolderReversalState() {
@@ -252,7 +266,6 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
     override fun beforeCollapseStateChange(isCollapsing: Boolean) {
         if (isCollapsing) KeyBoardUtils.closeKeyboard(searchView.windowToken, baseContext)
-        operator.clearCenterMark()
     }
 
     override fun collapseStateChanged(isCollapsed: Boolean) {

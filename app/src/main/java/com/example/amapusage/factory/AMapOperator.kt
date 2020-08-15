@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
@@ -61,11 +60,11 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     private fun addMarkerInScreenCenter() {
+        centerMarker?.remove()
         val option = MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))
         centerMarker = aMap.addMarker(option)
         aMap.addMarker(option)
         resetCenterMark()
-        startJumpAnimation()
     }
 
     fun resetCenterMark() {
@@ -97,20 +96,28 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private fun setUpClient() {
         mLocationClient = AMapLocationClient(context)
         clientOption = AMapLocationClientOption().apply {
-            isOnceLocation = true
+//            isOnceLocation = true
             locationMode = AMapLocationClientOption.AMapLocationMode.Hight_Accuracy
         }
         mLocationClient.setLocationOption(clientOption)
         mLocationClient.setLocationListener { aMapLocation ->
             myLocation = aMapLocation
             if (isFirst.get()) initAction()
-            mLocationClient.stopLocation()
+        }
+    }
+
+    override fun bindCurrentButton(btn: ImageButton, state:IMapOperator.LocateCurrentState): AMapOperator = apply {
+        btn.tag = false
+        currentButton = btn
+        currentButton.setOnClickListener {
+            state.performLocate(currentButton.tag as Boolean)
+            if (currentButton.tag as Boolean) return@setOnClickListener
+            currentButton.tag = true
         }
     }
 
     override fun initAction() {
         moveToCurrent()
-        addMarkerInScreenCenter()
     }
 
     override fun buildMapBaseConfig(): AMap {
@@ -151,6 +158,17 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
+        changeCurrentButtonState(cameraPosition)
+        listener.moveCameraFinish()
+        if (centerMarker ==  null){
+            addMarkerInScreenCenter()
+        }else{
+            startJumpAnimation()
+        }
+        if (isFirst.compareAndSet(true, false)) initActionDone()
+    }
+
+    private fun changeCurrentButtonState(cameraPosition: CameraPosition) {
         var backID = R.drawable.ic_gps_gray
         if (abs(cameraPosition.target.latitude - myLocation!!.latitude) < deta
             && abs(cameraPosition.target.longitude - myLocation!!.longitude) < deta
@@ -158,11 +176,8 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
             backID = R.drawable.ic_gps_blue
         }
         currentButton.setImageDrawable(ContextCompat.getDrawable(context, backID))
-        listener.moveCameraFinish()
-        startJumpAnimation()
-        if (isFirst.compareAndSet(true, false)) initActionDone()
+        if (currentButton.tag as Boolean) currentButton.tag = false
     }
-
 
     fun markAllDataBase() {
         // todo mark 所有的位置，在同一张地图可视化的
@@ -177,8 +192,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     override fun onPoiSearched(poiResult: PoiResult?, resultCode: Int) {}
     override fun clearCenterMark(): AMapOperator = apply { centerMarker?.isVisible = false }
     override fun setUpCenterMark(): AMapOperator = apply { centerMarker?.isVisible = true }
-    override fun bindCurrentButton(btn: ImageButton): AMapOperator = apply { currentButton = btn }
     override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
-
 
 }

@@ -8,7 +8,7 @@ interface IMapOperator {
     interface Operator {
         fun preWork(tMV: TextureMapView, lt: LocationSourceLister): Operator  // 不持有tMV
         fun buildMapBaseConfig(): AMap      // 配置
-        fun bindCurrentButton(btn: ImageButton): Operator
+        fun bindCurrentButton(btn: ImageButton, state:LocateCurrentState): Operator
         fun clearCenterMark(): Operator
         fun setUpCenterMark(): Operator
         fun getMap(): AMap
@@ -25,5 +25,7 @@ interface IMapOperator {
         fun loadDataDone()
     }
 
-//    interface locationDataSource
+    interface LocateCurrentState{
+       fun performLocate(isOnAnimation: Boolean)
+    }
 }
