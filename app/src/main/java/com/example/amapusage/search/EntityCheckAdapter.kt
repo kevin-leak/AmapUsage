@@ -25,6 +25,13 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     private lateinit var data: MutableLiveData<MutableList<CheckModel>>
     private lateinit var mContext: Context
     private lateinit var model: LocationViewModel
+    var isSearch = false
+        set(value) {
+            if (value) takeASnapshot()
+            switchData(if (value) model.searchList else model.normalList)
+            if (!value) restoreSnapshot()
+            field = value
+        }
     var listener: IEntityCheckSearch.CheckListener? = null
     private var footView: View? = null
 
@@ -55,7 +62,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position== itemCount - 1) VIEW_TYPE_FOOT
+        return if (isDataArea(position)) VIEW_TYPE_FOOT
         else super.getItemViewType(position)
     }
 
@@ -63,13 +70,15 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         Log.e("kyle-map", "onBindViewHolder: " + data.value!!.size)
-        if (position == itemCount - 1) return
+        if (isDataArea(position)) return
         holder.itemView.locationChecker.tag = position // 标记
         holder.itemView.locationChecker.setOnClickListener(this)
         holder.itemView.tvLocationName.text = data.value!![position].sendModel.placeTitle
         holder.itemView.tvLocationDesc.text = data.value!![position].distanceDetails
         holder.itemView.locationChecker.isChecked = data.value!![position].isChecked
     }
+
+    private fun isDataArea(position: Int) = position == itemCount - 1
 
     override fun switchData(data: MutableLiveData<MutableList<CheckModel>>) {
         this.data = data
@@ -125,6 +134,18 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
             return true
         }
         return false
+    }
+
+    var snapshot = -1
+    private fun takeASnapshot() {
+        snapshot = data.value?.indexOf(model.checkModel.value) ?: 0
+        snapshot = if (snapshot == -1) 0 else snapshot
+    }
+
+    private fun restoreSnapshot(): Int {
+        if (data.value!!.size <= snapshot) return -1
+        exchangeCheckStatus(snapshot)
+        return snapshot
     }
 
     fun getPosition(): Int {

@@ -183,6 +183,11 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         // todo mark 所有的位置，在同一张地图可视化的
     }
 
+    override fun setUpCenterMark(): AMapOperator = apply {
+        centerMarker?.isVisible = true
+        resetCenterMark()
+    }
+
     open fun initActionDone() {}
     override fun getMap(): AMap = aMap
     override fun queryByText(queryText: String) {}
@@ -191,7 +196,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     fun clearPositionMark() = apply { positionMark?.remove() }
     override fun onPoiSearched(poiResult: PoiResult?, resultCode: Int) {}
     override fun clearCenterMark(): AMapOperator = apply { centerMarker?.isVisible = false }
-    override fun setUpCenterMark(): AMapOperator = apply { centerMarker?.isVisible = true }
     override fun onCameraChange(cameraPosition: CameraPosition?) = listener.onMoveChange()
 
 }

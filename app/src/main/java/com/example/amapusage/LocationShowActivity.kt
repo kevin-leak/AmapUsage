@@ -62,7 +62,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         }
     }
 
-    private fun LinkedList<String>.pollAndSearch(){
+    private fun LinkedList<String>.pollAndSearch() {
         if (searchView.isSearch) {
             pollFirst()
             if (size == 1) executeQuery(pollLast()!!)
@@ -91,12 +91,12 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private fun initViewModel() {
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
         viewModel.checkModel.observe(this, Observer { changeSendButtonActive(it != null) })
-        viewModel.searchList.observe(
-            this,
-            Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
-        viewModel.normalList.observe(
-            this,
-            Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
+        viewModel.searchList.observe(this, Observer<MutableList<CheckModel>> {
+            if (searchView.isSearch) checkAdapter.notifyDataSetChanged()
+        })
+        viewModel.normalList.observe(this, Observer<MutableList<CheckModel>> {
+            if (!searchView.isSearch) checkAdapter.notifyDataSetChanged()
+        })
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -133,25 +133,23 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     }
 
     private fun changeState(isSearch: Boolean) {
-        clearSearchStatus()
+        clearDataStatus()
+        checkAdapter.isSearch = isSearch
         if (isSearch) resetSearchState()
         else resetNormalState()
+        entityRecycleView.smoothScrollToPosition(checkAdapter.snapshot)
     }
 
     private fun resetNormalState() {
+        clearDataStatus()
         operator.setUpCenterMark()
-        viewModel.restoreSnapshot()
-        operator.moveToCheck()
-        entityRecycleView.scrollToPosition(viewModel.snapshot)
-        checkAdapter.switchData(viewModel.normalList)
+        operator.clearPositionMark()
     }
 
     private fun resetSearchState() {
+        clearDataStatus()
         operator.clearCenterMark()
-        operator.clearPositionMark()
-        viewModel.takeASnapshot()
         viewModel.resetSearch()
-        checkAdapter.switchData(viewModel.searchList)
     }
 
     private fun executeQuery(data: String) {
@@ -159,13 +157,13 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         if (!TextUtils.isEmpty(data)) {
             operator.queryByText(data)
         } else {
-            clearSearchStatus()
+            clearDataStatus()
             viewModel.resetSearch()
             searchQueue.pollLast() // 自动删除，因为不会loadDone
         }
     }
 
-    private fun clearSearchStatus() {
+    private fun clearDataStatus() {
         textPlaceHolder.visibility = GONE
         progressBar.visibility = GONE
     }
@@ -188,7 +186,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     }
 
     override fun performLocate(isOnAnimation: Boolean) {
-        if (isOnAnimation){
+        if (isOnAnimation) {
             if (!checkAdapter.checkCurrent()) operator.moveToCurrent()
             else entityRecycleView.smoothScrollToPosition(0)
             if (searchView.isSearch) operator.setUpCenterMark() // 因为不对数据进行查询，所以不存在center.
@@ -244,12 +242,8 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                         putExtra(RESULT_BITMAP, buildSuitableBitmap(bitmap))
                         setResult(RESULT_CODE_SEND_MODEL, this)
                     }
-                    searchView.exitEditMode()
-                    textureMapView.onDestroy()
-                    operator.endOperate()
                     finish()
                 }
-
                 override fun onMapScreenShot(p0: Bitmap?, p1: Int) {}
             })
         }
@@ -282,8 +276,10 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     }
 
     override fun onBackPressed() {
-        if (searchView.isEnterMode) searchView.exitEditMode()
-        else super.onBackPressed()
+        when {
+            searchView.isSearch -> searchView.exitSearchMode()
+            else -> super.onBackPressed()
+        }
     }
 
     override fun onDestroy() {

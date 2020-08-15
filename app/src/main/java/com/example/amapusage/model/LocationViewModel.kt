@@ -14,7 +14,6 @@ open class LocationViewModel() : ViewModel() {
     var searchList = MutableLiveData<MutableList<CheckModel>>() // search的时候的list
     var checkModel = MutableLiveData<CheckModel?>() // 最终要修改的数据.
     var myLocation: AMapLocation? = null
-    var snapshot = -1 // 如果数据再处于加载中，这样可以先保存index但是无法变化checkModel
 
 
     init {
@@ -26,11 +25,6 @@ open class LocationViewModel() : ViewModel() {
     fun resetSearch() {
         searchList.value = mutableListOf()
         clearCheckModel()
-    }
-
-    fun takeASnapshot() {
-        snapshot = normalList.value?.indexOf(checkModel.value) ?: 0
-        snapshot = if (snapshot == -1) 0 else snapshot
     }
 
     fun reSetAllData() {
@@ -50,10 +44,6 @@ open class LocationViewModel() : ViewModel() {
         checkModel.value = normalList.value!![0]
     }
 
-    fun restoreSnapshot() {
-        if (normalList.value!!.size <= snapshot) return
-        checkModel.value = normalList.value!![snapshot]
-    }
 
     private fun clearCheckModel() = run { checkModel.value = null }
     fun isChecked() = checkModel.value != null
