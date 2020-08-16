@@ -25,13 +25,6 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     private lateinit var data: MutableLiveData<MutableList<CheckModel>>
     private lateinit var mContext: Context
     private lateinit var model: LocationViewModel
-    var isSearch = false
-        set(value) {
-            if (value) takeASnapshot()
-            switchData(if (value) model.searchList else model.normalList)
-            if (!value) restoreSnapshot()
-            field = value
-        }
     var listener: IEntityCheckSearch.CheckListener? = null
     private var footView: View? = null
 
@@ -69,7 +62,6 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     override fun getItemCount(): Int = data.value!!.size + 1
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        Log.e("kyle-map", "onBindViewHolder: " + data.value!!.size)
         if (isDataArea(position)) return
         holder.itemView.locationChecker.tag = position // 标记
         holder.itemView.locationChecker.setOnClickListener(this)
@@ -137,12 +129,12 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     var snapshot = -1
-    private fun takeASnapshot() {
+    fun takeASnapshot() {
         snapshot = data.value?.indexOf(model.checkModel.value) ?: 0
         snapshot = if (snapshot == -1) 0 else snapshot
     }
 
-    private fun restoreSnapshot(): Int {
+    fun restoreSnapshot(): Int {
         if (data.value!!.size <= snapshot) return -1
         exchangeCheckStatus(snapshot)
         return snapshot

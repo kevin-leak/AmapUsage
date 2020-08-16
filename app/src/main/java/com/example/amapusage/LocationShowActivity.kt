@@ -92,10 +92,10 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         viewModel = ViewModelProviders.of(this).get(LocationViewModel::class.java)
         viewModel.checkModel.observe(this, Observer { changeSendButtonActive(it != null) })
         viewModel.searchList.observe(this, Observer<MutableList<CheckModel>> {
-            if (searchView.isSearch) checkAdapter.notifyDataSetChanged()
+            checkAdapter.notifyDataSetChanged()
         })
         viewModel.normalList.observe(this, Observer<MutableList<CheckModel>> {
-            if (!searchView.isSearch) checkAdapter.notifyDataSetChanged()
+            checkAdapter.notifyDataSetChanged()
         })
     }
 
@@ -134,22 +134,26 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
     private fun changeState(isSearch: Boolean) {
         clearDataStatus()
-        checkAdapter.isSearch = isSearch
         if (isSearch) resetSearchState()
         else resetNormalState()
-        entityRecycleView.smoothScrollToPosition(checkAdapter.snapshot)
     }
 
     private fun resetNormalState() {
-        clearDataStatus()
-        operator.setUpCenterMark()
         operator.clearPositionMark()
+        operator.clearAllMarkerBase()
+        checkAdapter.switchData(viewModel.normalList)
+        val snapshot = checkAdapter.restoreSnapshot()
+        entityRecycleView.smoothScrollToPosition(snapshot)
+        operator.setUpCenterMark()
     }
 
     private fun resetSearchState() {
-        clearDataStatus()
+        checkAdapter.takeASnapshot()
         operator.clearCenterMark()
+        operator.clearPositionMark()
+        operator.clearAllMarkerBase()
         viewModel.resetSearch()
+        checkAdapter.switchData(viewModel.searchList)
     }
 
     private fun executeQuery(data: String) {
@@ -166,6 +170,8 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     private fun clearDataStatus() {
         textPlaceHolder.visibility = GONE
         progressBar.visibility = GONE
+        checkAdapter.removeFootItem()
+        searchQueue.clear()
     }
 
     private fun initAdapter() {
@@ -173,25 +179,28 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         checkAdapter = EntityCheckAdapter(this, viewModel)
         entityRecycleView.adapter = checkAdapter
         checkAdapter.listener = object : IEntityCheckSearch.CheckListener {
-            override fun hasBeChecked(position: Int) = checkLinkAnimation()
+            override fun hasBeChecked(position: Int) = checkAnimation()
         }
     }
 
-    private fun checkLinkAnimation() {
-        val value = viewModel.checkModel.value!!
+    private fun checkAnimation() {
         operator.moveToCheck()
         if (!searchView.isSearch) return
+        val value = viewModel.checkModel.value!!
         val lang = LatLng(value.lonPoint.latitude, value.lonPoint.longitude)
-        operator.addPositionMarker(lang)
+        operator.removeAddPositionMarker(lang)
     }
 
-    override fun performLocate(isOnAnimation: Boolean) {
-        if (isOnAnimation) {
-            if (!checkAdapter.checkCurrent()) operator.moveToCurrent()
+    override fun performLocateCurrent(isOnAnimation: Boolean): Boolean {
+        var haveCurrent = false
+        if (!isOnAnimation) {
+            haveCurrent = checkAdapter.checkCurrent()
+            if (!haveCurrent && searchView.isSearch) operator.isNeedQuery = false
+            if (!haveCurrent) operator.moveToCurrent()
             else entityRecycleView.smoothScrollToPosition(0)
-            if (searchView.isSearch) operator.setUpCenterMark() // 因为不对数据进行查询，所以不存在center.
         }
         if (searchView.isEnterMode) sensor.changeCollapseState(false)
+        return haveCurrent
     }
 
     override fun startLoadNewData() {
@@ -244,6 +253,7 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                     }
                     finish()
                 }
+
                 override fun onMapScreenShot(p0: Bitmap?, p1: Int) {}
             })
         }
@@ -260,18 +270,12 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
 
     override fun beforeCollapseStateChange(isCollapsing: Boolean) {
         if (isCollapsing) KeyBoardUtils.closeKeyboard(searchView.windowToken, baseContext)
+        if (!searchView.isSearch) operator.resetCenterMark()
     }
 
     override fun collapseStateChanged(isCollapsed: Boolean) {
         operator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
-        collapseButtonLayout.apply {
-            visibility = if (isCollapsed) VISIBLE else GONE
-//            animation = AlphaAnimation(if (isCollapsed) 0f else 1f, if (isCollapsed) 1f else 0f)
-//            animation.duration = 10
-//            animation.fillAfter = true
-//            animation.interpolator = AccelerateInterpolator()
-//            animation.start()
-        }
+        collapseButtonLayout.apply { visibility = if (isCollapsed) VISIBLE else GONE }
         if (!searchView.isSearch) operator.resetCenterMark()
     }
 

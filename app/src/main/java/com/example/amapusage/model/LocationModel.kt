@@ -32,10 +32,6 @@ open class LocationModel() : LiveData<LocationModel>(), Parcelable {
         return 0
     }
 
-    override fun toString(): String {
-        return "LocationModel(placeTitle=$placeTitle, placeDesc='$placeDesc')"
-    }
-
     companion object CREATOR : Parcelable.Creator<LocationModel> {
         override fun createFromParcel(parcel: Parcel): LocationModel {
             return LocationModel(parcel)

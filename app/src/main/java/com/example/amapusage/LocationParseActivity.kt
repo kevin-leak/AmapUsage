@@ -79,7 +79,8 @@ class LocationParseActivity : AppCompatActivity(), IMapOperator.LocationSourceLi
         super.onDestroy()
     }
 
-    override fun performLocate(b: Boolean) {
+    override fun performLocateCurrent(b: Boolean):Boolean {
         operator.moveToCurrent()
+        return false
     }
 }

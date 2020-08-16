@@ -38,7 +38,7 @@ class GetLocationOperator : AMapOperator() {
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
 
-    inner class Node(var latLonPoint: LatLonPoint) {
+    inner class Node(private var latLonPoint: LatLonPoint) {
         // 一个逆向的链表，先进先出，在上一个节点没有执行完，就会出现断层，如果没有执行完，就wait顺序执行.
         var last: Node? = null
         fun action() {
@@ -59,7 +59,7 @@ class GetLocationOperator : AMapOperator() {
 
     var tail: Node? = null // 如果checkList 发生暴击，在动画化没有完成前变成同步，导致数据错乱，但不能阻塞.
 
-    fun moveToPosition(latLonPoint: LatLonPoint) {
+    private fun moveToPosition(latLonPoint: LatLonPoint) {
         if (tail == null) tail = Node(latLonPoint).also { it.action() }
         else Node(latLonPoint).apply { this.last = tail }
     }
@@ -90,7 +90,7 @@ class GetLocationOperator : AMapOperator() {
         searchByText = PoiSearch.Query(queryText, "", "")
         searchByText!!.cityLimit = true
         searchByText!!.pageSize = 20
-        searchByText!!.pageNum = 0
+        searchByText!!.pageNum = 1
         byTextSearcher = PoiSearch(context, searchByText)
         byTextSearcher.setOnPoiSearchListener(this)
         byTextSearcher.query.isDistanceSort = true
@@ -115,13 +115,12 @@ class GetLocationOperator : AMapOperator() {
         centerSearcher.setOnPoiSearchListener(this)
         centerSearcher.bound = PoiSearch.SearchBound(latLonPoint, 1000000000)
         centerSearcher.searchPOIAsyn()
-
     }
 
     fun loadMoreByMove() {
         if (lock) return
         lock = true
-        centerSearcher.apply { query.pageNum += 1 }
+        centerSearcher.query.pageNum += 1
         centerSearcher.searchPOIAsyn()
     }
 

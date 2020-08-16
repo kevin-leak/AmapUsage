@@ -62,7 +62,6 @@ class ScrollSensorLayout(context: Context?, attrs: AttributeSet?) :
         collapseAnimation = if (isCollapsing) ValueAnimator.ofFloat(collapseHeight, expandHeight)
         else ValueAnimator.ofFloat(expandHeight, collapseHeight)
         collapseAnimation.apply {
-            // fixme 差值还是需要改改
             interpolator = AccelerateDecelerateInterpolator()
             duration = collapseDuration
             startDelay = collapseDelay

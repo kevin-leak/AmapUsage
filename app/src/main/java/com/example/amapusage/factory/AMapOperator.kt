@@ -3,7 +3,6 @@ package com.example.amapusage.factory
 import android.content.Context
 import android.graphics.Color
 import android.widget.ImageButton
-import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
@@ -38,7 +37,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private var isFirst: AtomicBoolean = AtomicBoolean().apply { set(true) }
     private var positionMark: Marker? = null
     private lateinit var clientOption: AMapLocationClientOption
-    private var mapPin: ImageView? = null
     private lateinit var currentButton: ImageButton
     private lateinit var mLocationClient: AMapLocationClient
     internal lateinit var aMap: AMap
@@ -47,6 +45,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     private val deta = 0.00002f // 这和两个location的取值有关系，有的四舍五入了.
     lateinit var context: Context
     private var centerMarker: Marker? = null
+    private var markBaseMap = mutableMapOf<String, Marker>()
 
     override fun preWork(tMV: TextureMapView, lt: IMapOperator.LocationSourceLister): AMapOperator {
         context = tMV.context
@@ -60,7 +59,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     private fun addMarkerInScreenCenter() {
-        centerMarker?.remove()
         val option = MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))
         centerMarker = aMap.addMarker(option)
         aMap.addMarker(option)
@@ -106,14 +104,15 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         }
     }
 
-    override fun bindCurrentButton(btn: ImageButton, state:IMapOperator.LocateCurrentState): AMapOperator = apply {
-        btn.tag = false
+    override fun bindCurrentButton(btn: ImageButton, state: IMapOperator.LocateCurrentState): AMapOperator {
         currentButton = btn
+        currentButton.tag = false
         currentButton.setOnClickListener {
-            state.performLocate(currentButton.tag as Boolean)
-            if (currentButton.tag as Boolean) return@setOnClickListener
+            if (state.performLocateCurrent(currentButton.tag as Boolean)
+                || currentButton.tag as Boolean) return@setOnClickListener
             currentButton.tag = true
         }
+        return this
     }
 
     override fun initAction() {
@@ -143,14 +142,44 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     fun addPositionMarker(latLng: LatLng) {
-        val markerOptions = MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin));//大头针图标
-        positionMark = aMap.addMarker(markerOptions);
+        val markerOptions = MarkerOptions()
+        markerOptions.position(latLng)
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))//大头针图标
+        val positionMark = aMap.addMarker(markerOptions)
+    }
+
+    fun removeAddPositionMarker(latLng: LatLng) {
+        val key = "" + latLng.latitude + "#" + latLng.longitude
+        if (positionMark != null){
+            val l = LatLng(positionMark!!.position.latitude, positionMark!!.position.longitude)
+            addPositionMarkerBase(l)
+            positionMark?.remove()
+        }
+        if (markBaseMap.containsKey(key)) {
+            markBaseMap[key]!!.remove()
+            markBaseMap.remove(key)
+        }
+        val positionOptions = MarkerOptions()
+        positionOptions.position(latLng)
+        positionOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))//大头针图标
+        positionMark = aMap.addMarker(positionOptions)
+    }
+
+    private fun addPositionMarkerBase(latLng: LatLng) {
+        val key = "" + latLng.latitude + "#" + latLng.longitude
+        if (markBaseMap.containsKey(key)) return
+        val markerOptions = MarkerOptions()
+        markerOptions.position(latLng)
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_base_green))//大头针图标
+        val mark = aMap.addMarker(markerOptions);
+        markBaseMap[key] = mark
+    }
+
+    fun clearAllMarkerBase() {
+        markBaseMap.clear()
     }
 
     override fun moveToCurrent() {
-        // fixme 不断点击.
         if (myLocation == null) return
         mLocationClient.startLocation()
         val latLng = LatLng(myLocation!!.latitude, myLocation!!.longitude)
@@ -160,11 +189,8 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
         changeCurrentButtonState(cameraPosition)
         listener.moveCameraFinish()
-        if (centerMarker ==  null){
-            addMarkerInScreenCenter()
-        }else{
-            startJumpAnimation()
-        }
+        if (centerMarker ==  null) addMarkerInScreenCenter()
+        else startJumpAnimation()
         if (isFirst.compareAndSet(true, false)) initActionDone()
     }
 
@@ -176,7 +202,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
             backID = R.drawable.ic_gps_blue
         }
         currentButton.setImageDrawable(ContextCompat.getDrawable(context, backID))
-        if (currentButton.tag as Boolean) currentButton.tag = false
+        currentButton.tag = false
     }
 
     fun markAllDataBase() {
@@ -184,8 +210,12 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun setUpCenterMark(): AMapOperator = apply {
-        centerMarker?.isVisible = true
-        resetCenterMark()
+        if (centerMarker == null){
+            addMarkerInScreenCenter()
+        }else{
+            centerMarker?.isVisible = true
+            resetCenterMark()
+        }
     }
 
     open fun initActionDone() {}

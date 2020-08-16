@@ -9,7 +9,6 @@ import android.widget.ScrollView
 
 class ScrollViewController : ScrollView, IScrollSensor.Controller {
 
-    private lateinit var loadListener: IScrollSensor.LoadListener
     private lateinit var sensor: IScrollSensor.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
@@ -37,11 +36,6 @@ class ScrollViewController : ScrollView, IScrollSensor.Controller {
     }
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
-        if (downY - ev.rawY > touchSlop && !canScrollVertically(1)) {
-            loadListener.bottomLoad()
-        } else if (ev.rawY - downY > touchSlop && !canScrollVertically(-1)) {
-            loadListener.topLoad()
-        }
         if (ev.action != MotionEvent.ACTION_MOVE) return super.onTouchEvent(ev)
         // 子view没有产生消费，判断父view是否要消费
         if (!sensor.isCollapsed() && downY - ev.rawY > touchSlop) {// 非坍塌,手指向上滑动 -> 则坍塌
@@ -57,9 +51,5 @@ class ScrollViewController : ScrollView, IScrollSensor.Controller {
 
     override fun fling(velocityY: Int) {
         super.fling((velocityY * 0.6).toInt())
-    }
-
-    override fun setLoadListener(listener: IScrollSensor.LoadListener) {
-        this.loadListener = listener
     }
 }

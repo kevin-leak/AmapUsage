@@ -26,6 +26,6 @@ interface IMapOperator {
     }
 
     interface LocateCurrentState{
-       fun performLocate(isOnAnimation: Boolean)
+       fun performLocateCurrent(isOnAnimation: Boolean):Boolean // 传入进行判断是否需要消费，返回是否消费
     }
 }

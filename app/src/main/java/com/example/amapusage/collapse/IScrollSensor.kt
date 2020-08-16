@@ -6,12 +6,6 @@ import android.view.animation.Animation
 
 interface IScrollSensor {
     interface Controller {
-        fun setLoadListener(listener: LoadListener)
-    }
-
-    interface LoadListener {
-        fun bottomLoad()
-        fun topLoad()
     }
 
     interface Sensor {
