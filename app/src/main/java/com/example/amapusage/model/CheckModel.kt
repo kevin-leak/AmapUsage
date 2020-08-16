@@ -15,8 +15,8 @@ class CheckModel(var lonPoint: LatLonPoint, var isChecked: Boolean = false) {
 
     fun isPointEqual(p0: LatLonPoint?): Boolean {
         if (p0 == null) return false
-        return abs(p0.latitude - lonPoint.latitude) < 0.00002f
-                && abs(p0.longitude - lonPoint.longitude) < 0.00002f
+        return abs(p0.latitude - lonPoint.latitude) < 0.0001f
+                && abs(p0.longitude - lonPoint.longitude) < 0.0001f
     }
 
     fun isPointEqual(p0: AMapLocation?): Boolean {

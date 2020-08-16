@@ -113,7 +113,6 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         searchView.addSearchListener(object : EntityCheckSearch.OnSearchListenerIml() {
             override fun onEnterModeChange(isEnter: Boolean) = sensor.changeCollapseState(isEnter)
             override fun sourceChanging(data: String) = searchQueue.offerAndSearch(data)
-            override fun sourceCome(data: String) = operator.markAllDataBase()
             override fun onSearchModeChange(isSearch: Boolean) = changeState(isSearch)
         })
         textureMapView.map.setOnMapTouchListener { // collapsed下不可滑动
@@ -144,10 +143,12 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
         checkAdapter.switchData(viewModel.normalList)
         val snapshot = checkAdapter.restoreSnapshot()
         entityRecycleView.smoothScrollToPosition(snapshot)
+        operator.isNeedCenterPin = true
         operator.setUpCenterMark()
     }
 
     private fun resetSearchState() {
+        operator.isNeedCenterPin = false
         checkAdapter.takeASnapshot()
         operator.clearCenterMark()
         operator.clearPositionMark()
@@ -192,15 +193,18 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
     }
 
     override fun performLocateCurrent(isOnAnimation: Boolean): Boolean {
-        var haveCurrent = false
+        var isConsume = false
         if (!isOnAnimation) {
-            haveCurrent = checkAdapter.checkCurrent()
-            if (!haveCurrent && searchView.isSearch) operator.isNeedQuery = false
-            if (!haveCurrent) operator.moveToCurrent()
-            else entityRecycleView.smoothScrollToPosition(0)
+            isConsume = checkAdapter.checkCurrent()
+            if (!isConsume) {
+                operator.isNeedQuery = !searchView.isSearch
+                operator.moveToCurrent()
+            }else{
+                entityRecycleView.smoothScrollToPosition(0) // 如果是check过去的，移动到顶端。
+            }
         }
         if (searchView.isEnterMode) sensor.changeCollapseState(false)
-        return haveCurrent
+        return isConsume
     }
 
     override fun startLoadNewData() {
@@ -253,7 +257,6 @@ class LocationShowActivity : AppCompatActivity(), IMapOperator.LocationSourceLis
                     }
                     finish()
                 }
-
                 override fun onMapScreenShot(p0: Bitmap?, p1: Int) {}
             })
         }

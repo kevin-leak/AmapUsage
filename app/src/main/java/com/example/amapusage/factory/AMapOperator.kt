@@ -59,10 +59,12 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     private fun addMarkerInScreenCenter() {
-        val option = MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))
-        centerMarker = aMap.addMarker(option)
-        aMap.addMarker(option)
-        resetCenterMark()
+        if (isNeedCenterPin){
+            val option = MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))
+            centerMarker = aMap.addMarker(option)
+            aMap.addMarker(option)
+            resetCenterMark()
+        }
     }
 
     fun resetCenterMark() {
@@ -99,9 +101,13 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         }
         mLocationClient.setLocationOption(clientOption)
         mLocationClient.setLocationListener { aMapLocation ->
-            myLocation = aMapLocation
-            if (isFirst.get()) initAction()
+            locationCome(aMapLocation)
         }
+    }
+
+    open fun locationCome(aMapLocation: AMapLocation?) {
+        myLocation = aMapLocation
+        if (isFirst.get()) initAction()
     }
 
     override fun bindCurrentButton(btn: ImageButton, state: IMapOperator.LocateCurrentState): AMapOperator {
@@ -183,6 +189,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         if (myLocation == null) return
         mLocationClient.startLocation()
         val latLng = LatLng(myLocation!!.latitude, myLocation!!.longitude)
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(16f))
         getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600, null)
     }
 
@@ -203,10 +210,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         }
         currentButton.setImageDrawable(ContextCompat.getDrawable(context, backID))
         currentButton.tag = false
-    }
-
-    fun markAllDataBase() {
-        // todo mark 所有的位置，在同一张地图可视化的
     }
 
     override fun setUpCenterMark(): AMapOperator = apply {

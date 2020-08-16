@@ -2,6 +2,7 @@ package com.example.amapusage.factory
 
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
@@ -145,9 +146,9 @@ class GetLocationOperator : AMapOperator() {
         model.searchList.value = value
     }
 
-    override fun initAction() {
-        super.initAction()
-        model.myLocation = myLocation
+    override fun locationCome(aMapLocation: AMapLocation?) {
+        model.myLocation = aMapLocation
+        super.locationCome(aMapLocation)
     }
 
     private fun dealCenterQuery(poiResult: PoiResult) {
