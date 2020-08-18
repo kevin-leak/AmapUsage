@@ -2,6 +2,7 @@ package com.example.amapusage.factory
 
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import android.widget.ImageButton
 import androidx.core.content.ContextCompat
 import com.amap.api.location.AMapLocation
@@ -53,9 +54,13 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         this.listener = lt
         buildMapBaseConfig()
         setUpClient()
-        mLocationClient.startLocation() //启动定位我当前位置
         aMap.setOnCameraChangeListener(this)
         return this
+    }
+
+    fun restartClient(){
+        mLocationClient.startLocation()
+        isFirst.set(true)
     }
 
     private fun addMarkerInScreenCenter() {
@@ -103,6 +108,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         mLocationClient.setLocationListener { aMapLocation ->
             locationCome(aMapLocation)
         }
+        mLocationClient.startLocation() //启动定位我当前位置
     }
 
     open fun locationCome(aMapLocation: AMapLocation?) {
@@ -151,24 +157,25 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         val markerOptions = MarkerOptions()
         markerOptions.position(latLng)
         markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))//大头针图标
-        val positionMark = aMap.addMarker(markerOptions)
+        aMap.addMarker(markerOptions)
     }
 
-    fun removeAddPositionMarker(latLng: LatLng) {
-        val key = "" + latLng.latitude + "#" + latLng.longitude
-        if (positionMark != null){
+    fun removeAddPositionMarker(latLng: LatLng) { // base和mark 不共生，且base会遗留.
+        if (positionMark == null){ // 第一次发生check
+            val positionOptions = MarkerOptions()
+            positionOptions.position(latLng)
+            positionOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))//大头针图标
+            positionMark = aMap.addMarker(positionOptions)
+        }else{ // 如果发生了check, mark有存在，则重置mark的位置，并移除当前位置的base，且构建出以前位置的base
             val l = LatLng(positionMark!!.position.latitude, positionMark!!.position.longitude)
             addPositionMarkerBase(l)
-            positionMark?.remove()
+            val key = "" + latLng.latitude + "#" + latLng.longitude
+            if (markBaseMap.containsKey(key)) {
+                markBaseMap[key]!!.remove()
+                markBaseMap.remove(key)
+            }
+            positionMark!!.position = latLng
         }
-        if (markBaseMap.containsKey(key)) {
-            markBaseMap[key]!!.remove()
-            markBaseMap.remove(key)
-        }
-        val positionOptions = MarkerOptions()
-        positionOptions.position(latLng)
-        positionOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))//大头针图标
-        positionMark = aMap.addMarker(positionOptions)
     }
 
     private fun addPositionMarkerBase(latLng: LatLng) {

@@ -17,6 +17,8 @@ import com.example.amapusage.R
 import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.model.CheckModel
 import com.example.amapusage.utils.KeyWordUtil
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class GetLocationOperator : AMapOperator() {
@@ -27,7 +29,7 @@ class GetLocationOperator : AMapOperator() {
     val TAG = "kyle-map-GetLocation"
     var lock = false // 防止不停的下拉，导致页码变化
         private set
-    var isNeedQuery = true
+    var isNeedQuery = false
     private lateinit var centerQuery: PoiSearch.Query
     private lateinit var currentCenterPoint: LatLonPoint
     private var searchByText: PoiSearch.Query? = null
@@ -39,30 +41,40 @@ class GetLocationOperator : AMapOperator() {
 
     fun bindModel(model: LocationViewModel) = apply { this.model = model }
 
-    inner class Node(private var latLonPoint: LatLonPoint) {
-        // 一个逆向的链表，先进先出，在上一个节点没有执行完，就会出现断层，如果没有执行完，就wait顺序执行.
-        var last: Node? = null
-        fun action() {
-            isNeedQuery = false
-            val latLng = LatLng(latLonPoint.latitude, latLonPoint.longitude)
-            getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600,
-                object : AMap.CancelableCallback {
-                    override fun onFinish() = turn()
-                    override fun onCancel() = turn()
-                })
-        }
+    override fun initAction() {
+        isNeedQuery = true
+        super.initAction()
+    }
 
-        private fun turn() {
-            last?.action()
-            this@GetLocationOperator.tail = last
+    private val moveQueue = LinkedList<LatLonPoint>()
+    fun emptyAnimationQueue() {
+        moveQueue.clear()
+    }
+
+    private fun moveToPosition(latLonPoint: LatLonPoint) {
+        if (moveQueue.size == 0) {
+            moveQueue.offer(latLonPoint)
+            performMove(latLonPoint)
+        } else {
+            moveQueue.offer(latLonPoint)
         }
     }
 
-    var tail: Node? = null // 如果checkList 发生暴击，在动画化没有完成前变成同步，导致数据错乱，但不能阻塞.
-
-    private fun moveToPosition(latLonPoint: LatLonPoint) {
-        if (tail == null) tail = Node(latLonPoint).also { it.action() }
-        else Node(latLonPoint).apply { this.last = tail }
+    private fun performMove(latLonPoint: LatLonPoint) {
+        isNeedQuery = false
+        val latLng = LatLng(latLonPoint.latitude, latLonPoint.longitude)
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(16f))
+        getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600, object :
+            AMap.CancelableCallback {
+            override fun onFinish() {
+                moveQueue.poll()
+                if (moveQueue.size >= 1) performMove(moveQueue.poll()!!)
+            }
+            override fun onCancel() {
+                moveQueue.poll()
+                if (moveQueue.size >= 1) performMove(moveQueue.poll()!!)
+            }
+        })
     }
 
     fun moveToCheck() {
@@ -72,7 +84,7 @@ class GetLocationOperator : AMapOperator() {
 
     override fun onCameraChange(cameraPosition: CameraPosition?) {
         super.onCameraChange(cameraPosition)
-        if (lock || !isNeedQuery) return
+        if (lock || !isNeedQuery) return // 非查询的不调用 startLoadNewData()
         lock = true
         listener.startLoadNewData()
     }
@@ -82,8 +94,6 @@ class GetLocationOperator : AMapOperator() {
         if (isNeedQuery) {
             val target = cameraPosition.target
             queryByMove(LatLonPoint(target.latitude, target.longitude)) // 查询数据
-        } else if (!isNeedQuery) {
-            isNeedQuery = !isNeedQuery
         }
     }
 
@@ -121,6 +131,7 @@ class GetLocationOperator : AMapOperator() {
     fun loadMoreByMove() {
         if (lock) return
         lock = true
+        if (!this::centerSearcher.isInitialized) return
         centerSearcher.query.pageNum += 1
         centerSearcher.searchPOIAsyn()
     }

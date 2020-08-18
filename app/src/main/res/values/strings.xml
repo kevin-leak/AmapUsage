@@ -1,12 +1,25 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">AMapUsage</string>
     <string name="get_location">get Location</string>
     <string name="cancel">Cancel</string>
     <string name="search_place">Search Place</string>
     <string name="send">Send</string>
-    <string name="no_search_results">No search results</string>
-    <string name="loading">loading...</string>
+    <string name="no_search_results">No results</string>
+    <string name="loading" tools:ignore="TypographyEllipsis">loading...</string>
     <string name="location_info">Location Info</string>
+    <string name="settings">Settings</string>
+    <string name="note">Note</string>
+    <string name="gsp_note">\u3000AMapUsage is unable to locate your position. Make sure mobile network and
+        GPS services are enabled in your device\'s settings.</string>
+    <string name="no_intent">Network is unavailable, try again later</string>
+    <string name="title">Title</string>
+    <string name="ok">ok</string>
+    <string name="gsp_permission">must have gps permission</string>
+    <string name="authorization_request">Authorization Request</string>
+    <string name="authorization_message" >\u3000Go to your devices\'s
+        \"Settings\" \> \"Apps" \> \"AMapUsage\" \> \"Permissions\"
+        to allow location services in order to use features such as
+        location sharing, Search,  and more.</string>
     <drawable name="item_normal">#FFFFFF</drawable>
     <drawable name="item_pressed">#52392D2D</drawable>
 

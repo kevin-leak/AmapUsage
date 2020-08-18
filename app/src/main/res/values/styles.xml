@@ -22,4 +22,13 @@
         <item name="colorControlNormal">@color/gray</item>
     </style>
 
+
+    <!--dialog去阴影-->
+    <style name="dialogNoBg">
+        <item name="android:background">#00000000</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
 </resources>

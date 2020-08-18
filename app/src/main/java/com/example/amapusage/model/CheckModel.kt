@@ -24,4 +24,8 @@ class CheckModel(var lonPoint: LatLonPoint, var isChecked: Boolean = false) {
         return isPointEqual(LatLonPoint(p0.latitude, p0.longitude))
     }
 
+    override fun toString(): String {
+        return "CheckModel(lonPoint=$lonPoint, isChecked=$isChecked, distanceDetails='$distanceDetails', isSearch=$isSearch, sendModel=$sendModel)"
+    }
+
 }

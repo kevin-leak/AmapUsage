@@ -84,6 +84,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     override fun addFootItem() {
+        if (itemCount <= 1) return
         isShowFootItem = true
         notifyItemInserted(itemCount)
         footView?.visibility = View.VISIBLE
@@ -95,6 +96,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         unCheck()
         checkModel(position)
         listener?.hasBeChecked(position)
+        Log.e("kyle-map", "exchangeCheckStatus: ")
     }
 
     private fun unCheck() {
@@ -141,7 +143,7 @@ class EntityCheckAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     fun getPosition(): Int {
-        if (data.value == null || data.value!!.size < itemCount || model.checkModel.value == null) return -1
+        if (data.value == null || model.checkModel.value == null) return -1
         return data.value!!.indexOf(model.checkModel.value!!)
     }
 

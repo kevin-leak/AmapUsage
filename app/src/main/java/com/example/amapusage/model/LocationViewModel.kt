@@ -42,4 +42,8 @@ open class LocationViewModel() : ViewModel() {
 
     private fun clearCheckModel() = run { checkModel.value = null }
     fun isChecked() = checkModel.value != null
+    fun resetNormal() {
+        normalList.value = mutableListOf()
+        clearCheckModel()
+    }
 }
