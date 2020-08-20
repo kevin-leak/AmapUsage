@@ -1,16 +1,16 @@
-
-
 package com.example.amapusage
 
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -31,6 +31,7 @@ import com.example.amapusage.search.EntityCheckSearch
 import com.example.amapusage.search.IEntityCheckSearch
 import com.example.amapusage.utils.BitmapUtils
 import com.example.amapusage.utils.KeyBoardUtils
+import com.example.amapusage.utils.ScreenUtils
 import kotlinx.android.synthetic.main.activity_show_location.*
 import java.io.ByteArrayOutputStream
 import java.util.*
@@ -77,6 +78,58 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
         super.initView(savedInstanceState)
         textureMapView.onCreate(savedInstanceState) // 此方法必须重写
         sensor.bindCollapsingView(textureMapView)
+
+        mapViewFitScreen()
+
+        searchView.setKeyboardListener(object : IEntityCheckSearch.KeyboardListener {
+            override fun keyboardClose() {
+                handleKeyBoardChange(true)
+            }
+
+            override fun keyboardOpen() {
+                handleKeyBoardChange(false)
+            }
+        })
+    }
+
+    private fun handleKeyBoardChange(isClose: Boolean) {
+        window.decorView.post {
+            val r = Rect() // 使用最外层布局填充，进行测算计算
+            val myLayout = window.decorView
+            myLayout.getWindowVisibleDisplayFrame(r)
+            val screenHeight: Int = myLayout.rootView.height
+            Log.e(TAG, "handleKeyBoardChange: " + r.bottom + " " + r.top + " " + ScreenUtils.getScreenHeight(this) + " " + myLayout.rootView.height)
+            val heightDiff = ScreenUtils.getScreenHeight(this) - (r.bottom - r.top) - ScreenUtils.getBottomStatusHeight(this)
+            val visibleHeight = recycleView.height - heightDiff
+
+            val layoutParams = progressBar.layoutParams as RelativeLayout.LayoutParams
+            if (isClose) {
+                layoutParams.topMargin = 0
+                layoutParams.addRule(RelativeLayout.CENTER_VERTICAL)
+            } else {
+                layoutParams.topMargin = (visibleHeight - progressBar.height)/ 2
+                layoutParams.removeRule(RelativeLayout.CENTER_VERTICAL)
+            }
+            progressBar.layoutParams = layoutParams
+
+
+            val params = textPlaceHolder.layoutParams as RelativeLayout.LayoutParams
+            if (isClose) {
+                params.topMargin = 0
+                params.addRule(RelativeLayout.CENTER_VERTICAL)
+            } else {
+                params.topMargin = (visibleHeight - textPlaceHolder.height) / 2
+                params.removeRule(RelativeLayout.CENTER_VERTICAL)
+            }
+            textPlaceHolder.layoutParams = params
+        }
+    }
+
+    private fun mapViewFitScreen() {
+        val layoutParams = textureMapView.layoutParams as RelativeLayout.LayoutParams
+        textureMapView.minimumHeight = ScreenUtils.getScreenHeight(this) / 3
+        layoutParams.height = ScreenUtils.getScreenHeight(this) / 3 * 2
+        textureMapView.layoutParams = layoutParams
     }
 
     override fun initData() {
@@ -152,6 +205,7 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
 
     private fun changeState(isSearch: Boolean) {
         clearDataStatus()
+        searchQueue.clear()
         if (isSearch) resetSearchState()
         else resetNormalState()
     }
@@ -182,9 +236,9 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
         if (!TextUtils.isEmpty(data)) {
             operator.queryByText(data)
         } else {
-            clearDataStatus()
             viewModel.resetSearch()
             searchQueue.pollLast() // 自动删除，因为不会loadDone
+            clearDataStatus()
         }
     }
 
@@ -192,7 +246,6 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
         textPlaceHolder.visibility = GONE
         progressBar.visibility = GONE
         checkAdapter.removeFootItem()
-        searchQueue.clear()
     }
 
     private fun initAdapter() {
@@ -301,6 +354,7 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
         operator.getMap().uiSettings.isScaleControlsEnabled = !isCollapsed
         collapseButtonLayout.apply { visibility = if (isCollapsed) VISIBLE else GONE }
         resetCenterMark()
+        handleKeyBoardChange(false)
         if (searchView.isSearch && !isCollapsed) {
             val index = checkAdapter.getPosition()
             if (index != -1) recycleView.smoothScrollToPosition(index)
@@ -324,6 +378,7 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
     private fun resetCenterMark() {
         if (!searchView.isSearch) operator.resetCenterMark()
     }
+
     override fun moveCameraFinish() = resetCenterMark()
     override fun onMoveChange() {}
     override fun onCollapseStateChange(isCollapsed: Boolean) = resetCenterMark()

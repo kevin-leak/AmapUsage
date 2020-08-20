@@ -4,11 +4,14 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
+import androidx.core.content.ContextCompat
 import com.example.amapusage.model.LocationModel
 import com.example.amapusage.utils.DialogUtils
 import kotlinx.android.synthetic.main.item_message.*
@@ -66,7 +69,10 @@ open class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbac
 
     override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
         if (!EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            DialogUtils.gpsPermissionDialog(this@MainActivity)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION))
+                DialogUtils.gpsPermissionDialog(this@MainActivity)
+            }
         }
     }
 

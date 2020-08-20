@@ -27,6 +27,11 @@ interface IEntityCheckSearch {
         fun textCome(text:String)
     }
 
+    interface KeyboardListener {
+        fun keyboardClose()
+        fun keyboardOpen()
+    }
+
     fun exitEditMode()
     fun enterEditMode()
     fun addSearchListener(lt: OnSearchListener)

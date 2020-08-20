@@ -2,16 +2,13 @@ package com.example.amapusage.collapse
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.sax.EndTextElementListener
+import android.graphics.Rect
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
-import com.example.amapusage.factory.GetLocationOperator
-import kotlinx.android.synthetic.main.activity_show_location.*
 
-class RecycleViewController : RecyclerView, IScrollSensor.Controller {
+open class RecycleViewController : RecyclerView, IScrollSensor.Controller {
     private lateinit var sensor: IScrollSensor.Sensor
     private var touchSlop: Int = 0
     private var downY: Float = 0f
@@ -57,6 +54,24 @@ class RecycleViewController : RecyclerView, IScrollSensor.Controller {
 
     override fun fling(velocityX: Int, velocityY: Int): Boolean {
         return super.fling(velocityX, (velocityY * 0.6).toInt())
+    }
+
+    protected fun isCover(): Boolean {
+        var cover = false
+        val rect = Rect()
+        cover = getGlobalVisibleRect(rect)
+        if (cover) {
+            if (rect.width() >= measuredWidth && rect.height() >= measuredHeight) {
+                return !cover
+            }
+        }
+        return true
+    }
+
+    fun getVisiableHeight():Int{
+        val rect = Rect()
+        getGlobalVisibleRect(rect)
+        return rect.bottom
     }
 
 }

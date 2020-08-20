@@ -70,6 +70,7 @@ class GetLocationOperator : AMapOperator() {
                 moveQueue.poll()
                 if (moveQueue.size >= 1) performMove(moveQueue.poll()!!)
             }
+
             override fun onCancel() {
                 moveQueue.poll()
                 if (moveQueue.size >= 1) performMove(moveQueue.poll()!!)
@@ -82,19 +83,14 @@ class GetLocationOperator : AMapOperator() {
         moveToPosition(model.checkModel.value!!.lonPoint)
     }
 
-    override fun onCameraChange(cameraPosition: CameraPosition?) {
-        super.onCameraChange(cameraPosition)
-        if (lock || !isNeedQuery) return // 非查询的不调用 startLoadNewData()
-        lock = true
-        listener.startLoadNewData()
-    }
 
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
         super.onCameraChangeFinish(cameraPosition)
-        if (isNeedQuery) {
-            val target = cameraPosition.target
-            queryByMove(LatLonPoint(target.latitude, target.longitude)) // 查询数据
-        }
+        if (lock || !isNeedQuery) return // 非查询的不调用 startLoadNewData()
+        lock = true
+        listener.startLoadNewData()
+        val target = cameraPosition.target
+        queryByMove(LatLonPoint(target.latitude, target.longitude)) // 查询数据
     }
 
     override fun queryByText(queryText: String) {

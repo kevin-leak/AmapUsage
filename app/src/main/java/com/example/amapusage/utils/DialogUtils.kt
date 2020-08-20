@@ -1,14 +1,16 @@
 package com.example.amapusage.utils
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.view.LayoutInflater
 import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
 import com.example.amapusage.R
 import kotlinx.android.synthetic.main.layout_dialog.view.*
 
@@ -35,12 +37,11 @@ object DialogUtils {
                 })
             }
         }
-        if (!(context as Activity).isFinishing){
+        if (!(context as Activity).isFinishing) {
             dialog.show()
             dialog.window?.setContentView(layout)
         }
     }
-
 
 
     fun gpsPermissionDialog(context: Context) {
@@ -53,12 +54,12 @@ object DialogUtils {
         layout.positiveButton.setOnClickListener {
             dialog.dismiss().also {
                 context.startActivity(Intent().apply {
-                    action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    data = Uri.parse("package:" + context.packageName)
+                    action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                 })
             }
         }
-        if (!(context as Activity).isFinishing){
+        if (!(context as Activity).isFinishing) {
             dialog.show()
             dialog.window?.setContentView(layout)
         }

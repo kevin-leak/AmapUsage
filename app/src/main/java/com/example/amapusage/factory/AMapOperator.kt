@@ -80,7 +80,6 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     open fun startJumpAnimation() {
-        //根据屏幕距离计算需要移动的目标点
         val latLng: LatLng = centerMarker!!.position
         val point = aMap.projection.toScreenLocation(latLng)
         point.y -= ScreenUtils.dip2px(context, 30f)
@@ -160,6 +159,9 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         aMap.addMarker(markerOptions)
     }
 
+    /**
+     * position mark 和 base 互斥, 且base会被保留.
+     * */
     fun removeAddPositionMarker(latLng: LatLng) { // base和mark 不共生，且base会遗留.
         if (positionMark == null){ // 第一次发生check
             val positionOptions = MarkerOptions()

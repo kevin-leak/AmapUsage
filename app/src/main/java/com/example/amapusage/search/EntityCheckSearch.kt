@@ -22,6 +22,7 @@ import com.example.amapusage.R
 class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int) :
     FrameLayout(context, attr, defStyleAttr, defStyleAttr), IEntityCheckSearch,
     IEntityCheckSearch.textTimeEndListener {
+    private lateinit var keyboardListener:IEntityCheckSearch.KeyboardListener
     var text: Editable = SpannableStringBuilder()
         set(value) {
             enterEditMode()
@@ -80,6 +81,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
             searchContentEdit.requestFocus()
             isSearch = true
             listeners.forEach { it.onSearchModeChange(isSearch) }
+            keyboardListener.keyboardOpen()
         }
         searchDeleteIcon.setOnClickListener {
             searchContentEdit.text = null
@@ -115,6 +117,7 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
     }
 
     override fun exitSearchMode() {
+        keyboardListener.keyboardClose()
         listeners.forEach { it.beforeSearchModeChange(isSearch) } // 防止遮盖，先调用
         searchContentEdit.text = null // 可能存在没有本身在搜索完就没有焦点的状态, 不回调监听.
         if (!searchContentEdit.isFocused) exitEditMode()
@@ -225,4 +228,11 @@ class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int
     override fun textCome(text: String) {
         listeners.forEach { it.sourceChanging(text) }
     }
+
+    fun setKeyboardListener(listener: IEntityCheckSearch.KeyboardListener) {
+        keyboardListener = listener
+    }
+
 }
+
+

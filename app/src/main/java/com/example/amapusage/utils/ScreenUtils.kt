@@ -7,13 +7,16 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Point
 import android.os.Build
+import android.util.DisplayMetrics
 import android.view.View
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import java.lang.reflect.Field
+import java.lang.reflect.Method
 
 
 object ScreenUtils {
+
     fun setStatus(activity: Activity) {
         if (Build.VERSION.SDK_INT >= 21) {//21表示5.0
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -69,5 +72,34 @@ object ScreenUtils {
             e1.printStackTrace()
         }
         return sbar
+    }
+
+    fun getDpi(context: Context): Int {
+        var dpi = 0
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val display = windowManager.defaultDisplay
+        val displayMetrics = DisplayMetrics()
+        val c: Class<*>
+        try {
+            c = Class.forName("android.view.Display")
+            val method: Method = c.getMethod("getRealMetrics", DisplayMetrics::class.java)
+            method.invoke(display, displayMetrics)
+            dpi = displayMetrics.heightPixels
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
+        return dpi
+    }
+
+    /**
+     * 获取 虚拟按键的高度
+     *
+     * @param context
+     * @return
+     */
+    fun getBottomStatusHeight(context: Context?): Int {
+        val totalHeight = getDpi(context!!)
+        val contentHeight = getScreenHeight(context)
+        return totalHeight - contentHeight
     }
 }
