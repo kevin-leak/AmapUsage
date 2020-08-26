@@ -1,7 +1,6 @@
 package com.example.amapusage.factory
 
 import android.util.Log
-import androidx.core.content.ContextCompat
 import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
@@ -13,9 +12,8 @@ import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.core.PoiItem
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
-import com.example.amapusage.R
-import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.model.CheckModel
+import com.example.amapusage.model.LocationViewModel
 import com.example.amapusage.utils.KeyWordUtil
 import java.util.*
 import kotlin.collections.ArrayList
@@ -180,7 +178,7 @@ class GetLocationOperator : AMapOperator() {
             checkModel.sendModel.apply {
                 placeDesc = it.snippet
                 placeTitle = if (result.query == centerQuery) it.title
-                else KeyWordUtil.buildSearchKey(it.title, keyword, context)
+                else KeyWordUtil.buildSearchKey(it.title, keyword)
             }
             data.add(checkModel)
         }

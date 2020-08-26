@@ -2,7 +2,6 @@ package com.example.amapusage.utils
 
 import android.graphics.Bitmap
 
-
 object BitmapUtils {
      fun createScaledBitmap(bm: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
         val w = bm.width // 得到图片的宽，高

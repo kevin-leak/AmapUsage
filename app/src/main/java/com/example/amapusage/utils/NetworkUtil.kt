@@ -4,23 +4,24 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.telephony.TelephonyManager
 import android.util.Log
+import com.example.amapusage.App
 
 object NetworkUtil {
     private const val TAG = "NetworkUtil"
-    fun hasNetwork(context: Context): Boolean {
-        val status = getNetworkStatus(context)
+    fun hasNetwork(): Boolean {
+        val status = getNetworkStatus()
         return status != XNetworkStatus.NOTREACHABLE && status != XNetworkStatus.UNKNOWN
     }
 
-    private fun getNetworkStatus(context: Context): XNetworkStatus {
+    private fun getNetworkStatus(): XNetworkStatus {
         val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            App.appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = connectivityManager.activeNetworkInfo
         if (activeNetwork != null) {
             if (activeNetwork.isConnectedOrConnecting) {
                 return when (activeNetwork.type) {
                     ConnectivityManager.TYPE_WIFI -> XNetworkStatus.REACHABLEVIAWIFI
-                    else -> getMobileNetWorkClass(context)
+                    else -> getMobileNetWorkClass()
                 }
             } else {
                 Log.d(TAG, "getNetworkStatus: network state is " + activeNetwork.state)
@@ -31,8 +32,8 @@ object NetworkUtil {
         return XNetworkStatus.NOTREACHABLE
     }
 
-    private fun getMobileNetWorkClass(context: Context): XNetworkStatus {
-        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    private fun getMobileNetWorkClass(): XNetworkStatus {
+        val telephonyManager = App.appContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         return when (telephonyManager.networkType) {
             TelephonyManager.NETWORK_TYPE_GPRS, TelephonyManager.NETWORK_TYPE_EDGE,
             TelephonyManager.NETWORK_TYPE_CDMA, TelephonyManager.NETWORK_TYPE_1xRTT, TelephonyManager.NETWORK_TYPE_IDEN

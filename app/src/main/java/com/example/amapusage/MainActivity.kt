@@ -14,7 +14,13 @@ import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
 import com.example.amapusage.model.LocationModel
 import com.example.amapusage.utils.DialogUtils
-import kotlinx.android.synthetic.main.item_message.*
+import com.example.amapusage.utils.ScreenUtils
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.navigation
+import kotlinx.android.synthetic.main.activity_parse_location.*
+import kotlinx.android.synthetic.main.item_msg_map.*
+import kotlinx.android.synthetic.main.item_msg_map.tvDetails
+import kotlinx.android.synthetic.main.item_msg_map.tvTitle
 import pub.devrel.easypermissions.EasyPermissions
 
 
@@ -36,7 +42,9 @@ open class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbac
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ScreenUtils.setWhiteStatusBlackFont(this)
         setContentView(R.layout.activity_main)
+        navigation.setOnClickListener { finish() }
     }
 
     fun getLocation(view: View) {
@@ -50,7 +58,7 @@ open class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbac
         val bitmap = BitmapFactory.decodeByteArray(bis, 0, bis!!.size)
         locationModel =
             data.getParcelableExtra(RESULT_SEND_MODEL) as LocationModel
-        cdvMessageItem.visibility = View.VISIBLE
+        rightMsg.visibility = View.VISIBLE
         ivMap.setImageBitmap(bitmap)
         tvTitle.text = locationModel.placeTitle
         tvDetails.text = locationModel.placeDesc
@@ -71,7 +79,7 @@ open class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbac
         if (!EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION))
-                DialogUtils.gpsPermissionDialog(this@MainActivity)
+                    DialogUtils.gpsPermissionDialog(this@MainActivity)
             }
         }
     }

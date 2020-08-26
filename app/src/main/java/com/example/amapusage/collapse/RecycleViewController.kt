@@ -68,7 +68,7 @@ open class RecycleViewController : RecyclerView, IScrollSensor.Controller {
         return true
     }
 
-    fun getVisiableHeight():Int{
+    fun getVisiableHeight(): Int {
         val rect = Rect()
         getGlobalVisibleRect(rect)
         return rect.bottom

@@ -1,8 +1,6 @@
 package com.example.amapusage.collapse
 
-import android.view.MotionEvent
 import android.view.View
-import android.view.animation.Animation
 
 interface IScrollSensor {
     interface Controller {

@@ -11,8 +11,6 @@ import com.example.amapusage.R
 import com.example.amapusage.model.CheckModel
 import com.example.amapusage.model.LocationViewModel
 import kotlinx.android.synthetic.main.item_location.view.*
-import javax.security.auth.login.LoginException
-import kotlin.math.log
 
 /**
  * 默认展示和搜索展示的切换.向外通知数据的变化.

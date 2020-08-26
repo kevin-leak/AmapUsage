@@ -22,7 +22,7 @@ import com.example.amapusage.R
 class EntityCheckSearch(context: Context, attr: AttributeSet?, defStyleAttr: Int) :
     FrameLayout(context, attr, defStyleAttr, defStyleAttr), IEntityCheckSearch,
     IEntityCheckSearch.textTimeEndListener {
-    private lateinit var keyboardListener:IEntityCheckSearch.KeyboardListener
+    private lateinit var keyboardListener: IEntityCheckSearch.KeyboardListener
     var text: Editable = SpannableStringBuilder()
         set(value) {
             enterEditMode()

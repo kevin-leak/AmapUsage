@@ -2,7 +2,6 @@ package com.example.amapusage.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import android.text.SpannableString
 import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import kotlin.properties.Delegates

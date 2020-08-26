@@ -98,8 +98,16 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
             val myLayout = window.decorView
             myLayout.getWindowVisibleDisplayFrame(r)
             val screenHeight: Int = myLayout.rootView.height
-            Log.e(TAG, "handleKeyBoardChange: " + r.bottom + " " + r.top + " " + ScreenUtils.getScreenHeight(this) + " " + myLayout.rootView.height)
-            val heightDiff = ScreenUtils.getScreenHeight(this) - (r.bottom - r.top) - ScreenUtils.getBottomStatusHeight(this)
+            Log.e(
+                TAG,
+                "handleKeyBoardChange: " + r.bottom + " " + r.top + " " + ScreenUtils.getScreenHeight(
+                    this
+                ) + " " + myLayout.rootView.height
+            )
+            val heightDiff =
+                ScreenUtils.getScreenHeight(this) - (r.bottom - r.top) - ScreenUtils.getNavigationBarHeight(
+                    this
+                )
             val visibleHeight = recycleView.height - heightDiff
 
             val layoutParams = progressBar.layoutParams as RelativeLayout.LayoutParams
@@ -107,7 +115,7 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
                 layoutParams.topMargin = 0
                 layoutParams.addRule(RelativeLayout.CENTER_VERTICAL)
             } else {
-                layoutParams.topMargin = (visibleHeight - progressBar.height)/ 2
+                layoutParams.topMargin = (visibleHeight - progressBar.height) / 2
                 layoutParams.removeRule(RelativeLayout.CENTER_VERTICAL)
             }
             progressBar.layoutParams = layoutParams
@@ -192,8 +200,12 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
             if (it == null) changeSendButtonActive(false)
             else changeSendButtonActive(it.isSearch == searchView.isSearch)
         })
-        viewModel.searchList.observe(this, Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
-        viewModel.normalList.observe(this, Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
+        viewModel.searchList.observe(
+            this,
+            Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
+        viewModel.normalList.observe(
+            this,
+            Observer<MutableList<CheckModel>> { checkAdapter.notifyDataSetChanged() })
     }
 
     private fun loadMore() {
@@ -331,6 +343,7 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
                     }
                     finish()
                 }
+
                 override fun onMapScreenShot(p0: Bitmap?, p1: Int) {}
             })
         }
@@ -346,7 +359,7 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
     }
 
     override fun beforeCollapseStateChange(isCollapsing: Boolean) {
-        if (isCollapsing) KeyBoardUtils.closeKeyboard(searchView.windowToken, baseContext)
+        if (isCollapsing) KeyBoardUtils.closeKeyboard(searchView.windowToken)
         resetCenterMark()
     }
 
@@ -371,7 +384,7 @@ class LocationShowActivity : LocationActivity(), IMapOperator.LocationSourceList
     override fun onDestroy() {
         operator.endOperate()
         textureMapView.onDestroy()
-        KeyBoardUtils.closeKeyboard(searchView.windowToken, baseContext)
+        KeyBoardUtils.closeKeyboard(searchView.windowToken)
         super.onDestroy()
     }
 

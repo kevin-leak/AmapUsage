@@ -2,7 +2,6 @@ package com.example.amapusage.factory
 
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
 import android.widget.ImageButton
 import androidx.core.content.ContextCompat
 import com.amap.api.location.AMapLocation
@@ -58,14 +57,15 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         return this
     }
 
-    fun restartClient(){
+    fun restartClient() {
         mLocationClient.startLocation()
         isFirst.set(true)
     }
 
     private fun addMarkerInScreenCenter() {
-        if (isNeedCenterPin){
-            val option = MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))
+        if (isNeedCenterPin) {
+            val option =
+                MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))
             centerMarker = aMap.addMarker(option)
             aMap.addMarker(option)
             resetCenterMark()
@@ -115,12 +115,16 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
         if (isFirst.get()) initAction()
     }
 
-    override fun bindCurrentButton(btn: ImageButton, state: IMapOperator.LocateCurrentState): AMapOperator {
+    override fun bindCurrentButton(
+        btn: ImageButton,
+        state: IMapOperator.LocateCurrentState
+    ): AMapOperator {
         currentButton = btn
         currentButton.tag = false
         currentButton.setOnClickListener {
             if (state.performLocateCurrent(currentButton.tag as Boolean)
-                || currentButton.tag as Boolean) return@setOnClickListener
+                || currentButton.tag as Boolean
+            ) return@setOnClickListener
             currentButton.tag = true
         }
         return this
@@ -163,12 +167,12 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
      * position mark 和 base 互斥, 且base会被保留.
      * */
     fun removeAddPositionMarker(latLng: LatLng) { // base和mark 不共生，且base会遗留.
-        if (positionMark == null){ // 第一次发生check
+        if (positionMark == null) { // 第一次发生check
             val positionOptions = MarkerOptions()
             positionOptions.position(latLng)
             positionOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))//大头针图标
             positionMark = aMap.addMarker(positionOptions)
-        }else{ // 如果发生了check, mark有存在，则重置mark的位置，并移除当前位置的base，且构建出以前位置的base
+        } else { // 如果发生了check, mark有存在，则重置mark的位置，并移除当前位置的base，且构建出以前位置的base
             val l = LatLng(positionMark!!.position.latitude, positionMark!!.position.longitude)
             addPositionMarkerBase(l)
             val key = "" + latLng.latitude + "#" + latLng.longitude
@@ -197,7 +201,11 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     override fun moveToCurrent() {
         if (myLocation == null) return
         mLocationClient.startLocation()
-        val latLng = LatLng(myLocation!!.latitude, myLocation!!.longitude)
+        moveTo(myLocation!!.latitude, myLocation!!.longitude)
+    }
+
+    fun moveTo(latitude: Double, longitude: Double) {
+        val latLng = LatLng(latitude, longitude)
         aMap.moveCamera(CameraUpdateFactory.zoomTo(16f))
         getMap().animateCamera(CameraUpdateFactory.changeLatLng(latLng), 600, null)
     }
@@ -205,7 +213,7 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     override fun onCameraChangeFinish(cameraPosition: CameraPosition) {
         changeCurrentButtonState(cameraPosition)
         listener.moveCameraFinish()
-        if (centerMarker ==  null) addMarkerInScreenCenter()
+        if (centerMarker == null) addMarkerInScreenCenter()
         else startJumpAnimation()
         if (isFirst.compareAndSet(true, false)) initActionDone()
     }
@@ -222,9 +230,9 @@ open class AMapOperator : AMap.OnCameraChangeListener, IMapOperator.Operator,
     }
 
     override fun setUpCenterMark(): AMapOperator = apply {
-        if (centerMarker == null){
+        if (centerMarker == null) {
             addMarkerInScreenCenter()
-        }else{
+        } else {
             centerMarker?.isVisible = true
             resetCenterMark()
         }

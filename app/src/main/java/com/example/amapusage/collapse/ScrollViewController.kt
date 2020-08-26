@@ -1,5 +1,6 @@
 package com.example.amapusage.collapse
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -35,6 +36,7 @@ class ScrollViewController : ScrollView, IScrollSensor.Controller {
         return super.onInterceptTouchEvent(e)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         if (ev.action != MotionEvent.ACTION_MOVE) return super.onTouchEvent(ev)
         // 子view没有产生消费，判断父view是否要消费

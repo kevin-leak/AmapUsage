@@ -3,7 +3,7 @@
     android:id="@+id/locationItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/selector_item_location"
+    android:background="@drawable/press_back_state"
     android:gravity="center"
     android:paddingLeft="15dp"
     android:paddingRight="15dp"

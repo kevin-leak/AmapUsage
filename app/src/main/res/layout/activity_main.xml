@@ -1,25 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/toolbarColor"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@drawable/shape_toolbar_bottom_border"
+        android:paddingTop="24dp"
+        app:elevation="0dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:elevation="0dp"
+            android:minHeight="60dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/navigation"
+                    android:layout_width="20dp"
+                    android:layout_height="match_parent"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_back" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@id/navigation"
+                    android:gravity="center_vertical"
+                    android:text="@string/maps_message"
+                    android:textColor="@color/black"
+                    android:textSize="17sp" />
+
+                <ImageButton
+                    android:id="@+id/toolbarMenu"
+                    android:layout_width="60dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginBottom="1dp"
+                    android:background="@drawable/press_state_toolbar"
+                    android:src="@drawable/ic_more" />
+
+            </RelativeLayout>
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <include
+        android:id="@+id/rightMsg"
+        layout="@layout/item_msg_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/appBar"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        android:visibility="gone" />
 
     <Button
         android:layout_width="200dp"
         android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
+        android:background="@drawable/press_back_state"
         android:onClick="getLocation"
         android:text="@string/get_location"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.8" />
+        android:textAllCaps="false"
+        android:textColor="@color/black" />
 
-    <include layout="@layout/item_message" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/sheetTitle"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/shape_bottom_title_sheet_dialog"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:text="@string/title"
+        android:textColor="@color/black" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycleView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="10dp"
+        android:background="@color/sheetBackColor"/>
+
+    <TextView
+        android:id="@+id/tvCancel"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/shape_sheet_top_border"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:text="@string/cancel"
+        android:textColor="@color/black" />
+
+</LinearLayout>

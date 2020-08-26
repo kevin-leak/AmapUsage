@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">AMapUsage</string>
-    <string name="get_location">get Location</string>
+    <string name="app_name">AmapUsage</string>
+    <string name="get_location">Get Location</string>
     <string name="cancel">Cancel</string>
     <string name="search_place">Search Place</string>
     <string name="send">Send</string>
@@ -16,11 +16,19 @@
     <string name="ok">ok</string>
     <string name="gsp_permission">must have gps permission</string>
     <string name="authorization_request">Authorization Request</string>
-    <string name="authorization_message" >\u3000Go to your devices\'s
+    <string name="authorization_message">\u3000Go to your devices\'s
         \"Settings\" \> \"Apps" \> \"AMapUsage\" \> \"Permissions\"
         to allow location services in order to use features such as
         location sharing, Search,  and more.</string>
-    <drawable name="item_normal">#FFFFFF</drawable>
+    <string name="tencent_maps">Tencent Maps</string>
+    <string name="maps">Maps</string>
+    <string name="a_map">Amap</string>
+    <string name="didi">DiDi Travel</string>
+    <string name="didi_action_title">Use the DiDi Program to Get a Ride</string>
+    <string name="maps_message">maps message</string>
+    <drawable name="item_normal">@color/white</drawable>
+    <drawable name="item_normal_toolbar">@color/toolbarColor</drawable>
     <drawable name="item_pressed">#52392D2D</drawable>
+    <drawable name="item_pressed_toolbar">#52424141</drawable>
 
 </resources>

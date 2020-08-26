@@ -1,12 +1,11 @@
 package com.example.amapusage.utils
 
-import android.content.Context
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import androidx.core.content.ContextCompat
+import com.example.amapusage.App
 import com.example.amapusage.R
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -33,8 +32,8 @@ object KeyWordUtil {
         return spannableString
     }
 
-    fun buildSearchKey(text: String, word: String, context: Context): SpannableString{
-       return buildKey(text, word,  ContextCompat.getColor(context, R.color.searchKey))
+    fun buildSearchKey(text: String, word: String): SpannableString{
+       return buildKey(text, word,  ContextCompat.getColor(App.appContext, R.color.searchKey))
     }
 
     private fun escapeExprSpecialWord(word: String): String {

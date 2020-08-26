@@ -100,7 +100,7 @@ abstract class LocationActivity : AppCompatActivity() {
 //        netStateMonitor = ConnectionStateMonitor(this)
 //        netStateMonitor.start()
 
-        if (!NetworkUtil.hasNetwork(this)) {
+        if (!NetworkUtil.hasNetwork()) {
             Toast.makeText(this, R.string.no_intent, Toast.LENGTH_LONG).show()
         }
         val filter = IntentFilter()
@@ -115,7 +115,7 @@ abstract class LocationActivity : AppCompatActivity() {
             // 如果相等的话就说明网络状态发生了变化
             // 如果相等的话就说明网络状态发生了变化
             if (intent!!.action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
-                val netWorkState = NetworkUtil.hasNetwork(this@LocationActivity)
+                val netWorkState = NetworkUtil.hasNetwork()
                 // 接口回调传过去状态的类型
                 netStateChange(netWorkState)
             }

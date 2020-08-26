@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#636262</color>
-    
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#FFFFFF</color>
+    <color name="colorAccent">#0684BD</color>
     <color name="white">#ffffff</color>
+    <color name="black">#090909</color>
     <color name="sendButtonTextImActive">#808080</color>
     <color name="searchKey">#3BE3A0</color>
     <color name="gray">#686868</color>
@@ -12,4 +12,7 @@
     <color name="transparent">#00000000</color>
     <color name="dialogBorder">#E4E2E2</color>
     <color name="textPlaceHolder">#8A8989</color>
+    <color name="sheetBackColor">#F6F5F5</color>
+    <color name="toolbarColor">#EAECEC</color>
+    <color name="navBarColor">#E0E1E1</color>
 </resources>
